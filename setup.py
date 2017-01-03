@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='fastjsonschema',
-    version='1.0',
+    version='1.1',
     packages=['fastjsonschema'],
 
     url='https://github.com/seznam/python-fastjsonschema',

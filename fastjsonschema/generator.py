@@ -36,7 +36,7 @@ class CodeGenerator:
     JSON_TYPE_TO_PYTHON_TYPE = {
         'null': 'NoneType',
         'boolean': 'bool',
-        'number': 'int',
+        'number': 'int, float',
         'integer': 'int',
         'string': 'str',
         'array': 'list',

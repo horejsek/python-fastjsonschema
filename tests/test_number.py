@@ -110,3 +110,27 @@ def test_multiple_of(asserter, number_type, value, expected):
         'type': number_type,
         'multipleOf': 3,
     }, value, expected)
+
+
+@pytest.mark.parametrize('value', (
+    1.0,
+    0.1,
+    0.01,
+    0.001,
+))
+def test_integer_is_not_number(asserter, value):
+    asserter({
+        'type': 'integer',
+    }, value, JsonSchemaException('data must be integer'))
+
+
+@pytest.mark.parametrize('value', (
+    1.0,
+    0.1,
+    0.01,
+    0.001,
+))
+def test_number_allows_float(asserter, value):
+    asserter({
+        'type': 'number',
+    }, value, value)
