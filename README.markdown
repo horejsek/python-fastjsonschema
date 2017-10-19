@@ -8,4 +8,4 @@ Support for Python 3.3 and higher.
 
 ## Documentation
 
-Documentation: http://opensource.seznam.cz/python-fastjsonschema/
+Documentation: https://seznam.github.io/python-fastjsonschema/
