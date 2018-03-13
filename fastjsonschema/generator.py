@@ -358,7 +358,7 @@ class CodeGenerator:
 
             if 'additionalItems' in self._definition:
                 if self._definition['additionalItems'] is False:
-                    self.l('if {variable}_len > {}: raise JsonSchemaException("{name} must contain only spcified items")', len(self._definition['items']))
+                    self.l('if {variable}_len > {}: raise JsonSchemaException("{name} must contain only specified items")', len(self._definition['items']))
                 else:
                     with self.l('for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):', len(self._definition['items'])):
                         self.generate_func_code_block(
@@ -404,8 +404,9 @@ class CodeGenerator:
                 self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
         if 'additionalProperties' in self._definition:
+            # import pdb; pdb.set_trace()
             if self._definition['additionalProperties'] is False:
-                self.l('if {variable}_keys: raise JsonSchemaException("{name} must contain only spcified properties")')
+                self.l('if {variable}_keys: raise JsonSchemaException("{name} must contain only specified properties")')
             else:
                 with self.l('for {variable}_key in {variable}_keys:'):
                     self.l('{variable}_value = {variable}.get({variable}_key)')
