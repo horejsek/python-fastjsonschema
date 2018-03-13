@@ -294,6 +294,10 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
 
     def generate_minimum(self):
+        with self.l('try:'):
+            self.l('{variable} = float({variable})')
+        with self.l('except ValueError:'):
+            self.l('return {variable}')
         if self._definition.get('exclusiveMinimum', False):
             with self.l('if {variable} <= {minimum}:'):
                 self.l('raise JsonSchemaException("{name} must be bigger than {minimum}")')
@@ -302,6 +306,10 @@ class CodeGenerator:
                 self.l('raise JsonSchemaException("{name} must be bigger than or equal to {minimum}")')
 
     def generate_maximum(self):
+        with self.l('try:'):
+            self.l('{variable} = float({variable})')
+        with self.l('except ValueError:'):
+            self.l('return {variable}')
         if self._definition.get('exclusiveMaximum', False):
             with self.l('if {variable} >= {maximum}:'):
                 self.l('raise JsonSchemaException("{name} must be smaller than {maximum}")')
