@@ -290,6 +290,8 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must be longer than or equal to {minLength} characters")')
 
     def generate_max_length(self):
+        with self.l('if not isinstance({variable}, str):'):
+            self.l('return {variable}')
         self.create_variable_with_length()
         with self.l('if {variable}_len > {maxLength}:'):
             self.l('raise JsonSchemaException("{name} must be shorter than or equal to {maxLength} characters")')
