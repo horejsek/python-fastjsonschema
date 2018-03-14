@@ -52,6 +52,7 @@ class CodeGenerator:
         self._variable = None
         self._variable_name = None
         self._definition = None
+        self._context = {}
 
         self._json_keywords_to_function = OrderedDict((
             ('type', self.generate_type),
@@ -156,18 +157,18 @@ class CodeGenerator:
             self.generate_func_code_block(definition, 'data', 'data')
             self.l('return data')
 
-    def generate_func_code_block(self, definition, variable, variable_name):
+    def generate_func_code_block(self, definition, variable, variable_name, **kwargs):
         """
         Creates validation rules for current definition.
         """
-        backup = self._definition, self._variable, self._variable_name
-        self._definition, self._variable, self._variable_name = definition, variable, variable_name
+        backup = self._definition, self._variable, self._variable_name, self._context
+        self._definition, self._variable, self._variable_name, self._context = definition, variable, variable_name, kwargs.get('context', {})
 
         for key, func in self._json_keywords_to_function.items():
             if key in definition:
                 func()
 
-        self._definition, self._variable, self._variable_name = backup
+        self._definition, self._variable, self._variable_name, self._context = backup
 
     def generate_type(self):
         """
@@ -272,12 +273,16 @@ class CodeGenerator:
 
             {'not': {'type': 'null'}}
 
-        Valid values for this definitions are 'hello', 42, ... but not None.
+        Valid values for this definitions are 'hello', 42, {} ... but not None.
         """
-        with self.l('try:'):
-            self.generate_func_code_block(self._definition['not'], self._variable, self._variable_name)
-        self.l('except JsonSchemaException: pass')
-        self.l('else: raise JsonSchemaException("{name} must not be valid by not definition")')
+        if self._definition['not'] is not None and not self._definition['not']:  # {}
+            with self.l('if "{}" in {}.keys():', self._context['key'], self._context['definition'].get('properties', {})):
+                self.l('raise JsonSchemaException("{name} must not be valid by not definition")')
+        else:
+            with self.l('try:'):
+                self.generate_func_code_block(self._definition['not'], self._variable, self._variable_name)
+            self.l('except JsonSchemaException: pass')
+            self.l('else: raise JsonSchemaException("{name} must not be valid by not definition")')
 
     def generate_min_length(self):
         self.create_variable_with_length()
@@ -413,6 +418,10 @@ class CodeGenerator:
                     prop_definition,
                     '{}_{}'.format(self._variable, key),
                     '{}.{}'.format(self._variable_name, key),
+                    context={
+                        "definition": self._definition,
+                        "key": key
+                    },
                 )
             if 'default' in prop_definition:
                 self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
