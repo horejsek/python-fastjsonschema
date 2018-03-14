@@ -1,4 +1,4 @@
-
+from textwrap import dedent
 import timeit
 
 # apt-get install jsonschema json-spec validictory
@@ -93,18 +93,18 @@ def t(func, valid_values=True):
     """
 
     if valid_values:
-        code = """
+        code = dedent("""
         for value in VALUES_OK:
             {}(value, JSON_SCHEMA)
-        """.format(func)
+        """.format(func))
     else:
-        code = """
+        code = dedent("""
         try:
             for value in VALUES_BAD:
                 {}(value, JSON_SCHEMA)
         except:
             pass
-        """.format(func)
+        """.format(func))
 
     res = timeit.timeit(code, setup, number=NUMBER)
     print('{:<20} {:<10} ==> {}'.format(module, 'valid' if valid_values else 'invalid', res))
