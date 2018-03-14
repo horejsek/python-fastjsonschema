@@ -401,6 +401,8 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain at least {minProperties} properties")')
 
     def generate_max_properties(self):
+        with self.l('if not isinstance({variable}, dict):'):
+            self.l('return {variable}')
         self.create_variable_with_length()
         with self.l('if {variable}_len > {maxProperties}:'):
             self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxProperties} properties")')
