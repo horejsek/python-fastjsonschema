@@ -330,6 +330,8 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must be multiple of {multipleOf}")')
 
     def generate_min_items(self):
+        with self.l('if not isinstance({variable}, list):'):
+            self.l('return {variable}')
         self.create_variable_with_length()
         with self.l('if {variable}_len < {minItems}:'):
             self.l('raise JsonSchemaException("{name} must contain at least {minItems} items")')
