@@ -357,6 +357,8 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain unique items")')
 
     def generate_items(self):
+        with self.l('if isinstance({variable}, dict):'):
+            self.l('return {variable}')
         self.create_variable_with_length()
         if isinstance(self._definition['items'], list):
             for x, item_definition in enumerate(self._definition['items']):
