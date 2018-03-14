@@ -400,6 +400,8 @@ class CodeGenerator:
                     )
 
     def generate_min_properties(self):
+        with self.l('if not isinstance({variable}, dict):'):
+            self.l('return {variable}')
         self.create_variable_with_length()
         with self.l('if {variable}_len < {minProperties}:'):
             self.l('raise JsonSchemaException("{name} must contain at least {minProperties} properties")')
