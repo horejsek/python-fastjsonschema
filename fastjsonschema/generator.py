@@ -299,8 +299,10 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must be shorter than or equal to {maxLength} characters")')
 
     def generate_pattern(self):
+        with self.l('if not isinstance({variable}, str):'):
+            self.l('return {variable}')
         self._compile_regexps['{}_re'.format(self._variable)] = re.compile(self._definition['pattern'])
-        with self.l('if not {variable}_re.match({variable}):'):
+        with self.l('if not {variable}_re.search({variable}):'):
             self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
 
     def generate_minimum(self):
