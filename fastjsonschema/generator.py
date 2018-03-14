@@ -328,7 +328,10 @@ class CodeGenerator:
                 self.l('raise JsonSchemaException("{name} must be smaller than or equal to {maximum}")')
 
     def generate_multiple_of(self):
-        with self.l('if {variable} % {multipleOf} != 0:'):
+        with self.l('if not isinstance({variable}, (int, float)):'):
+            self.l('return {variable}')
+        self.l('quotient = {variable} / {multipleOf}')
+        with self.l('if int(quotient) != quotient:'):
             self.l('raise JsonSchemaException("{name} must be multiple of {multipleOf}")')
 
     def generate_min_items(self):
