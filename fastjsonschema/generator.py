@@ -376,12 +376,13 @@ class CodeGenerator:
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                         )
         else:
-            with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
-                self.generate_func_code_block(
-                    self._definition['items'],
-                    '{}_item'.format(self._variable),
-                    '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
-                )
+            if self._definition['items']:
+                with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
+                    self.generate_func_code_block(
+                        self._definition['items'],
+                        '{}_item'.format(self._variable),
+                        '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
+                    )
 
     def generate_min_properties(self):
         self.create_variable_with_length()
