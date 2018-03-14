@@ -74,6 +74,7 @@ class CodeGenerator:
             ('maxProperties', self.generate_max_properties),
             ('required', self.generate_required),
             ('properties', self.generate_properties),
+            ('additionalProperties', self.generate_additional_properties),
         ))
 
         self.generate_func_code(definition)
@@ -398,6 +399,10 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain {required} properties")')
 
     def generate_properties(self):
+        with self.l('try:'):
+            self.l('{variable}.keys()')
+        with self.l('except AttributeError:'):
+            self.l('return {variable}')
         self.l('{variable}_keys = set({variable}.keys())')
         for key, prop_definition in self._definition['properties'].items():
             with self.l('if "{}" in {variable}_keys:', key):
@@ -412,7 +417,6 @@ class CodeGenerator:
                 self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
         if 'additionalProperties' in self._definition:
-            # import pdb; pdb.set_trace()
             if self._definition['additionalProperties'] is False:
                 self.l('if {variable}_keys: raise JsonSchemaException("{name} must contain only specified properties")')
             else:
@@ -423,3 +427,26 @@ class CodeGenerator:
                         '{}_value'.format(self._variable),
                         '{}.{{{}_key}}'.format(self._variable_name, self._variable),
                     )
+
+    def generate_additional_properties(self):
+        with self.l('try:'):
+            self.l('{variable}.keys()')
+        with self.l('except AttributeError:'):
+            self.l('return {variable}')
+        self.l('{variable}_keys = set({variable}.keys())')
+        add_prop_definition = self._definition["additionalProperties"]
+        if add_prop_definition is False:
+            with self.l('for key in {variable}_keys:'):
+                with self.l('if key not in "{}":', self._definition['properties']):
+                    self.l('raise JsonSchemaException("{name} may not contain additional properties")')
+        else:
+            with self.l('for {variable}_key in {variable}_keys:'):
+                with self.l('if {variable}_key not in "{}":', self._definition.get('properties', [])):
+                    self.l('{variable}_value = {variable}.get({variable}_key)')
+                    self.generate_func_code_block(
+                        add_prop_definition,
+                        '{}_value'.format(self._variable),
+                        '{}.{{{}_key}}'.format(self._variable_name, self._variable),
+                    )
+            if 'default' in add_prop_definition:
+                self.l('else: {variable}["{}"] = {}', key, repr(add_prop_definition['default']))
