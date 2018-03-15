@@ -75,6 +75,7 @@ class CodeGenerator:
             ('maxProperties', self.generate_max_properties),
             ('required', self.generate_required),
             ('properties', self.generate_properties),
+            ('patternProperties', self.generate_pattern_properties),
             ('additionalProperties', self.generate_additional_properties),
         ))
 
@@ -447,6 +448,19 @@ class CodeGenerator:
             if 'default' in prop_definition:
                 self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
+        if 'patternProperties' in self._definition:
+            self.generate_func_code_block(
+                {'patternProperties': self._definition['patternProperties']},
+                self._variable,
+                '{}.{}'.format(self._variable_name, 'patternProperties'),
+            )
+            self.l('pattern_keys = set()')
+            with self.l('for key in {variable}_keys:'):
+                for pattern in self._definition['patternProperties'].keys():
+                    with self.l('if globals()["{}_re"].search(key):', pattern):
+                        self.l('pattern_keys.add(key)')
+            self.l('{variable}_keys -= pattern_keys')
+
         if 'additionalProperties' in self._definition:
             if self._definition['additionalProperties'] is False:
                 self.l('if {variable}_keys: raise JsonSchemaException("{name} must contain only specified properties")')
@@ -465,12 +479,17 @@ class CodeGenerator:
         with self.l('except AttributeError:'):
             self.l('return {variable}')
         self.l('{variable}_keys = set({variable}.keys())')
-        add_prop_definition = self._definition["additionalProperties"]
-        if add_prop_definition is False:
+
+        if 'patternProperties' in self._definition:
+            self.l('pattern_keys = set()')
             with self.l('for key in {variable}_keys:'):
-                with self.l('if key not in "{}":', self._definition['properties']):
-                    self.l('raise JsonSchemaException("{name} may not contain additional properties")')
-        else:
+                for pattern in self._definition['patternProperties'].keys():
+                    with self.l('if globals()["{}_re"].search(key):', pattern):
+                        self.l('pattern_keys.add(key)')
+            self.l('{variable}_keys -= pattern_keys')
+
+        add_prop_definition = self._definition["additionalProperties"]
+        if add_prop_definition:
             with self.l('for {variable}_key in {variable}_keys:'):
                 with self.l('if {variable}_key not in "{}":', self._definition.get('properties', [])):
                     self.l('{variable}_value = {variable}.get({variable}_key)')
@@ -481,3 +500,20 @@ class CodeGenerator:
                     )
             if 'default' in add_prop_definition:
                 self.l('else: {variable}["{}"] = {}', key, repr(add_prop_definition['default']))
+
+    def generate_pattern_properties(self):
+        with self.l('if not isinstance({variable}, dict):'):
+            self.l('return {variable}')
+        for pattern, definition in self._definition['patternProperties'].items():
+            self._compile_regexps['{}_re'.format(pattern)] = re.compile(pattern)
+        with self.l('for key, val in {variable}.items():'):
+            for pattern, definition in self._definition['patternProperties'].items():
+                if not definition:
+                    self.l('pass')
+                else:
+                    with self.l('if globals()["{}_re"].search(key):', pattern):
+                        self.generate_func_code_block(
+                            definition,
+                            'val',
+                            '{}.{{key}}'.format(self._variable_name),
+                        )
