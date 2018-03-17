@@ -427,9 +427,7 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain {required} properties")')
 
     def generate_properties(self):
-        with self.l('try:'):
-            self.l('{variable}.keys()')
-        with self.l('except AttributeError:'):
+        with self.l('if not isinstance({variable}, dict):'):
             self.l('return {variable}')
         self.l('{variable}_keys = set({variable}.keys())')
         for key, prop_definition in self._definition['properties'].items():
@@ -474,9 +472,7 @@ class CodeGenerator:
                     )
 
     def generate_additional_properties(self):
-        with self.l('try:'):
-            self.l('{variable}.keys()')
-        with self.l('except AttributeError:'):
+        with self.l('if not isinstance({variable}, dict):'):
             self.l('return {variable}')
         self.l('{variable}_keys = set({variable}.keys())')
 
