@@ -477,12 +477,7 @@ class CodeGenerator:
         self.l('{variable}_keys = set({variable}.keys())')
 
         if 'patternProperties' in self._definition:
-            self.l('pattern_keys = set()')
-            with self.l('for key in {variable}_keys:'):
-                for pattern in self._definition['patternProperties'].keys():
-                    with self.l('if globals()["{}_re"].search(key):', pattern):
-                        self.l('pattern_keys.add(key)')
-            self.l('{variable}_keys -= pattern_keys')
+            self.l('return {variable}')
 
         add_prop_definition = self._definition["additionalProperties"]
         if add_prop_definition:
