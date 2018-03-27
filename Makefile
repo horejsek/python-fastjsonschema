@@ -14,7 +14,7 @@ upload:
 	python3 setup.py register sdist upload
 
 install:
-	python3 setup.py install
+	pip install --editable .[test]
 
 test:
 	python3 -m pytest tests

@@ -114,8 +114,8 @@ def test_different_items_with_additional_items(asserter, value, expected):
     ([1], [1]),
     ([1, 'a'], [1, 'a']),
     ([1, 2], JsonSchemaException('data[1] must be string')),
-    ([1, 'a', 2], JsonSchemaException('data must contain only spcified items')),
-    ([1, 'a', 'b'], JsonSchemaException('data must contain only spcified items')),
+    ([1, 'a', 2], JsonSchemaException('data must contain only specified items')),
+    ([1, 'a', 'b'], JsonSchemaException('data must contain only specified items')),
 ])
 def test_different_items_without_additional_items(asserter, value, expected):
     asserter({

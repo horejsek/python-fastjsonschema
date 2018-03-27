@@ -11,6 +11,16 @@ setup(
     version='1.1',
     packages=['fastjsonschema'],
 
+    extras_require={
+        "test": [
+            "colorama",
+            "jsonschema",
+            "json-spec",
+            "pytest",
+            "validictory",
+        ],
+    },
+
     url='https://github.com/seznam/python-fastjsonschema',
     author='Michal Horejsek',
     author_email='horejsekmichal@gmail.com',
