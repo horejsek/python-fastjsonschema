@@ -8,6 +8,8 @@
 from collections import OrderedDict
 import re
 
+import requests
+
 from .exceptions import JsonSchemaException
 from .indent import indent
 
@@ -51,9 +53,11 @@ class CodeGenerator:
         self._indent = 0
         self._variable = None
         self._variable_name = None
+        self._root_definition = definition
         self._definition = None
 
         self._json_keywords_to_function = OrderedDict((
+            ('$ref', self.generate_ref),
             ('type', self.generate_type),
             ('enum', self.generate_enum),
             ('allOf', self.generate_all_of),
@@ -186,6 +190,30 @@ class CodeGenerator:
         if clear_variables:
             self._variables = backup_variables
 
+    def generate_ref(self):
+        """
+        Ref can be link to remote or local definition.
+
+        .. code-block:: python
+
+            {'$ref': 'http://json-schema.org/draft-04/schema#'}
+            {
+                'properties': {
+                    'foo': {'type': 'integer'},
+                    'bar': {'$ref': '#/properties/foo'}
+                }
+            }
+        """
+        if self._definition['$ref'].startswith('http'):
+            res = requests.get(self._definition['$ref'])
+            definition = res.json()
+            self.generate_func_code_block(definition, self._variable, self._variable_name)
+        elif self._definition['$ref'] == '#':
+            self.l('func({variable})')
+        else:
+            #TODO: Create more functions for any ref and call it here.
+            self.l('pass')
+
     def generate_type(self):
         """
         Validation of type. Can be one type or list of types.
@@ -206,6 +234,15 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
 
     def generate_enum(self):
+        """
+        Means that only value specified in the enum is valid.
+
+        .. code-block:: python
+
+            {
+                'enum': ['a', 'b'],
+            }
+        """
         with self.l('if {variable} not in {enum}:'):
             self.l('raise JsonSchemaException("{name} must be one of {enum}")')
 
@@ -429,12 +466,13 @@ class CodeGenerator:
         with self.l('if isinstance({variable}, dict):'):
             self.create_variable_keys()
             for key, prop_definition in self._definition['properties'].items():
+                key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
                 with self.l('if "{}" in {variable}_keys:', key):
                     self.l('{variable}_keys.remove("{}")', key)
-                    self.l('{variable}_{0} = {variable}["{0}"]', key)
+                    self.l('{variable}_{0} = {variable}["{0}"]', key_name)
                     self.generate_func_code_block(
                         prop_definition,
-                        '{}_{}'.format(self._variable, key),
+                        '{}_{}'.format(self._variable, key_name),
                         '{}.{}'.format(self._variable_name, key),
                     )
                 if 'default' in prop_definition:

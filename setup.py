@@ -11,6 +11,9 @@ setup(
     version='1.1',
     packages=['fastjsonschema'],
 
+    install_requires=[
+        'requests',
+    ],
     extras_require={
         "test": [
             "colorama",

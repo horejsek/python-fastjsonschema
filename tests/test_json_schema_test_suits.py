@@ -11,10 +11,8 @@ def pytest_generate_tests(metafunc):
     ignored_suite_files = [
         'definitions.json',
         'dependencies.json',
-        'bignum.json',
         'ecmascript-regex.json',
         'format.json',
-        'zeroTerminatedFloats.json',
         'ref.json',
         'refRemote.json',
         'uniqueItems.json',
