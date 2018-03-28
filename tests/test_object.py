@@ -110,7 +110,6 @@ def test_properties_without_additional_properties(asserter, value, expected):
     }, value, expected)
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize('value, expected', [
     ({}, {}),
     ({'a': 1}, {'a': 1}),

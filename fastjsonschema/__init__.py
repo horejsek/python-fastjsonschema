@@ -83,6 +83,7 @@ def compile(definition):
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
     code_generator = CodeGenerator(definition)
-    local_state = {}
-    exec(code_generator.func_code, code_generator.global_state, local_state)
-    return local_state['func']
+    # Do not pass local state so it can recursively call itself.
+    global_state = code_generator.global_state
+    exec(code_generator.func_code, global_state)
+    return global_state['func']

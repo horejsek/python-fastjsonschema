@@ -8,6 +8,8 @@
 from collections import OrderedDict
 import re
 
+import requests
+
 from .exceptions import JsonSchemaException
 from .indent import indent
 
@@ -51,10 +53,11 @@ class CodeGenerator:
         self._indent = 0
         self._variable = None
         self._variable_name = None
+        self._root_definition = definition
         self._definition = None
-        self._context = {}
 
         self._json_keywords_to_function = OrderedDict((
+            ('$ref', self.generate_ref),
             ('type', self.generate_type),
             ('enum', self.generate_enum),
             ('allOf', self.generate_all_of),
@@ -64,6 +67,7 @@ class CodeGenerator:
             ('minLength', self.generate_min_length),
             ('maxLength', self.generate_max_length),
             ('pattern', self.generate_pattern),
+            ('format', self.generate_format),
             ('minimum', self.generate_minimum),
             ('maximum', self.generate_maximum),
             ('multipleOf', self.generate_multiple_of),
@@ -136,7 +140,7 @@ class CodeGenerator:
 
     def create_variable_with_length(self):
         """
-        In code append code for creating variable with length of that variable
+        Append code for creating variable with length of that variable
         (for example length of list or dictionary) with name ``{variable}_len``.
         It can be called several times and always it's done only when that variable
         still does not exists.
@@ -147,6 +151,17 @@ class CodeGenerator:
         self._variables.add(variable_name)
         self.l('{variable}_len = len({variable})')
 
+    def create_variable_keys(self):
+        """
+        Append code for creating variable with keys of that variable (dictionary)
+        with name ``{variable}_len``. It can be called several times and always
+        it's done only when that variable still does not exists.
+        """
+        variable_name = '{}_keys'.format(self._variable)
+        if variable_name in self._variables:
+            return
+        self._variables.add(variable_name)
+        self.l('{variable}_keys = set({variable}.keys())')
 
     def generate_func_code(self, definition):
         """
@@ -158,18 +173,47 @@ class CodeGenerator:
             self.generate_func_code_block(definition, 'data', 'data')
             self.l('return data')
 
-    def generate_func_code_block(self, definition, variable, variable_name, **kwargs):
+    def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
         """
         Creates validation rules for current definition.
         """
-        backup = self._definition, self._variable, self._variable_name, self._context
-        self._definition, self._variable, self._variable_name, self._context = definition, variable, variable_name, kwargs.get('context', {})
+        backup = self._definition, self._variable, self._variable_name
+        self._definition, self._variable, self._variable_name = definition, variable, variable_name
+        if clear_variables:
+            backup_variables = self._variables
+            self._variables = set()
 
         for key, func in self._json_keywords_to_function.items():
             if key in definition:
                 func()
 
-        self._definition, self._variable, self._variable_name, self._context = backup
+        self._definition, self._variable, self._variable_name = backup
+        if clear_variables:
+            self._variables = backup_variables
+
+    def generate_ref(self):
+        """
+        Ref can be link to remote or local definition.
+
+        .. code-block:: python
+
+            {'$ref': 'http://json-schema.org/draft-04/schema#'}
+            {
+                'properties': {
+                    'foo': {'type': 'integer'},
+                    'bar': {'$ref': '#/properties/foo'}
+                }
+            }
+        """
+        if self._definition['$ref'].startswith('http'):
+            res = requests.get(self._definition['$ref'])
+            definition = res.json()
+            self.generate_func_code_block(definition, self._variable, self._variable_name)
+        elif self._definition['$ref'] == '#':
+            self.l('func({variable})')
+        else:
+            #TODO: Create more functions for any ref and call it here.
+            self.l('pass')
 
     def generate_type(self):
         """
@@ -191,6 +235,15 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
 
     def generate_enum(self):
+        """
+        Means that only value specified in the enum is valid.
+
+        .. code-block:: python
+
+            {
+                'enum': ['a', 'b'],
+            }
+        """
         with self.l('if {variable} not in {enum}:'):
             self.l('raise JsonSchemaException("{name} must be one of {enum}")')
 
@@ -211,7 +264,7 @@ class CodeGenerator:
         Valid values for this definition are 5, 6, 7, ... but not 4 or 'abc' for example.
         """
         for definition_item in self._definition['allOf']:
-            self.generate_func_code_block(definition_item, self._variable, self._variable_name)
+            self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
 
     def generate_any_of(self):
         """
@@ -233,7 +286,7 @@ class CodeGenerator:
         for definition_item in self._definition['anyOf']:
             with self.l('if not {variable}_any_of_count:'):
                 with self.l('try:'):
-                    self.generate_func_code_block(definition_item, self._variable, self._variable_name)
+                    self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_any_of_count += 1')
                 self.l('except JsonSchemaException: pass')
 
@@ -259,7 +312,7 @@ class CodeGenerator:
         self.l('{variable}_one_of_count = 0')
         for definition_item in self._definition['oneOf']:
             with self.l('try:'):
-                self.generate_func_code_block(definition_item, self._variable, self._variable_name)
+                self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                 self.l('{variable}_one_of_count += 1')
             self.l('except JsonSchemaException: pass')
 
@@ -276,8 +329,8 @@ class CodeGenerator:
 
         Valid values for this definitions are 'hello', 42, {} ... but not None.
         """
-        if self._definition['not'] is not None and not self._definition['not']:  # {}
-            with self.l('if "{}" in {}.keys():', self._context['key'], self._context['definition'].get('properties', {})):
+        if not self._definition['not']:
+            with self.l('if {}:', self._variable):
                 self.l('raise JsonSchemaException("{name} must not be valid by not definition")')
         else:
             with self.l('try:'):
@@ -286,70 +339,73 @@ class CodeGenerator:
             self.l('else: raise JsonSchemaException("{name} must not be valid by not definition")')
 
     def generate_min_length(self):
-        with self.l('if not isinstance({variable}, str):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if {variable}_len < {minLength}:'):
-            self.l('raise JsonSchemaException("{name} must be longer than or equal to {minLength} characters")')
+        with self.l('if isinstance({variable}, str):'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len < {minLength}:'):
+                self.l('raise JsonSchemaException("{name} must be longer than or equal to {minLength} characters")')
 
     def generate_max_length(self):
-        with self.l('if not isinstance({variable}, str):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if {variable}_len > {maxLength}:'):
-            self.l('raise JsonSchemaException("{name} must be shorter than or equal to {maxLength} characters")')
+        with self.l('if isinstance({variable}, str):'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len > {maxLength}:'):
+                self.l('raise JsonSchemaException("{name} must be shorter than or equal to {maxLength} characters")')
 
     def generate_pattern(self):
-        with self.l('if not isinstance({variable}, str):'):
-            self.l('return {variable}')
-        self._compile_regexps['{}_re'.format(self._variable)] = re.compile(self._definition['pattern'])
-        with self.l('if not {variable}_re.search({variable}):'):
-            self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
+        with self.l('if isinstance({variable}, str):'):
+            self._compile_regexps['{}_re'.format(self._variable)] = re.compile(self._definition['pattern'])
+            with self.l('if not {variable}_re.search({variable}):'):
+                self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
+
+    def generate_format(self):
+        with self.l('if isinstance({variable}, str):'):
+            self._generate_format('date-time', 'date_time_re_pattern', r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{6})?Z?$')
+            self._generate_format('uri', 'uri_re_pattern', r'^\w+:(\/?\/?)[^\s]+$')
+            self._generate_format('email', 'email_re_pattern', r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+            self._generate_format('ipv4', 'ipv4_re_pattern', r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
+            self._generate_format('ipv6', 'ipv6_re_pattern', r'^(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)$')
+            self._generate_format('hostname', 'hostname_re_pattern', r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{1,62}[A-Za-z0-9])$')
+
+    def _generate_format(self, format_name, regexp_name, regexp):
+            if self._definition['format'] == format_name:
+                self._compile_regexps[regexp_name] = re.compile(regexp)
+                with self.l('if not {}.match({variable}):', regexp_name):
+                    self.l('raise JsonSchemaException("{name} must be {}")', format_name)
 
     def generate_minimum(self):
-        with self.l('try:'):
-            self.l('{variable} = float({variable})')
-        with self.l('except ValueError:'):
-            self.l('return {variable}')
-        if self._definition.get('exclusiveMinimum', False):
-            with self.l('if {variable} <= {minimum}:'):
-                self.l('raise JsonSchemaException("{name} must be bigger than {minimum}")')
-        else:
-            with self.l('if {variable} < {minimum}:'):
-                self.l('raise JsonSchemaException("{name} must be bigger than or equal to {minimum}")')
+        with self.l('if isinstance({variable}, (int, float)):'):
+            if self._definition.get('exclusiveMinimum', False):
+                with self.l('if {variable} <= {minimum}:'):
+                    self.l('raise JsonSchemaException("{name} must be bigger than {minimum}")')
+            else:
+                with self.l('if {variable} < {minimum}:'):
+                    self.l('raise JsonSchemaException("{name} must be bigger than or equal to {minimum}")')
 
     def generate_maximum(self):
-        with self.l('try:'):
-            self.l('{variable} = float({variable})')
-        with self.l('except ValueError:'):
-            self.l('return {variable}')
-        if self._definition.get('exclusiveMaximum', False):
-            with self.l('if {variable} >= {maximum}:'):
-                self.l('raise JsonSchemaException("{name} must be smaller than {maximum}")')
-        else:
-            with self.l('if {variable} > {maximum}:'):
-                self.l('raise JsonSchemaException("{name} must be smaller than or equal to {maximum}")')
+        with self.l('if isinstance({variable}, (int, float)):'):
+            if self._definition.get('exclusiveMaximum', False):
+                with self.l('if {variable} >= {maximum}:'):
+                    self.l('raise JsonSchemaException("{name} must be smaller than {maximum}")')
+            else:
+                with self.l('if {variable} > {maximum}:'):
+                    self.l('raise JsonSchemaException("{name} must be smaller than or equal to {maximum}")')
 
     def generate_multiple_of(self):
-        with self.l('if not isinstance({variable}, (int, float)):'):
-            self.l('return {variable}')
-        self.l('quotient = {variable} / {multipleOf}')
-        with self.l('if int(quotient) != quotient:'):
-            self.l('raise JsonSchemaException("{name} must be multiple of {multipleOf}")')
+        with self.l('if isinstance({variable}, (int, float)):'):
+            self.l('quotient = {variable} / {multipleOf}')
+            with self.l('if int(quotient) != quotient:'):
+                self.l('raise JsonSchemaException("{name} must be multiple of {multipleOf}")')
 
     def generate_min_items(self):
-        with self.l('if not isinstance({variable}, list):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if {variable}_len < {minItems}:'):
-            self.l('raise JsonSchemaException("{name} must contain at least {minItems} items")')
+        with self.l('if isinstance({variable}, list):'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len < {minItems}:'):
+                self.l('raise JsonSchemaException("{name} must contain at least {minItems} items")')
 
     def generate_max_items(self):
-        with self.l('if not isinstance({variable}, list):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if {variable}_len > {maxItems}:'):
-            self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxItems} items")')
+        with self.l('if isinstance({variable}, list):'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len > {maxItems}:'):
+                self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxItems} items")')
 
     def generate_unique_items(self):
         """
@@ -371,141 +427,103 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain unique items")')
 
     def generate_items(self):
-        with self.l('if isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        if isinstance(self._definition['items'], list):
-            for x, item_definition in enumerate(self._definition['items']):
-                with self.l('if {variable}_len > {}:', x):
-                    self.l('{variable}_{0} = {variable}[{0}]', x)
-                    self.generate_func_code_block(
-                        item_definition,
-                        '{}_{}'.format(self._variable, x),
-                        '{}[{}]'.format(self._variable_name, x),
-                    )
-                if 'default' in item_definition:
-                    self.l('else: {variable}.append({})', repr(item_definition['default']))
-
-            if 'additionalItems' in self._definition:
-                if self._definition['additionalItems'] is False:
-                    self.l('if {variable}_len > {}: raise JsonSchemaException("{name} must contain only specified items")', len(self._definition['items']))
-                else:
-                    with self.l('for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):', len(self._definition['items'])):
+        with self.l('if isinstance({variable}, list):'):
+            self.create_variable_with_length()
+            if isinstance(self._definition['items'], list):
+                for x, item_definition in enumerate(self._definition['items']):
+                    with self.l('if {variable}_len > {}:', x):
+                        self.l('{variable}_{0} = {variable}[{0}]', x)
                         self.generate_func_code_block(
-                            self._definition['additionalItems'],
+                            item_definition,
+                            '{}_{}'.format(self._variable, x),
+                            '{}[{}]'.format(self._variable_name, x),
+                        )
+                    if 'default' in item_definition:
+                        self.l('else: {variable}.append({})', repr(item_definition['default']))
+
+                if 'additionalItems' in self._definition:
+                    if self._definition['additionalItems'] is False:
+                        self.l('if {variable}_len > {}: raise JsonSchemaException("{name} must contain only specified items")', len(self._definition['items']))
+                    else:
+                        with self.l('for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):', len(self._definition['items'])):
+                            self.generate_func_code_block(
+                                self._definition['additionalItems'],
+                                '{}_item'.format(self._variable),
+                                '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
+                            )
+            else:
+                if self._definition['items']:
+                    with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
+                        self.generate_func_code_block(
+                            self._definition['items'],
                             '{}_item'.format(self._variable),
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                         )
-        else:
-            if self._definition['items']:
-                with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
-                    self.generate_func_code_block(
-                        self._definition['items'],
-                        '{}_item'.format(self._variable),
-                        '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
-                    )
 
     def generate_min_properties(self):
-        with self.l('if not isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if {variable}_len < {minProperties}:'):
-            self.l('raise JsonSchemaException("{name} must contain at least {minProperties} properties")')
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len < {minProperties}:'):
+                self.l('raise JsonSchemaException("{name} must contain at least {minProperties} properties")')
 
     def generate_max_properties(self):
-        with self.l('if not isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if {variable}_len > {maxProperties}:'):
-            self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxProperties} properties")')
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len > {maxProperties}:'):
+                self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxProperties} properties")')
 
     def generate_required(self):
-        with self.l('if not isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        self.create_variable_with_length()
-        with self.l('if not all(prop in {variable} for prop in {required}):'):
-            self.l('raise JsonSchemaException("{name} must contain {required} properties")')
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_with_length()
+            with self.l('if not all(prop in {variable} for prop in {required}):'):
+                self.l('raise JsonSchemaException("{name} must contain {required} properties")')
 
     def generate_properties(self):
-        with self.l('if not isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        self.l('{variable}_keys = set({variable}.keys())')
-        for key, prop_definition in self._definition['properties'].items():
-            with self.l('if "{}" in {variable}_keys:', key):
-                self.l('{variable}_keys.remove("{}")', key)
-                self.l('{variable}_{0} = {variable}["{0}"]', key)
-                self.generate_func_code_block(
-                    prop_definition,
-                    '{}_{}'.format(self._variable, key),
-                    '{}.{}'.format(self._variable_name, key),
-                    context={
-                        "definition": self._definition,
-                        "key": key
-                    },
-                )
-            if 'default' in prop_definition:
-                self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
-
-        if 'patternProperties' in self._definition:
-            self.generate_func_code_block(
-                {'patternProperties': self._definition['patternProperties']},
-                self._variable,
-                '{}.{}'.format(self._variable_name, 'patternProperties'),
-            )
-            self.l('pattern_keys = set()')
-            with self.l('for key in {variable}_keys:'):
-                for pattern in self._definition['patternProperties'].keys():
-                    with self.l('if globals()["{}_re"].search(key):', pattern):
-                        self.l('pattern_keys.add(key)')
-            self.l('{variable}_keys -= pattern_keys')
-
-        if 'additionalProperties' in self._definition:
-            if self._definition['additionalProperties'] is False:
-                self.l('if {variable}_keys: raise JsonSchemaException("{name} must contain only specified properties")')
-            else:
-                with self.l('for {variable}_key in {variable}_keys:'):
-                    self.l('{variable}_value = {variable}.get({variable}_key)')
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_keys()
+            for key, prop_definition in self._definition['properties'].items():
+                key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
+                with self.l('if "{}" in {variable}_keys:', key):
+                    self.l('{variable}_keys.remove("{}")', key)
+                    self.l('{variable}_{0} = {variable}["{0}"]', key_name)
                     self.generate_func_code_block(
-                        self._definition['additionalProperties'],
-                        '{}_value'.format(self._variable),
-                        '{}.{{{}_key}}'.format(self._variable_name, self._variable),
+                        prop_definition,
+                        '{}_{}'.format(self._variable, key_name),
+                        '{}.{}'.format(self._variable_name, key),
                     )
-
-    def generate_additional_properties(self):
-        with self.l('if not isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        self.l('{variable}_keys = set({variable}.keys())')
-
-        if 'patternProperties' in self._definition:
-            self.l('return {variable}')
-
-        add_prop_definition = self._definition["additionalProperties"]
-        if add_prop_definition:
-            properties_keys = self._definition.get("properties", {}).keys()
-            with self.l('for {variable}_key in {variable}_keys:'):
-                with self.l('if {variable}_key not in "{}":', properties_keys):
-                    self.l('{variable}_value = {variable}.get({variable}_key)')
-                    self.generate_func_code_block(
-                        add_prop_definition,
-                        '{}_value'.format(self._variable),
-                        '{}.{{{}_key}}'.format(self._variable_name, self._variable),
-                    )
-            if 'default' in add_prop_definition:
-                self.l('else: {variable}["{}"] = {}', key, repr(add_prop_definition['default']))
+                if 'default' in prop_definition:
+                    self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
     def generate_pattern_properties(self):
-        with self.l('if not isinstance({variable}, dict):'):
-            self.l('return {variable}')
-        for pattern, definition in self._definition['patternProperties'].items():
-            self._compile_regexps['{}_re'.format(pattern)] = re.compile(pattern)
-        with self.l('for key, val in {variable}.items():'):
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_keys()
             for pattern, definition in self._definition['patternProperties'].items():
-                if not definition:
-                    self.l('pass')
-                else:
+                self._compile_regexps['{}_re'.format(pattern)] = re.compile(pattern)
+            with self.l('for key, val in {variable}.items():'):
+                for pattern, definition in self._definition['patternProperties'].items():
                     with self.l('if globals()["{}_re"].search(key):', pattern):
+                        with self.l('if key in {variable}_keys:'):
+                            self.l('{variable}_keys.remove(key)')
                         self.generate_func_code_block(
                             definition,
                             'val',
                             '{}.{{key}}'.format(self._variable_name),
                         )
+
+    def generate_additional_properties(self):
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_keys()
+            add_prop_definition = self._definition["additionalProperties"]
+            if add_prop_definition:
+                properties_keys = self._definition.get("properties", {}).keys()
+                with self.l('for {variable}_key in {variable}_keys:'):
+                    with self.l('if {variable}_key not in "{}":', properties_keys):
+                        self.l('{variable}_value = {variable}.get({variable}_key)')
+                        self.generate_func_code_block(
+                            add_prop_definition,
+                            '{}_value'.format(self._variable),
+                            '{}.{{{}_key}}'.format(self._variable_name, self._variable),
+                        )
+            else:
+                with self.l('if {variable}_keys:'):
+                    self.l('raise JsonSchemaException("{name} must contain only specified properties")')
