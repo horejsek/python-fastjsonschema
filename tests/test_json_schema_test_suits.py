@@ -12,7 +12,6 @@ def pytest_generate_tests(metafunc):
         'definitions.json',
         'dependencies.json',
         'ecmascript-regex.json',
-        'format.json',
         'ref.json',
         'refRemote.json',
         'uniqueItems.json',
