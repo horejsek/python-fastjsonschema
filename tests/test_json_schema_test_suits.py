@@ -52,7 +52,8 @@ def test(schema, data, is_valid):
 
     validate = compile(schema)
     try:
-        validate(data)
+        result = validate(data)
+        print('Validate result:', result)
     except JsonSchemaException:
         if is_valid:
             raise
