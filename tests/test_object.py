@@ -98,6 +98,8 @@ def test_properties_with_additional_properties(asserter, value, expected):
     ({'a': 1, 'b': ''}, {'a': 1, 'b': ''}),
     ({'a': 1, 'b': 2}, JsonSchemaException('data.b must be string')),
     ({'a': 1, 'b': '', 'any': True}, JsonSchemaException('data must contain only specified properties')),
+    ({'cd': True}, JsonSchemaException('data must contain only specified properties')),
+    ({'c_d': True}, {'c_d': True}),
 ])
 def test_properties_without_additional_properties(asserter, value, expected):
     asserter({
@@ -105,6 +107,7 @@ def test_properties_without_additional_properties(asserter, value, expected):
         'properties': {
             'a': {'type': 'number'},
             'b': {'type': 'string'},
+            'c_d': {'type': 'boolean'},
         },
         'additionalProperties': False,
     }, value, expected)

@@ -485,7 +485,7 @@ class CodeGenerator:
                 key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
                 with self.l('if "{}" in {variable}_keys:', key):
                     self.l('{variable}_keys.remove("{}")', key)
-                    self.l('{variable}_{0} = {variable}["{0}"]', key_name)
+                    self.l('{variable}_{0} = {variable}["{1}"]', key_name, key)
                     self.generate_func_code_block(
                         prop_definition,
                         '{}_{}'.format(self._variable, key_name),
