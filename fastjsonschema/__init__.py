@@ -1,46 +1,44 @@
 """
-This project is there because commonly used JSON schema libraries in Python
-are really slow which was problem at out project. Just let's see some numbers first:
+This project was made to come up with fast JSON validations. Just let's see some numbers first:
 
- * Probalby most popular ``jsonschema`` can take in tests up to 11 seconds for valid inputs
-   and 2.5 seconds for invalid inputs.
- * Secondly most popular ``json-spec`` is even worse with up to 12 and 3 seconds.
- * Lastly ``validictory`` is much better with 800 or 50 miliseconds, but it does not
+ * Probalby most popular ``jsonschema`` can take in tests up to 7 seconds for valid inputs
+   and 1.6 seconds for invalid inputs.
+ * Secondly most popular ``json-spec`` is even worse with up to 11 and 2.6 seconds.
+ * Lastly ``validictory`` is much better with 640 or 30 miliseconds, but it does not
    follow all standards and it can be still slow for some purposes.
 
-That's why there is this project which compiles definition into Python most stupid code
+That's why this project exists. It compiles definition into Python most stupid code
 which people would had hard time to write by themselfs because of not-written-rule DRY
-(don't repeat yourself). When you compile definition, then times are 60 miliseconds for
-valid inputs and 3 miliseconds for invalid inputs. Pretty amazing, right? :-)
+(don't repeat yourself). When you compile definition, then times are 90 miliseconds for
+valid inputs and 5 miliseconds for invalid inputs. Pretty amazing, right? :-)
 
 You can try it for yourself with included script:
 
 .. code-block:: bash
 
     $ make performance
-    fast_compiled        valid      ==> 0.06058199889957905
-    fast_compiled        invalid    ==> 0.0028909146785736084
-    fast_not_compiled    valid      ==> 7.054106639698148
-    fast_not_compiled    invalid    ==> 1.6773221027106047
-    jsonschema           valid      ==> 11.189393147826195
-    jsonschema           invalid    ==> 2.642645660787821
-    jsonspec             valid      ==> 11.942349303513765
-    jsonspec             invalid    ==> 2.9887414034456015
-    validictory          valid      ==> 0.7500483158230782
-    validictory          invalid    ==> 0.03606216423213482
+    fast_compiled        valid      ==> 0.09240092901140451
+    fast_compiled        invalid    ==> 0.004246290685236454
+    fast_not_compiled    valid      ==> 6.710726021323353
+    fast_not_compiled    invalid    ==> 1.5449269418604672
+    jsonschema           valid      ==> 6.963333621155471
+    jsonschema           invalid    ==> 1.6309524956159294
+    jsonspec             valid      ==> 10.576010060030967
+    jsonspec             invalid    ==> 2.6199211929924786
+    validictory          valid      ==> 0.6349993739277124
+    validictory          invalid    ==> 0.03125431900843978
 
-This library follows and implements `JSON schema <http://json-schema.org>`_. Sometimes
+This library follows and implements `JSON schema v4 <http://json-schema.org>`_. Sometimes
 it's not perfectly clear so I recommend also check out this `understaning json schema
 <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
- * ``dependency`` for objects are not implemented yet. Future implementation will not change speed.
- * ``patternProperty`` for objects are not implemented yet. Future implementation can little bit
-   slow down validation of object properties. Of course only for those who uses ``properties``.
- * ``definitions`` for sharing JSON schema are not implemented yet. Future implementation will
-   not change speed.
- * Regular expressions are full what Python provides, not only what JSON schema allows. It's easier
+ * ``dependency`` for objects are not implemented yet. Future implementation will not change the speed.
+ * ``definitions`` and ``ref`` for sharing JSON schema are not implemented yet. Future implementation will
+   not change the speed.
+ * ``uniqueItems`` does not work with Python objects yet. Future implementation may change the speed.
+ * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
    to allow everything and also it's faster to compile without limits. So keep in mind that when
    you will use more advanced regular expression, it may not work with other library.
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
