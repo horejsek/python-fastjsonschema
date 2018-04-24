@@ -14,7 +14,6 @@ def pytest_generate_tests(metafunc):
         'ecmascript-regex.json',
         'ref.json',
         'refRemote.json',
-        'uniqueItems.json',
     ]
 
     suite_dir_path = Path(suite_dir).resolve()
