@@ -358,7 +358,7 @@ class CodeGenerator:
 
     def generate_format(self):
         with self.l('if isinstance({variable}, str):'):
-            self._generate_format('date-time', 'date_time_re_pattern', r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{6})?Z?$')
+            self._generate_format('date-time', 'date_time_re_pattern', r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z)?$')
             self._generate_format('uri', 'uri_re_pattern', r'^\w+:(\/?\/?)[^\s]+$')
             self._generate_format('email', 'email_re_pattern', r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
             self._generate_format('ipv4', 'ipv4_re_pattern', r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
