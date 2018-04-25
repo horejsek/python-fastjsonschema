@@ -6,7 +6,7 @@ Installation
 
 .. code-block:: bash
 
-    pip install python-fastjsonschema
+    pip install fastjsonschema
 
 Documentation
 *************

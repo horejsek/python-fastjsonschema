@@ -1,35 +1,27 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>fastjsonschema documentation &mdash; fastjsonschema  documentation</title>
-    
+    <title>fastjsonschema documentation &#8212; fastjsonschema  documentation</title>
     <link rel="stylesheet" href="static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
+    <script type="text/javascript" src="static/documentation_options.js"></script>
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="fastjsonschema  documentation" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
    
   <link rel="stylesheet" href="static/custom.css" type="text/css" />
   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body role="document">
+  </head><body>
   
 
     <div class="document">
@@ -41,55 +33,52 @@
 <h1>fastjsonschema documentation<a class="headerlink" href="#fastjsonschema-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install python-fastjsonschema
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install fastjsonschema
 </pre></div>
 </div>
 </div>
 <div class="section" id="module-fastjsonschema">
 <span id="documentation"></span><h2>Documentation<a class="headerlink" href="#module-fastjsonschema" title="Permalink to this headline">¶</a></h2>
-<p>This project is there because commonly used JSON schema libraries in Python
-are really slow which was problem at out project. Just let&#8217;s see some numbers first:</p>
+<p>This project was made to come up with fast JSON validations. Just let’s see some numbers first:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Probalby most popular <code class="docutils literal"><span class="pre">jsonschema</span></code> can take in tests up to 11 seconds for valid inputs
-and 2.5 seconds for invalid inputs.</li>
-<li>Secondly most popular <code class="docutils literal"><span class="pre">json-spec</span></code> is even worse with up to 12 and 3 seconds.</li>
-<li>Lastly <code class="docutils literal"><span class="pre">validictory</span></code> is much better with 800 or 50 miliseconds, but it does not
+<li>Probalby most popular <code class="docutils literal notranslate"><span class="pre">jsonschema</span></code> can take in tests up to 7 seconds for valid inputs
+and 1.6 seconds for invalid inputs.</li>
+<li>Secondly most popular <code class="docutils literal notranslate"><span class="pre">json-spec</span></code> is even worse with up to 11 and 2.6 seconds.</li>
+<li>Lastly <code class="docutils literal notranslate"><span class="pre">validictory</span></code> is much better with 640 or 30 miliseconds, but it does not
 follow all standards and it can be still slow for some purposes.</li>
 </ul>
 </div></blockquote>
-<p>That&#8217;s why there is this project which compiles definition into Python most stupid code
+<p>That’s why this project exists. It compiles definition into Python most stupid code
 which people would had hard time to write by themselfs because of not-written-rule DRY
-(don&#8217;t repeat yourself). When you compile definition, then times are 60 miliseconds for
-valid inputs and 3 miliseconds for invalid inputs. Pretty amazing, right? :-)</p>
+(don’t repeat yourself). When you compile definition, then times are 90 miliseconds for
+valid inputs and 5 miliseconds for invalid inputs. Pretty amazing, right? :-)</p>
 <p>You can try it for yourself with included script:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ make performance
-fast_compiled        <span class="nv">valid</span>      <span class="o">==</span>&gt; 0.06058199889957905
-fast_compiled        <span class="nv">invalid</span>    <span class="o">==</span>&gt; 0.0028909146785736084
-fast_not_compiled    <span class="nv">valid</span>      <span class="o">==</span>&gt; 7.054106639698148
-fast_not_compiled    <span class="nv">invalid</span>    <span class="o">==</span>&gt; 1.6773221027106047
-jsonschema           <span class="nv">valid</span>      <span class="o">==</span>&gt; 11.189393147826195
-jsonschema           <span class="nv">invalid</span>    <span class="o">==</span>&gt; 2.642645660787821
-jsonspec             <span class="nv">valid</span>      <span class="o">==</span>&gt; 11.942349303513765
-jsonspec             <span class="nv">invalid</span>    <span class="o">==</span>&gt; 2.9887414034456015
-validictory          <span class="nv">valid</span>      <span class="o">==</span>&gt; 0.7500483158230782
-validictory          <span class="nv">invalid</span>    <span class="o">==</span>&gt; 0.03606216423213482
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ make performance
+fast_compiled        <span class="nv">valid</span>      <span class="o">==</span>&gt; <span class="m">0</span>.09240092901140451
+fast_compiled        <span class="nv">invalid</span>    <span class="o">==</span>&gt; <span class="m">0</span>.004246290685236454
+fast_not_compiled    <span class="nv">valid</span>      <span class="o">==</span>&gt; <span class="m">6</span>.710726021323353
+fast_not_compiled    <span class="nv">invalid</span>    <span class="o">==</span>&gt; <span class="m">1</span>.5449269418604672
+jsonschema           <span class="nv">valid</span>      <span class="o">==</span>&gt; <span class="m">6</span>.963333621155471
+jsonschema           <span class="nv">invalid</span>    <span class="o">==</span>&gt; <span class="m">1</span>.6309524956159294
+jsonspec             <span class="nv">valid</span>      <span class="o">==</span>&gt; <span class="m">10</span>.576010060030967
+jsonspec             <span class="nv">invalid</span>    <span class="o">==</span>&gt; <span class="m">2</span>.6199211929924786
+validictory          <span class="nv">valid</span>      <span class="o">==</span>&gt; <span class="m">0</span>.6349993739277124
+validictory          <span class="nv">invalid</span>    <span class="o">==</span>&gt; <span class="m">0</span>.03125431900843978
 </pre></div>
 </div>
-<p>This library follows and implements <a class="reference external" href="http://json-schema.org">JSON schema</a>. Sometimes
-it&#8217;s not perfectly clear so I recommend also check out this <a class="reference external" href="https://spacetelescope.github.io/understanding-json-schema">understaning json schema</a>.</p>
+<p>This library follows and implements <a class="reference external" href="http://json-schema.org">JSON schema v4</a>. Sometimes
+it’s not perfectly clear so I recommend also check out this <a class="reference external" href="https://spacetelescope.github.io/understanding-json-schema">understaning json schema</a>.</p>
 <p>Note that there are some differences compared to JSON schema standard:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">dependency</span></code> for objects are not implemented yet. Future implementation will not change speed.</li>
-<li><code class="docutils literal"><span class="pre">patternProperty</span></code> for objects are not implemented yet. Future implementation can little bit
-slow down validation of object properties. Of course only for those who uses <code class="docutils literal"><span class="pre">properties</span></code>.</li>
-<li><code class="docutils literal"><span class="pre">definitions</span></code> for sharing JSON schema are not implemented yet. Future implementation will
-not change speed.</li>
-<li>Regular expressions are full what Python provides, not only what JSON schema allows. It&#8217;s easier
-to allow everything and also it&#8217;s faster to compile without limits. So keep in mind that when
+<li><code class="docutils literal notranslate"><span class="pre">dependency</span></code> for objects are not implemented yet. Future implementation will not change the speed.</li>
+<li><code class="docutils literal notranslate"><span class="pre">definitions</span></code> and <code class="docutils literal notranslate"><span class="pre">ref</span></code> for sharing JSON schema are not implemented yet. Future implementation will
+not change the speed.</li>
+<li>Regular expressions are full Python ones, not only what JSON schema allows. It’s easier
+to allow everything and also it’s faster to compile without limits. So keep in mind that when
 you will use more advanced regular expression, it may not work with other library.</li>
-<li>JSON schema says you can use keyword <code class="docutils literal"><span class="pre">default</span></code> for providing default values. This implementation
+<li>JSON schema says you can use keyword <code class="docutils literal notranslate"><span class="pre">default</span></code> for providing default values. This implementation
 uses that and always returns transformed input data.</li>
 </ul>
 </div></blockquote>
@@ -97,22 +86,22 @@ uses that and always returns transformed input data.</li>
 <dl class="exception">
 <dt id="fastjsonschema.JsonSchemaException">
 <em class="property">exception </em><code class="descclassname">fastjsonschema.</code><code class="descname">JsonSchemaException</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="modules/fastjsonschema/exceptions.html#JsonSchemaException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fastjsonschema.JsonSchemaException" title="Permalink to this definition">¶</a></dt>
-<dd><p>Exception raised by validation function. Contains <code class="docutils literal"><span class="pre">message</span></code> with
+<dd><p>Exception raised by validation function. Contains <code class="docutils literal notranslate"><span class="pre">message</span></code> with
 information what is wrong.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="fastjsonschema.compile">
 <code class="descclassname">fastjsonschema.</code><code class="descname">compile</code><span class="sig-paren">(</span><em>definition</em><span class="sig-paren">)</span><a class="reference internal" href="modules/fastjsonschema.html#compile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fastjsonschema.compile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates validation function for validating JSON schema by <code class="docutils literal"><span class="pre">definition</span></code>. Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">fastjsonschema</span>
+<dd><p>Generates validation function for validating JSON schema by <code class="docutils literal notranslate"><span class="pre">definition</span></code>. Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">fastjsonschema</span>
 
 <span class="n">validate</span> <span class="o">=</span> <span class="n">fastjsonschema</span><span class="o">.</span><span class="n">compile</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">})</span>
 <span class="n">validate</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This implementation support keyword <code class="docutils literal"><span class="pre">default</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">validate</span> <span class="o">=</span> <span class="n">fastjsonschema</span><span class="o">.</span><span class="n">compile</span><span class="p">({</span>
+<p>This implementation support keyword <code class="docutils literal notranslate"><span class="pre">default</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">validate</span> <span class="o">=</span> <span class="n">fastjsonschema</span><span class="o">.</span><span class="n">compile</span><span class="p">({</span>
     <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;object&#39;</span><span class="p">,</span>
     <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">},</span>
@@ -123,7 +112,7 @@ information what is wrong.</p>
 <span class="k">assert</span> <span class="n">data</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>Exception <a class="reference internal" href="#fastjsonschema.JsonSchemaException" title="fastjsonschema.JsonSchemaException"><code class="xref any py py-exc docutils literal"><span class="pre">JsonSchemaException</span></code></a> is thrown when validation fails.</p>
+<p>Exception <a class="reference internal" href="#fastjsonschema.JsonSchemaException" title="fastjsonschema.JsonSchemaException"><code class="xref any py py-exc docutils literal notranslate"><span class="pre">JsonSchemaException</span></code></a> is thrown when validation fails.</p>
 </dd></dl>
 
 </div>
@@ -152,15 +141,14 @@ information what is wrong.</p>
 </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -168,14 +156,14 @@ information what is wrong.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2016-2016, Seznam.cz.
+      &copy;2016-2018, Seznam.cz.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="sources/index.txt"
+      <a href="sources/index.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
