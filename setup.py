@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='fastjsonschema',
-    version='1.2',
+    version='1.3',
     packages=['fastjsonschema'],
 
     install_requires=[
