@@ -19,6 +19,9 @@ install:
 test:
 	python3 -m pytest tests
 
+test-lf:
+	python3 -m pytest --last-fail tests
+
 performance:
 	python3 performance.py
 

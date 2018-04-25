@@ -352,8 +352,8 @@ class CodeGenerator:
 
     def generate_pattern(self):
         with self.l('if isinstance({variable}, str):'):
-            self._compile_regexps['{}_re'.format(self._variable)] = re.compile(self._definition['pattern'])
-            with self.l('if not {variable}_re.search({variable}):'):
+            self._compile_regexps['{}_re'.format(self._definition['pattern'])] = re.compile(self._definition['pattern'])
+            with self.l('if not globals()["{}_re"].search({variable}):', self._definition['pattern']):
                 self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
 
     def generate_format(self):

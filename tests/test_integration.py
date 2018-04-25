@@ -99,3 +99,27 @@ def test_integration(asserter, value, expected):
             ]},
         ],
     }, value, expected)
+
+
+def test_any_of_with_patterns(asserter):
+    asserter({
+        'type': 'object',
+        'properties': {
+            'hash': {
+                'anyOf': [
+                    {
+                        'type': 'string',
+                        'pattern': '^AAA'
+                    },
+                    {
+                        'type': 'string',
+                        'pattern': '^BBB'
+                    }
+                ]
+            }
+        }
+    }, {
+        'hash': 'AAAXXX',
+    }, {
+        'hash': 'AAAXXX',
+    })
