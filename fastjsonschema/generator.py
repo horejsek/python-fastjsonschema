@@ -213,7 +213,7 @@ class CodeGenerator:
             self.l('func({variable})')
         else:
             #TODO: Create more functions for any ref and call it here.
-            self.l('pass')
+            raise Exception('Local ref is not supported yet')
 
     def generate_type(self):
         """
