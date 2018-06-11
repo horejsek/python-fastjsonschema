@@ -34,7 +34,6 @@ it's not perfectly clear so I recommend also check out this `understaning json s
 
 Note that there are some differences compared to JSON schema standard:
 
- * ``dependency`` for objects are not implemented yet. Future implementation will not change the speed.
  * ``definitions`` and ``ref`` for sharing JSON schema are not implemented yet. Future implementation will
    not change the speed.
  * Regular expressions are full Python ones, not only what JSON schema allows. It's easier

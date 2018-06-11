@@ -81,6 +81,7 @@ class CodeGenerator:
             ('properties', self.generate_properties),
             ('patternProperties', self.generate_pattern_properties),
             ('additionalProperties', self.generate_additional_properties),
+            ('dependencies', self.generate_dependencies),
         ))
 
         self.generate_func_code(definition)
@@ -527,3 +528,15 @@ class CodeGenerator:
             else:
                 with self.l('if {variable}_keys:'):
                     self.l('raise JsonSchemaException("{name} must contain only specified properties")')
+
+    def generate_dependencies(self):
+        with self.l('if isinstance({variable}, dict):'):
+            self.create_variable_keys()
+            for key, values in self._definition["dependencies"].items():
+                with self.l('if "{}" in {variable}_keys:', key):
+                    if isinstance(values, list):
+                        for value in values:
+                            with self.l('if "{}" not in {variable}_keys:', value):
+                                self.l('raise JsonSchemaException("{name} missing dependency {} for {}")', value, key)
+                    else:
+                        self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
