@@ -7,6 +7,7 @@
 
 from collections import OrderedDict
 import re
+from urllib.parse import unquote
 
 import requests
 
@@ -18,6 +19,23 @@ def enforce_list(variable):
     if isinstance(variable, list):
         return variable
     return [variable]
+
+
+def resolve_path(schema, path):
+    """
+    Return definition from path.
+
+    Path is unescaped according https://tools.ietf.org/html/rfc6901
+    """
+    parts = unquote(path).split('/') if path else []
+    current = schema
+    for part in parts:
+        part = part.replace(u"~1", u"/").replace(u"~0", u"~")
+        if isinstance(current, list):
+            current = current[int(part)]
+        else:
+            current = current[part]
+    return current
 
 
 class CodeGenerator:
@@ -184,9 +202,13 @@ class CodeGenerator:
             backup_variables = self._variables
             self._variables = set()
 
-        for key, func in self._json_keywords_to_function.items():
-            if key in definition:
-                func()
+        if '$ref' in definition:
+            # needed because ref overrides any sibling keywords
+            self.generate_ref()
+        else:
+            for key, func in self._json_keywords_to_function.items():
+                if key in definition:
+                    func()
 
         self._definition, self._variable, self._variable_name = backup
         if clear_variables:
@@ -212,8 +234,12 @@ class CodeGenerator:
             self.generate_func_code_block(definition, self._variable, self._variable_name)
         elif self._definition['$ref'] == '#':
             self.l('func({variable})')
+        elif self._definition['$ref'].startswith('#'):
+            path = self._definition['$ref'].lstrip('#/')
+            current = resolve_path(self._root_definition, path)
+            self.generate_func_code_block(current, self._variable, self._variable_name, clear_variables=True)
         else:
-            #TODO: Create more functions for any ref and call it here.
+            # TODO: Create more functions for any ref and call it here.
             raise NotImplementedError('Local ref is not supported yet')
 
     def generate_type(self):
