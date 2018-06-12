@@ -47,11 +47,12 @@ Support only for Python 3.3 and higher.
 
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
+from .ref_resolver import RefResolver
 
 __all__ = ('JsonSchemaException', 'compile')
 
 
-def compile(definition):
+def compile(definition, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``. Example:
 
@@ -78,7 +79,8 @@ def compile(definition):
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    code_generator = CodeGenerator(definition)
+    resolver = RefResolver.from_schema(definition, handlers=handlers)
+    code_generator = CodeGenerator(definition, resolver=resolver)
     # Do not pass local state so it can recursively call itself.
     global_state = code_generator.global_state
     exec(code_generator.func_code, global_state)

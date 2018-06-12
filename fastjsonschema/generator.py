@@ -12,6 +12,7 @@ import requests
 
 from .exceptions import JsonSchemaException
 from .indent import indent
+from .ref_resolver import RefResolver
 
 
 def enforce_list(variable):
@@ -45,7 +46,7 @@ class CodeGenerator:
         'object': 'dict',
     }
 
-    def __init__(self, definition):
+    def __init__(self, definition, name='func', resolver=None):
         self._code = []
         self._compile_regexps = {}
 
@@ -55,9 +56,18 @@ class CodeGenerator:
         self._variable_name = None
         self._root_definition = definition
         self._definition = None
+        self._name = name
+
+        self._validation_functions = {}
+        self._validation_functions_done = set()
+        if resolver == None:
+            resolver = RefResolver.from_schema(definition)
+        self._resolver = resolver
+        if 'id' in definition:
+            self.generate_validation_function()
 
         self._json_keywords_to_function = OrderedDict((
-            ('$ref', self.generate_ref),
+            ('definitions', self.generate_defitions),
             ('type', self.generate_type),
             ('enum', self.generate_enum),
             ('allOf', self.generate_all_of),
@@ -84,7 +94,7 @@ class CodeGenerator:
             ('dependencies', self.generate_dependencies),
         ))
 
-        self.generate_func_code(definition)
+        self.generate_func_code(definition, name)
 
     @property
     def func_code(self):
@@ -164,15 +174,26 @@ class CodeGenerator:
         self._variables.add(variable_name)
         self.l('{variable}_keys = set({variable}.keys())')
 
-    def generate_func_code(self, definition):
+    def generate_func_code(self, definition, name):
         """
         Creates base code of validation function and calls helper
         for creating code by definition.
         """
-        with self.l('def func(data):'):
-            self.l('NoneType = type(None)')
+        self._validation_functions_done.add(self._resolver.get_uri())
+        self.l('NoneType = type(None)')
+        self.l('')
+        with self.l('def {}(data):', name):
             self.generate_func_code_block(definition, 'data', 'data')
             self.l('return data')
+        # Generate parts that are referenced and not yet generated
+        while len(self._validation_functions) > 0:
+            uri, name = self._validation_functions.popitem()
+            self._validation_functions_done.add(uri)
+            self.l('')
+            with self._resolver.resolving(uri) as definition:
+                with self.l('def {}(data):', name):
+                    self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
+                    self.l('return data')
 
     def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
         """
@@ -184,13 +205,24 @@ class CodeGenerator:
             backup_variables = self._variables
             self._variables = set()
 
-        for key, func in self._json_keywords_to_function.items():
-            if key in definition:
-                func()
+        if '$ref' in definition:
+            # needed because ref overrides any sibling keywords
+            self.generate_ref()
+        elif 'id' in definition:
+            id = definition['id']
+            with self._resolver.in_scope(id):
+                self.run_generate_functions(definition)
+        else:
+            self.run_generate_functions(definition)
 
         self._definition, self._variable, self._variable_name = backup
         if clear_variables:
             self._variables = backup_variables
+
+    def run_generate_functions(self, definition):
+        for key, func in self._json_keywords_to_function.items():
+            if key in definition:
+                func()
 
     def generate_ref(self):
         """
@@ -206,15 +238,26 @@ class CodeGenerator:
                 }
             }
         """
-        if self._definition['$ref'].startswith('http'):
-            res = requests.get(self._definition['$ref'])
-            definition = res.json()
-            self.generate_func_code_block(definition, self._variable, self._variable_name)
-        elif self._definition['$ref'] == '#':
-            self.l('func({variable})')
-        else:
-            #TODO: Create more functions for any ref and call it here.
-            raise NotImplementedError('Local ref is not supported yet')
+        ref = self._definition['$ref']
+        with self._resolver.in_scope(ref):
+            name = self.generate_validation_function()
+            self.l('{}({variable})', name)
+
+    def generate_validation_function(self):
+        name = self._resolver.get_scope_name()
+        if 'validate' == name:
+            name = self._name
+        uri = self._resolver.get_uri()
+        if uri not in self._validation_functions_done:
+            self._validation_functions[uri] = name
+        return name
+
+    def generate_defitions(self):
+        definitions = self._definition['definitions']
+        for _, value in definitions.items():
+            if 'id' in value:
+                id = value['id']
+                self._resolver.store[id] = value
 
     def generate_type(self):
         """
@@ -234,6 +277,7 @@ class CodeGenerator:
 
         with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
             self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
+
 
     def generate_enum(self):
         """
@@ -365,6 +409,8 @@ class CodeGenerator:
             self._generate_format('ipv4', 'ipv4_re_pattern', r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
             self._generate_format('ipv6', 'ipv6_re_pattern', r'^(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)$')
             self._generate_format('hostname', 'hostname_re_pattern', r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{1,62}[A-Za-z0-9])$')
+            # TODO real pattern for regex
+            self._generate_format('regex', 'regex_re_pattern', r'^.+$')
 
     def _generate_format(self, format_name, regexp_name, regexp):
             if self._definition['format'] == format_name:

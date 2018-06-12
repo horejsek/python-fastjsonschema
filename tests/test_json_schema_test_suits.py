@@ -2,17 +2,37 @@ import json
 from pathlib import Path
 
 import pytest
+import requests
 
-from fastjsonschema import CodeGenerator, JsonSchemaException, compile
+from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
 
+remotes = {
+    'http://localhost:1234/integer.json': {'type': 'integer'},
+    'http://localhost:1234/name.json': {
+        'type': 'string',
+        'definitions': {
+            'orNull': {'anyOf': [{'type': 'null'}, {'$ref': '#'}]},
+        },
+    },
+    'http://localhost:1234/subSchemas.json': {
+        'integer': {'type': 'integer'},
+        'refToInteger': {'$ref': '#/integer'},
+    },
+    'http://localhost:1234/folder/folderInteger.json': {'type': 'integer'}
+}
+def remotes_handler(uri):
+    print(uri)
+    if uri in remotes:
+        return remotes[uri]
+    return requests.get(uri).json()
 
 def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft4'
     ignored_suite_files = [
-        'definitions.json',
         'ecmascript-regex.json',
-        'ref.json',
-        'refRemote.json',
+    ]
+    ignore_tests = [
+        "base URI change - change folder in subschema",
     ]
 
     suite_dir_path = Path(suite_dir).resolve()
@@ -30,7 +50,10 @@ def pytest_generate_tests(metafunc):
                         test_case['schema'],
                         test_data['data'],
                         test_data['valid'],
-                        marks=pytest.mark.xfail if test_file_path.name in ignored_suite_files else pytest.mark.none,
+                        marks=pytest.mark.xfail
+                            if test_file_path.name in ignored_suite_files
+                                or test_case['description'] in ignore_tests
+                            else pytest.mark.none,
                     ))
                     param_ids.append('{} / {} / {}'.format(
                         test_file_path.name,
@@ -43,9 +66,10 @@ def pytest_generate_tests(metafunc):
 
 def test(schema, data, is_valid):
     # For debug purposes. When test fails, it will print stdout.
-    print(CodeGenerator(schema).func_code)
+    resolver = RefResolver.from_schema(schema, handlers={'http': remotes_handler})
+    print(CodeGenerator(schema, resolver=resolver).func_code)
 
-    validate = compile(schema)
+    validate = compile(schema, handlers={'http': remotes_handler})
     try:
         result = validate(data)
         print('Validate result:', result)
