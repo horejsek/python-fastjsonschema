@@ -27,6 +27,7 @@ def resolve_path(schema, path):
 
     Path is unescaped according https://tools.ietf.org/html/rfc6901
     """
+    path = path.lstrip('#/')
     parts = unquote(path).split('/') if path else []
     current = schema
     for part in parts:
@@ -74,6 +75,7 @@ class CodeGenerator:
         self._variable_name = None
         self._root_definition = definition
         self._definition = None
+        self._name = name
 
         self._json_keywords_to_function = OrderedDict((
             ('$ref', self.generate_ref),
@@ -243,9 +245,9 @@ class CodeGenerator:
                     self._compile_regexps[key] = value
             self.l('{}({variable})', name)
         elif self._definition['$ref'] == '#':
-            self.l('func({variable})')
+            self.l('{}({variable})', self._name)
         elif self._definition['$ref'].startswith('#'):
-            path = self._definition['$ref'].lstrip('#/')
+            path = self._definition['$ref']
             current = resolve_path(self._root_definition, path)
             self.generate_func_code_block(current, self._variable, self._variable_name, clear_variables=True)
         else:
