@@ -7,7 +7,7 @@
 
 from collections import OrderedDict
 import re
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 import requests
 
@@ -63,9 +63,10 @@ class CodeGenerator:
         'object': 'dict',
     }
 
-    def __init__(self, definition):
+    def __init__(self, definition, name='func'):
         self._code = []
         self._compile_regexps = {}
+        self._validation_functions = set()
 
         self._variables = set()
         self._indent = 0
@@ -102,7 +103,7 @@ class CodeGenerator:
             ('dependencies', self.generate_dependencies),
         ))
 
-        self.generate_func_code(definition)
+        self.generate_func_code(definition, name)
 
     @property
     def func_code(self):
@@ -182,12 +183,12 @@ class CodeGenerator:
         self._variables.add(variable_name)
         self.l('{variable}_keys = set({variable}.keys())')
 
-    def generate_func_code(self, definition):
+    def generate_func_code(self, definition, name):
         """
         Creates base code of validation function and calls helper
         for creating code by definition.
         """
-        with self.l('def func(data):'):
+        with self.l('def {}(data):', name):
             self.l('NoneType = type(None)')
             self.generate_func_code_block(definition, 'data', 'data')
             self.l('return data')
@@ -229,9 +230,18 @@ class CodeGenerator:
             }
         """
         if self._definition['$ref'].startswith('http'):
-            res = requests.get(self._definition['$ref'])
-            definition = res.json()
-            self.generate_func_code_block(definition, self._variable, self._variable_name)
+            name = 'validate_' + self._definition['$ref']
+            name = re.sub('[:/#.-]', '_', name)
+            if not name in self._validation_functions:
+                res = requests.get(self._definition['$ref'])
+                definition = res.json()
+                current = resolve_path(definition, urlparse(self._definition['$ref']).fragment)
+                code_generator = CodeGenerator(current, name)
+                self._code.insert(0, code_generator.func_code + '\n')
+                self._validation_functions.add(name)
+                for key, value in code_generator._compile_regexps.items():
+                    self._compile_regexps[key] = value
+            self.l('{}({variable})', name)
         elif self._definition['$ref'] == '#':
             self.l('func({variable})')
         elif self._definition['$ref'].startswith('#'):
@@ -391,6 +401,8 @@ class CodeGenerator:
             self._generate_format('ipv4', 'ipv4_re_pattern', r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
             self._generate_format('ipv6', 'ipv6_re_pattern', r'^(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)$')
             self._generate_format('hostname', 'hostname_re_pattern', r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{1,62}[A-Za-z0-9])$')
+            # TODO real pattern for regex
+            self._generate_format('regex', 'regex_re_pattern', r'^.+$')
 
     def _generate_format(self, format_name, regexp_name, regexp):
             if self._definition['format'] == format_name:

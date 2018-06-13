@@ -9,7 +9,6 @@ from fastjsonschema import CodeGenerator, JsonSchemaException, compile
 def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft4'
     ignored_suite_files = [
-        'definitions.json',
         'ecmascript-regex.json',
         'ref.json',
         'refRemote.json',
