@@ -152,6 +152,6 @@ class RefResolver(object):
 
     def get_scope_name(self):
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_')
-        name = re.sub(r'[:/#.-%]', '_', name)
+        name = re.sub('[:/#\.\-\%]', '_', name)
         name = name.lower().rstrip('_')
         return name

@@ -208,18 +208,18 @@ class CodeGenerator:
         elif 'id' in definition:
             id = definition['id']
             with self._resolver.in_scope(id):
-                self._resolver.store_id(self._definition)
-                for key, func in self._json_keywords_to_function.items():
-                    if key in definition:
-                        func()
-        else:            
-            for key, func in self._json_keywords_to_function.items():
-                if key in definition:
-                    func()
+                self.run_generate_functions(definition)
+        else:
+            self.run_generate_functions(definition)
 
         self._definition, self._variable, self._variable_name = backup
         if clear_variables:
             self._variables = backup_variables
+
+    def run_generate_functions(self, definition):
+        for key, func in self._json_keywords_to_function.items():
+            if key in definition:
+                func()
 
     def generate_ref(self):
         """
