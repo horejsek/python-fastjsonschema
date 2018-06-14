@@ -63,6 +63,8 @@ class CodeGenerator:
         if resolver == None:
             resolver = RefResolver.from_schema(definition)
         self._resolver = resolver
+        if 'id' in definition:
+            self.generate_validation_function()
 
         self._json_keywords_to_function = OrderedDict((
             ('definitions', self.generate_defitions),
@@ -183,13 +185,14 @@ class CodeGenerator:
         with self.l('def {}(data):', name):
             self.generate_func_code_block(definition, 'data', 'data')
             self.l('return data')
+        # Generate parts that are referenced and not yet generated
         while len(self._validation_functions) > 0:
             uri, name = self._validation_functions.popitem()
             self._validation_functions_done.add(uri)
             self.l('')
             with self._resolver.resolving(uri) as definition:
                 with self.l('def {}(data):', name):
-                    self.generate_func_code_block(definition, 'data', 'data')
+                    self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
                     self.l('return data')
 
     def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
@@ -237,16 +240,24 @@ class CodeGenerator:
         """
         ref = self._definition['$ref']
         with self._resolver.in_scope(ref):
-            name = self._resolver.get_scope_name()
-            if 'validate' == name:
-                name = self._name
-            uri = self._resolver.get_uri()
-            if uri not in self._validation_functions_done:
-                self._validation_functions[uri] = name
+            name = self.generate_validation_function()
             self.l('{}({variable})', name)
 
+    def generate_validation_function(self):
+        name = self._resolver.get_scope_name()
+        if 'validate' == name:
+            name = self._name
+        uri = self._resolver.get_uri()
+        if uri not in self._validation_functions_done:
+            self._validation_functions[uri] = name
+        return name
+
     def generate_defitions(self):
-        pass
+        definitions = self._definition['definitions']
+        for _, value in definitions.items():
+            if 'id' in value:
+                id = value['id']
+                self._resolver.store[id] = value
 
     def generate_type(self):
         """
@@ -266,6 +277,7 @@ class CodeGenerator:
 
         with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
             self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
+
 
     def generate_enum(self):
         """

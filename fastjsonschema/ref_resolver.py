@@ -123,7 +123,6 @@ class RefResolver(object):
         """
         new_uri = urlparse.urljoin(self.resolution_scope, ref)
         uri, fragment = urlparse.urldefrag(new_uri)
-        print(new_uri, uri, fragment, sep='\n')
 
         if normalize(uri) in self.store:
             schema = self.store[normalize(uri)]
