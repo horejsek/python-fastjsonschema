@@ -7,36 +7,18 @@
 
 from collections import OrderedDict
 import re
-from urllib.parse import unquote, urlparse
 
 import requests
 
 from .exceptions import JsonSchemaException
 from .indent import indent
+from .ref_resolver import RefResolver
 
 
 def enforce_list(variable):
     if isinstance(variable, list):
         return variable
     return [variable]
-
-
-def resolve_path(schema, path):
-    """
-    Return definition from path.
-
-    Path is unescaped according https://tools.ietf.org/html/rfc6901
-    """
-    path = path.lstrip('#/')
-    parts = unquote(path).split('/') if path else []
-    current = schema
-    for part in parts:
-        part = part.replace(u"~1", u"/").replace(u"~0", u"~")
-        if isinstance(current, list):
-            current = current[int(part)]
-        else:
-            current = current[part]
-    return current
 
 
 class CodeGenerator:
@@ -64,10 +46,9 @@ class CodeGenerator:
         'object': 'dict',
     }
 
-    def __init__(self, definition, name='func'):
+    def __init__(self, definition, name='func', resolver=None):
         self._code = []
         self._compile_regexps = {}
-        self._validation_functions = set()
 
         self._variables = set()
         self._indent = 0
@@ -77,8 +58,14 @@ class CodeGenerator:
         self._definition = None
         self._name = name
 
+        self._validation_functions = {}
+        self._validation_functions_done = set()
+        if resolver == None:
+            resolver = RefResolver.from_schema(definition)
+        self._resolver = resolver
+
         self._json_keywords_to_function = OrderedDict((
-            ('$ref', self.generate_ref),
+            ('definitions', self.generate_defitions),
             ('type', self.generate_type),
             ('enum', self.generate_enum),
             ('allOf', self.generate_all_of),
@@ -190,10 +177,20 @@ class CodeGenerator:
         Creates base code of validation function and calls helper
         for creating code by definition.
         """
+        self._validation_functions_done.add(self._resolver.get_uri())
+        self.l('NoneType = type(None)')
+        self.l('')
         with self.l('def {}(data):', name):
-            self.l('NoneType = type(None)')
             self.generate_func_code_block(definition, 'data', 'data')
             self.l('return data')
+        while len(self._validation_functions) > 0:
+            uri, name = self._validation_functions.popitem()
+            self._validation_functions_done.add(uri)
+            self.l('')
+            with self._resolver.resolving(uri) as definition:
+                with self.l('def {}(data):', name):
+                    self.generate_func_code_block(definition, 'data', 'data')
+                    self.l('return data')
 
     def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
         """
@@ -208,7 +205,14 @@ class CodeGenerator:
         if '$ref' in definition:
             # needed because ref overrides any sibling keywords
             self.generate_ref()
-        else:
+        elif 'id' in definition:
+            id = definition['id']
+            with self._resolver.in_scope(id):
+                self._resolver.store_id(self._definition)
+                for key, func in self._json_keywords_to_function.items():
+                    if key in definition:
+                        func()
+        else:            
             for key, func in self._json_keywords_to_function.items():
                 if key in definition:
                     func()
@@ -231,28 +235,18 @@ class CodeGenerator:
                 }
             }
         """
-        if self._definition['$ref'].startswith('http'):
-            name = 'validate_' + self._definition['$ref']
-            name = re.sub('[:/#.-]', '_', name)
-            if not name in self._validation_functions:
-                res = requests.get(self._definition['$ref'])
-                definition = res.json()
-                current = resolve_path(definition, urlparse(self._definition['$ref']).fragment)
-                code_generator = CodeGenerator(current, name)
-                self._code.insert(0, code_generator.func_code + '\n')
-                self._validation_functions.add(name)
-                for key, value in code_generator._compile_regexps.items():
-                    self._compile_regexps[key] = value
+        ref = self._definition['$ref']
+        with self._resolver.in_scope(ref):
+            name = self._resolver.get_scope_name()
+            if 'validate' == name:
+                name = self._name
+            uri = self._resolver.get_uri()
+            if uri not in self._validation_functions_done:
+                self._validation_functions[uri] = name
             self.l('{}({variable})', name)
-        elif self._definition['$ref'] == '#':
-            self.l('{}({variable})', self._name)
-        elif self._definition['$ref'].startswith('#'):
-            path = self._definition['$ref']
-            current = resolve_path(self._root_definition, path)
-            self.generate_func_code_block(current, self._variable, self._variable_name, clear_variables=True)
-        else:
-            # TODO: Create more functions for any ref and call it here.
-            raise NotImplementedError('Local ref is not supported yet')
+
+    def generate_defitions(self):
+        pass
 
     def generate_type(self):
         """
