@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from fastjsonschema import CodeGenerator, JsonSchemaException, compile
+from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
 
 remotes = {
     "http://localhost:1234/integer.json": {u"type": u"integer"},
@@ -21,6 +21,7 @@ remotes = {
     "http://localhost:1234/folder/folderInteger.json": {u"type": u"integer"}
 }
 def remotes_handler(uri):
+    print(uri)
     if uri in remotes:
         return remotes[uri]
     return requests.get(uri).json()
@@ -65,7 +66,8 @@ def pytest_generate_tests(metafunc):
 
 def test(schema, data, is_valid):
     # For debug purposes. When test fails, it will print stdout.
-    print(CodeGenerator(schema).func_code)
+    resolver = RefResolver.from_schema(schema, handlers={'http': remotes_handler})
+    print(CodeGenerator(schema, resolver=resolver).func_code)
 
     validate = compile(schema, handlers={'http': remotes_handler})
     try:
