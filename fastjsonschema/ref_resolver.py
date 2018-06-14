@@ -1,5 +1,7 @@
 """
-Adapted from https://github.com/Julian/jsonschema
+JSON Schema URI resolution scopes and dereferencing
+
+Code adapted from https://github.com/Julian/jsonschema
 """
 import contextlib
 import re
@@ -84,16 +86,16 @@ class RefResolver(object):
 
     """
 
-    def __init__(self, base_uri, schema, store=(), cache=True, handlers=()):
+    def __init__(self, base_uri, schema, store=(), cache=True, handlers={}):
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
         self.store = dict(store)
         self.cache = cache
-        self.handlers = dict(handlers)
+        self.handlers = handlers
 
     @classmethod
-    def from_schema(cls, schema, *args, **kwargs):
+    def from_schema(cls, schema, handlers={}, **kwargs):
         """
         Construct a resolver from a JSON schema object.
 
@@ -101,7 +103,7 @@ class RefResolver(object):
         :rtype: :class:`RefResolver`
 
         """
-        return cls(schema.get('id', ''), schema, *args, **kwargs)
+        return cls(schema.get('id', ''), schema, handlers=handlers, **kwargs)
 
     @contextlib.contextmanager
     def in_scope(self, scope):

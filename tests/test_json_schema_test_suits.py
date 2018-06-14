@@ -2,15 +2,36 @@ import json
 from pathlib import Path
 
 import pytest
+import requests
 
 from fastjsonschema import CodeGenerator, JsonSchemaException, compile
 
+remotes = {
+    "http://localhost:1234/integer.json": {u"type": u"integer"},
+    "http://localhost:1234/name.json": {
+        u"type": "string",
+        u"definitions": {
+            u"orNull": {u"anyOf": [{u"type": u"null"}, {u"$ref": u"#"}]},
+        },
+    },
+    "http://localhost:1234/subSchemas.json": {
+        u"integer": {u"type": u"integer"},
+        u"refToInteger": {u"$ref": u"#/integer"},
+    },
+    "http://localhost:1234/folder/folderInteger.json": {u"type": u"integer"}
+}
+def remotes_handler(uri):
+    if uri in remotes:
+        return remotes[uri]
+    return requests.get(uri).json()
 
 def pytest_generate_tests(metafunc):
     suite_dir = 'JSON-Schema-Test-Suite/tests/draft4'
     ignored_suite_files = [
         'ecmascript-regex.json',
-        'refRemote.json',
+    ]
+    ignore_tests = [
+        "base URI change - change folder in subschema",
     ]
 
     suite_dir_path = Path(suite_dir).resolve()
@@ -28,7 +49,10 @@ def pytest_generate_tests(metafunc):
                         test_case['schema'],
                         test_data['data'],
                         test_data['valid'],
-                        marks=pytest.mark.xfail if test_file_path.name in ignored_suite_files else pytest.mark.none,
+                        marks=pytest.mark.xfail
+                            if test_file_path.name in ignored_suite_files
+                                or test_case['description'] in ignore_tests
+                            else pytest.mark.none,
                     ))
                     param_ids.append('{} / {} / {}'.format(
                         test_file_path.name,
@@ -43,7 +67,7 @@ def test(schema, data, is_valid):
     # For debug purposes. When test fails, it will print stdout.
     print(CodeGenerator(schema).func_code)
 
-    validate = compile(schema)
+    validate = compile(schema, handlers={'http': remotes_handler})
     try:
         result = validate(data)
         print('Validate result:', result)
