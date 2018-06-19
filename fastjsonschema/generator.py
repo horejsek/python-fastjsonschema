@@ -189,9 +189,9 @@ class CodeGenerator:
             self.l('return data')
         # Generate parts that are referenced and not yet generated
         while len(self._needed_validation_functions) > 0:
-            # Normal for ... in... loop not works here, because new functions
-            # can be found and therefore added in self._needed_validation_functions
-            # during it generation and dictionary cannot changed during iteration.
+            # During generation of validation function, could be needed to generate
+            # new one that is added again to `_needed_validation_functions`.
+            # Therefore usage of while instead of for loop.
             uri, name = self._needed_validation_functions.popitem()
             self._validation_functions_done.add(uri)
             self.generate_validation_function(uri, name)
