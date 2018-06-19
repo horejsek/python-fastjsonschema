@@ -85,3 +85,27 @@ def compile(definition, handlers={}):
     global_state = code_generator.global_state
     exec(code_generator.func_code, global_state)
     return global_state[name]
+
+def write_code(filename, definition, handlers={}):
+    """
+    Generates validation function for validating JSON schema by ``definition``
+    and write it to file. Example:
+
+    .. code-block:: python
+
+        import fastjsonschema
+
+        validate = fastjsonschema.write_code('validator.py', {'type': 'string'})
+
+    Exception :any:`JsonSchemaException` is thrown when validation fails.
+    """
+    resolver = RefResolver.from_schema(definition, handlers=handlers)
+    # get main function name
+    name = resolver.get_scope_name()
+    code_generator = CodeGenerator(definition, resolver=resolver)
+    # Do not pass local state so it can recursively call itself.
+    global_state_code = code_generator.global_state_code
+    with open(filename, 'w', encoding='UTF-8') as out:
+        print(global_state_code, file=out)
+        print(code_generator.func_code, file=out)
+    return name
