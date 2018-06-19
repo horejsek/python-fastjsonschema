@@ -84,4 +84,4 @@ def compile(definition, handlers={}):
     # Do not pass local state so it can recursively call itself.
     global_state = code_generator.global_state
     exec(code_generator.func_code, global_state)
-    return global_state['func']
+    return global_state['validate']

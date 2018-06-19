@@ -1,6 +1,8 @@
 """
 JSON Schema URI resolution scopes and dereferencing
 
+https://tools.ietf.org/id/draft-zyp-json-schema-04.html#rfc.section.7
+
 Code adapted from https://github.com/Julian/jsonschema
 """
 import contextlib
@@ -86,13 +88,14 @@ class RefResolver(object):
 
     """
 
-    def __init__(self, base_uri, schema, store=(), cache=True, handlers={}):
+    def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
-        self.store = dict(store)
+        self.store = store
         self.cache = cache
         self.handlers = handlers
+        self.walk(schema)
 
     @classmethod
     def from_schema(cls, schema, handlers={}, **kwargs):
@@ -156,3 +159,22 @@ class RefResolver(object):
         name = re.sub('[:/#\.\-\%]', '_', name)
         name = name.lower().rstrip('_')
         return name
+
+    def walk(self, node: dict):
+        """
+        Walk thru schema and Normalize ``id`` and ``$ref`` instances
+        """
+        if '$ref' in node:
+            ref = node['$ref']
+            node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
+        if 'id' in node:
+            id = node['id']
+            with self.in_scope(id):
+                self.store[normalize(self.resolution_scope)] = node
+                for _, item in node.items():
+                    if isinstance(item, dict):
+                        self.walk(item)
+        else:
+            for _, item in node.items():
+                if isinstance(item, dict):
+                    self.walk(item)

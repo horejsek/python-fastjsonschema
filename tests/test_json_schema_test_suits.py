@@ -32,7 +32,6 @@ def pytest_generate_tests(metafunc):
         'ecmascript-regex.json',
     ]
     ignore_tests = [
-        "base URI change - change folder in subschema",
     ]
 
     suite_dir_path = Path(suite_dir).resolve()
