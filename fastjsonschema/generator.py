@@ -66,8 +66,8 @@ class CodeGenerator:
         if resolver == None:
             resolver = RefResolver.from_schema(definition)
         self._resolver = resolver
-        if 'id' in definition:
-            self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()
+        # add main function to `self._needed_validation_functions`
+        self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()
 
         self._json_keywords_to_function = OrderedDict((
             ('type', self.generate_type),
@@ -181,25 +181,20 @@ class CodeGenerator:
         Creates base code of validation function and calls helper
         for creating code by definition.
         """
-        self._validation_functions_done.add(self._resolver.get_uri())
         self.l('NoneType = type(None)')
-        self.l('')
-        with self.l('def validate(data):'):
-            self.generate_func_code_block(definition, 'data', 'data')
-            self.l('return data')
         # Generate parts that are referenced and not yet generated
         while len(self._needed_validation_functions) > 0:
             # During generation of validation function, could be needed to generate
             # new one that is added again to `_needed_validation_functions`.
             # Therefore usage of while instead of for loop.
             uri, name = self._needed_validation_functions.popitem()
-            self._validation_functions_done.add(uri)
             self.generate_validation_function(uri, name)
 
     def generate_validation_function(self, uri, name):
         """
         Generate validation function for given uri with given name
         """
+        self._validation_functions_done.add(uri)
         self.l('')
         with self._resolver.resolving(uri) as definition:
             with self.l('def {}(data):', name):
