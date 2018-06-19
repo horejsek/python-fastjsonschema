@@ -34,8 +34,6 @@ it's not perfectly clear so I recommend also check out this `understaning json s
 
 Note that there are some differences compared to JSON schema standard:
 
- * ``definitions`` and ``ref`` for sharing JSON schema are not implemented yet. Future implementation will
-   not change the speed.
  * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
    to allow everything and also it's faster to compile without limits. So keep in mind that when
    you will use more advanced regular expression, it may not work with other library.
