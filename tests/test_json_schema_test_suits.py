@@ -1,9 +1,6 @@
 import json
-from pathlib import Path
-
 import pytest
 import requests
-
 from fastjsonschema import CodeGenerator, RefResolver, JsonSchemaException, compile
 
 remotes = {
@@ -26,22 +23,12 @@ def remotes_handler(uri):
         return remotes[uri]
     return requests.get(uri).json()
 
-def pytest_generate_tests(metafunc):
-    suite_dir = 'JSON-Schema-Test-Suite/tests/draft4'
-    ignored_suite_files = [
-        'ecmascript-regex.json',
-    ]
-    ignore_tests = [
-    ]
 
-    suite_dir_path = Path(suite_dir).resolve()
-    test_file_paths = sorted(set(suite_dir_path.glob("**/*.json")))
-
+def resolve_param_values_and_ids(test_file_paths, ignored_suite_files, ignore_tests):
     param_values = []
     param_ids = []
-
     for test_file_path in test_file_paths:
-        with test_file_path.open() as test_file:
+        with test_file_path.open(encoding='UTF-8') as test_file:
             test_cases = json.load(test_file)
             for test_case in test_cases:
                 for test_data in test_case['tests']:
@@ -59,11 +46,10 @@ def pytest_generate_tests(metafunc):
                         test_case['description'],
                         test_data['description'],
                     ))
+    return param_values, param_ids
 
-    metafunc.parametrize(['schema', 'data', 'is_valid'], param_values, ids=param_ids)
 
-
-def test(schema, data, is_valid):
+def template_test(schema, data, is_valid):
     # For debug purposes. When test fails, it will print stdout.
     resolver = RefResolver.from_schema(schema, handlers={'http': remotes_handler})
     print(CodeGenerator(schema, resolver=resolver).func_code)
