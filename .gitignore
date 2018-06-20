@@ -3,6 +3,9 @@
 .cache
 .vscode
 .testmondata
+__pycache__
+.tox
+.pytest_cache
 
 build/
 _build/

@@ -28,7 +28,7 @@ You can try it for yourself with included script:
     validictory          valid      ==> 0.6349993739277124
     validictory          invalid    ==> 0.03125431900843978
 
-This library follows and implements `JSON schema v4 <http://json-schema.org>`_. Sometimes
+This library follows and implements `JSON schema draft-04 <http://json-schema.org>`_. Sometimes
 it's not perfectly clear so I recommend also check out this `understaning json schema
 <https://spacetelescope.github.io/understanding-json-schema>`_.
 
