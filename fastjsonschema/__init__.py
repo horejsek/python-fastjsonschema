@@ -75,6 +75,11 @@ def compile(definition, handlers={}):
         data = validate({})
         assert data == {'a': 42}
 
+    Args:
+        definition (dict): Json schema definition
+        handlers (dict): A mapping from URI schemes to functions
+            that should be used to retrieve them.
+
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
     resolver = RefResolver.from_schema(definition, handlers=handlers)
