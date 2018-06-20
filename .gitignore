@@ -1,7 +1,7 @@
 
 *.pyc
 .cache
-
+.vscode
 .testmondata
 
 build/

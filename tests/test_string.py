@@ -60,3 +60,14 @@ def test_pattern(asserter, value, expected):
         'type': 'string',
         'pattern': '^[ab]*[^ab]+(c{2}|d)$',
     }, value, expected)
+
+exc = JsonSchemaException('data must be a valid regex')
+@pytest.mark.parametrize('value, expected', [
+    ('[a-z]', '[a-z]'),
+    ('[a-z', exc),
+])
+def test_pattern(asserter, value, expected):
+    asserter({
+        'format': 'regex',
+        'type': 'string'
+    }, value, expected)
