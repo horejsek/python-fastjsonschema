@@ -162,12 +162,12 @@ class RefResolver(object):
 
     def walk(self, node: dict):
         """
-        Walk thru schema and Normalize ``id`` and ``$ref`` instances
+        Walk thru schema and dereferencing ``id`` and ``$ref`` instances
         """
-        if '$ref' in node:
+        if '$ref' in node and isinstance(node['$ref'], str):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
-        if 'id' in node:
+        elif 'id' in node and isinstance(node['id'], str):
             id = node['id']
             with self.in_scope(id):
                 self.store[normalize(self.resolution_scope)] = node
