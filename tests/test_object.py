@@ -148,7 +148,7 @@ def test_object_with_id_property(asserter, value, expected):
     ({'$ref': 1}, JsonSchemaException('data.$ref must be string')),
 ])
 
-def test_object_with_id_property(asserter, value, expected):
+def test_object_with_ref_property(asserter, value, expected):
     asserter({
         "type": "object",
         "properties": {
