@@ -89,16 +89,42 @@ def compile(definition, handlers={}):
 def write_code(filename, definition, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``
-    and write it to file. Example:
+    and write it to file.
+    
+    Arguments:
+        filename (str): Filename where generated code is written
+        definition (dict): JSON Schema defining validation rules
+        handlers (dict): A mapping from URI schemes to functions
+        that should be used to retrieve them.
+
+    Returns:
+        validation function name (str)
+
+    Raises:
+        JsonSchemaException: is thrown when generation fails.
+    
+
+    Create validator Example:
 
     .. code-block:: python
 
         import fastjsonschema
 
-        validate = fastjsonschema.write_code('validator.py', {'type': 'string'})
+        schema = {'type': 'string'}
+        name = fastjsonschema.write_code('validator.py', schema)
+        print(name)
+
+    Generated file usage Example:
+
+    .. code-block:: python
+
+        from validator import validate
+
+        validate('example')
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
+
     resolver = RefResolver.from_schema(definition, handlers=handlers)
     # get main function name
     name = resolver.get_scope_name()
