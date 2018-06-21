@@ -442,10 +442,11 @@ class CodeGenerator:
                     self.l('raise JsonSchemaException("{name} must be a valid regex")')
 
     def _generate_format(self, format_name, regexp_name, regexp):
-            if self._definition['format'] == format_name:
+        if self._definition['format'] == format_name:
+            if not regexp_name in self._compile_regexps:
                 self._compile_regexps[regexp_name] = re.compile(regexp)
-                with self.l('if not REGEX_PATTERNS["{}"].match({variable}):', regexp_name):
-                    self.l('raise JsonSchemaException("{name} must be {}")', format_name)
+            with self.l('if not REGEX_PATTERNS["{}"].match({variable}):', regexp_name):
+                self.l('raise JsonSchemaException("{name} must be {}")', format_name)
 
     def generate_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):

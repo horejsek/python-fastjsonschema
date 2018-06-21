@@ -43,11 +43,13 @@ Note that there are some differences compared to JSON schema standard:
 Support only for Python 3.3 and higher.
 """
 
+from os.path import exists
+
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
 
-__all__ = ('JsonSchemaException', 'compile')
+__all__ = ('JsonSchemaException', 'compile', 'write_code')
 
 
 def compile(definition, handlers={}):
@@ -86,7 +88,7 @@ def compile(definition, handlers={}):
     exec(code_generator.func_code, global_state)
     return global_state[name]
 
-def write_code(filename, definition, handlers={}):
+def write_code(filename, definition, handlers={}, overwrite=False):
     """
     Generates validation function for validating JSON schema by ``definition``
     and write it to file.
@@ -96,6 +98,7 @@ def write_code(filename, definition, handlers={}):
         definition (dict): JSON Schema defining validation rules
         handlers (dict): A mapping from URI schemes to functions
         that should be used to retrieve them.
+        overwrite (bool): Set to `True` to overwrite existing file
 
     Returns:
         validation function name (str)
@@ -125,6 +128,8 @@ def write_code(filename, definition, handlers={}):
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
 
+    if exists(filename) and overwrite == False:
+        raise JsonSchemaException('file {} already exists'.format(filename))
     resolver = RefResolver.from_schema(definition, handlers=handlers)
     # get main function name
     name = resolver.get_scope_name()

@@ -11,3 +11,4 @@ dist/
 *.tar.gz
 *egg-info
 MANIFEST
+temp/*
