@@ -6,6 +6,7 @@
 __pycache__
 .tox
 .pytest_cache
+.coverage
 
 build/
 _build/
