@@ -146,11 +146,6 @@ class RefResolver(object):
         finally:
             self.base_uri, self.schema = old_base_uri, old_schema
 
-    def store_id(self, schema):
-        id = self.resolution_scope
-        if normalize(id) not in self.store:
-            self.store[normalize(id)] = schema
-
     def get_uri(self):
         return normalize(self.resolution_scope)
 

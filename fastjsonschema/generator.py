@@ -8,8 +8,6 @@
 from collections import OrderedDict
 import re
 
-import requests
-
 from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
