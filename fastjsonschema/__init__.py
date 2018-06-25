@@ -43,11 +43,13 @@ Note that there are some differences compared to JSON schema standard:
 Support only for Python 3.3 and higher.
 """
 
+from os.path import exists
+
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
 
-__all__ = ('JsonSchemaException', 'compile')
+__all__ = ('JsonSchemaException', 'compile', 'write_code')
 
 
 def compile(definition, handlers={}):
@@ -85,3 +87,56 @@ def compile(definition, handlers={}):
     global_state = code_generator.global_state
     exec(code_generator.func_code, global_state)
     return global_state[name]
+
+def write_code(filename, definition, handlers={}, overwrite=False):
+    """
+    Generates validation function for validating JSON schema by ``definition``
+    and write it to file.
+    
+    Arguments:
+        filename (str): Filename where generated code is written
+        definition (dict): JSON Schema defining validation rules
+        handlers (dict): A mapping from URI schemes to functions
+        that should be used to retrieve them.
+        overwrite (bool): Set to `True` to overwrite existing file
+
+    Returns:
+        validation function name (str)
+
+    Raises:
+        JsonSchemaException: is thrown when generation fails.
+    
+
+    Create validator Example:
+
+    .. code-block:: python
+
+        import fastjsonschema
+
+        schema = {'type': 'string'}
+        name = fastjsonschema.write_code('validator.py', schema)
+        print(name)
+
+    Generated file usage Example:
+
+    .. code-block:: python
+
+        from validator import validate
+
+        validate('example')
+
+    Exception :any:`JsonSchemaException` is thrown when validation fails.
+    """
+
+    if exists(filename) and overwrite == False:
+        raise JsonSchemaException('file {} already exists'.format(filename))
+    resolver = RefResolver.from_schema(definition, handlers=handlers)
+    # get main function name
+    name = resolver.get_scope_name()
+    code_generator = CodeGenerator(definition, resolver=resolver)
+    # Do not pass local state so it can recursively call itself.
+    global_state_code = code_generator.global_state_code
+    with open(filename, 'w', encoding='UTF-8') as out:
+        print(global_state_code, file=out)
+        print(code_generator.func_code, file=out)
+    return name
