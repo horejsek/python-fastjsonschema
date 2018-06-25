@@ -1,4 +1,3 @@
-
 class JsonSchemaException(ValueError):
     """
     Exception raised by validation function. Contains ``message`` with
@@ -6,4 +5,5 @@ class JsonSchemaException(ValueError):
     """
 
     def __init__(self, message):
+        super().__init__()
         self.message = message

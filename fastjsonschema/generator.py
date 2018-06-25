@@ -1,4 +1,3 @@
-
 #    ___
 #    \./     DANGER: This module implements some code generation
 # .--.O.--.          techniques involving string concatenation.
@@ -13,6 +12,7 @@ from .indent import indent
 from .ref_resolver import RefResolver
 
 
+# pylint: disable=line-too-long
 FORMAT_REGEXS = {
     'date-time': r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z)?$',
     'uri': r'^\w+:(\/?\/?)[^\s]+$',
@@ -29,6 +29,7 @@ def enforce_list(variable):
     return [variable]
 
 
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
 class CodeGenerator:
     """
     This class is not supposed to be used directly. Anything
@@ -71,7 +72,7 @@ class CodeGenerator:
         # validation function names that are already done
         self._validation_functions_done = set()
 
-        if resolver == None:
+        if resolver is None:
             resolver = RefResolver.from_schema(definition)
         self._resolver = resolver
         # add main function to `self._needed_validation_functions`
@@ -104,7 +105,7 @@ class CodeGenerator:
             ('dependencies', self.generate_dependencies),
         ))
 
-        self.generate_func_code(definition)
+        self.generate_func_code()
 
     @property
     def func_code(self):
@@ -132,7 +133,7 @@ class CodeGenerator:
         Returns global variables for generating function from ``func_code`` as code.
         Includes compiled regular expressions and imports.
         """
-        if len(self._compile_regexps) == 0:
+        if self._compile_regexps:
             return '\n'.join(
                 [
                     'from fastjsonschema import JsonSchemaException',
@@ -154,6 +155,7 @@ class CodeGenerator:
             ]
         )
 
+    # pylint: disable=invalid-name
     @indent
     def l(self, line, *args, **kwds):
         """
@@ -212,14 +214,14 @@ class CodeGenerator:
         self._variables.add(variable_name)
         self.l('{variable}_keys = set({variable}.keys())')
 
-    def generate_func_code(self, definition):
+    def generate_func_code(self):
         """
         Creates base code of validation function and calls helper
         for creating code by definition.
         """
         self.l('NoneType = type(None)')
         # Generate parts that are referenced and not yet generated
-        while len(self._needed_validation_functions) > 0:
+        while self._needed_validation_functions:
             # During generation of validation function, could be needed to generate
             # new one that is added again to `_needed_validation_functions`.
             # Therefore usage of while instead of for loop.
@@ -428,12 +430,12 @@ class CodeGenerator:
 
     def generate_format(self):
         with self.l('if isinstance({variable}, str):'):
-            format = self._definition['format']
-            if format in FORMAT_REGEXS:
-                format_regex = FORMAT_REGEXS[format]
-                self._generate_format(format, format + '_re_pattern', format_regex)
+            format_ = self._definition['format']
+            if format_ in FORMAT_REGEXS:
+                format_regex = FORMAT_REGEXS[format_]
+                self._generate_format(format_, format_ + '_re_pattern', format_regex)
             # format regex is used only in meta schemas
-            elif format == 'regex':
+            elif format_ == 'regex':
                 with self.l('try:'):
                     self.l('re.compile({variable})')
                 with self.l('except Exception:'):

@@ -72,15 +72,13 @@ VALUES_BAD = (
 
 fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA)
 fast_compiled = lambda value, _: fastjsonschema_validate(value)
+
 fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema)(value)
-validate = fastjsonschema.write_code(
-    filename='temp/performance.py',
-    definition=JSON_SCHEMA,
-    overwrite=True
-)
-def fast_file(value, schema):
-    from temp.performance import validate
-    validate(value)
+
+with open('temp/performance.py', 'w') as f:
+    f.write(fastjsonschema.compile_to_code(JSON_SCHEMA))
+from temp.performance import validate
+fast_file = lambda value, _: validate(value)
 
 jsonspec = load(JSON_SCHEMA)
 

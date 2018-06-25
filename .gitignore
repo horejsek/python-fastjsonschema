@@ -1,14 +1,22 @@
-
+# Python files
+__pycache__/
+.cache/
 *.pyc
-.cache
-.vscode
-.testmondata
+*.pyo
 
+# Test files
+.pytest_cache/
+temp/
+
+# Deb files
+debian/files
+debian/*debhelper*
+debian/*substvars
+
+# Build files
+.eggs/
+*.egg-info/
 build/
 _build/
-deb_dist/
 dist/
-*.tar.gz
-*egg-info
-MANIFEST
-temp/*
+venv/

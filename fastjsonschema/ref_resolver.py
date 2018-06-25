@@ -88,6 +88,7 @@ class RefResolver(object):
 
     """
 
+    # pylint: disable=dangerous-default-value,too-many-arguments
     def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
         self.base_uri = base_uri
         self.resolution_scope = base_uri
@@ -151,7 +152,7 @@ class RefResolver(object):
 
     def get_scope_name(self):
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_')
-        name = re.sub('[:/#\.\-\%]', '_', name)
+        name = re.sub(r'[:/#\.\-\%]', '_', name)
         name = name.lower().rstrip('_')
         return name
 
@@ -163,8 +164,7 @@ class RefResolver(object):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
         elif 'id' in node and isinstance(node['id'], str):
-            id = node['id']
-            with self.in_scope(id):
+            with self.in_scope(node['id']):
                 self.store[normalize(self.resolution_scope)] = node
                 for _, item in node.items():
                     if isinstance(item, dict):
