@@ -84,7 +84,7 @@ def compile(definition, handlers={}):
     Args:
         definition (dict): Json schema definition
         handlers (dict): A mapping from URI schemes to functions
-            that should be used to retrieve them.
+        that should be used to retrieve them.
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
