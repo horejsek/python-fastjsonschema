@@ -1,5 +1,3 @@
-
-
 def indent(func):
     """
     Decorator for allowing to use method as normal method or with
@@ -18,5 +16,5 @@ class Indent:
     def __enter__(self):
         self.instance._indent += 1
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         self.instance._indent -= 1

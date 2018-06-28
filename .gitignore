@@ -1,5 +1,8 @@
-
+# Python files
+__pycache__/
+.cache/
 *.pyc
+<<<<<<< HEAD
 .cache
 .vscode
 .testmondata
@@ -7,11 +10,23 @@ __pycache__
 .tox
 .pytest_cache
 .coverage
+=======
+*.pyo
 
+# Test files
+.pytest_cache/
+temp/
+
+# Deb files
+debian/files
+debian/*debhelper*
+debian/*substvars
+>>>>>>> upstream/master
+
+# Build files
+.eggs/
+*.egg-info/
 build/
 _build/
-deb_dist/
 dist/
-*.tar.gz
-*egg-info
-MANIFEST
+venv/

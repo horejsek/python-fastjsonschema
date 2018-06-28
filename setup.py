@@ -7,23 +7,32 @@ except ImportError:
     from distutils.core import setup
 
 with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
-    long_description = readme.read()
+    LONG_DESCRIPTION = readme.read()
+
+# https://packaging.python.org/en/latest/single_source_version.html
+try:
+    execfile('fastjsonschema/version.py')
+except NameError:
+    exec(open('fastjsonschema/version.py').read())
+
 
 setup(
     name='fastjsonschema',
-    version='1.6',
+    version=VERSION,
     packages=['fastjsonschema'],
 
     install_requires=[
         'requests',
     ],
     extras_require={
-        "test": [
-            "colorama",
-            "jsonschema",
-            "json-spec",
-            "pytest",
-            "validictory",
+        'devel': [
+            'colorama',
+            'jsonschema',
+            'json-spec',
+            'pylint',
+            'pytest',
+            'pytest-cache',
+            'validictory',
         ],
     },
 
@@ -31,7 +40,7 @@ setup(
     author='Michal Horejsek',
     author_email='horejsekmichal@gmail.com',
     description='Fastest Python implementation of JSON schema',
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     license='BSD',
 
     classifiers=[

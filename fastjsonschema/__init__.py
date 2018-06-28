@@ -1,32 +1,34 @@
 """
 This project was made to come up with fast JSON validations. Just let's see some numbers first:
 
- * Probalby most popular ``jsonschema`` can take in tests up to 7 seconds for valid inputs
-   and 1.6 seconds for invalid inputs.
- * Secondly most popular ``json-spec`` is even worse with up to 11 and 2.6 seconds.
- * Lastly ``validictory`` is much better with 640 or 30 miliseconds, but it does not
+ * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds for valid inputs
+   and 1.2 seconds for invalid inputs.
+ * Secondly most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
+ * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it does not
    follow all standards and it can be still slow for some purposes.
 
 That's why this project exists. It compiles definition into Python most stupid code
 which people would had hard time to write by themselfs because of not-written-rule DRY
-(don't repeat yourself). When you compile definition, then times are 90 miliseconds for
-valid inputs and 5 miliseconds for invalid inputs. Pretty amazing, right? :-)
+(don't repeat yourself). When you compile definition, then times are 25 miliseconds for
+valid inputs and less than 2 miliseconds for invalid inputs. Pretty amazing, right? :-)
 
 You can try it for yourself with included script:
 
 .. code-block:: bash
 
     $ make performance
-    fast_compiled        valid      ==> 0.09240092901140451
-    fast_compiled        invalid    ==> 0.004246290685236454
-    fast_not_compiled    valid      ==> 6.710726021323353
-    fast_not_compiled    invalid    ==> 1.5449269418604672
-    jsonschema           valid      ==> 6.963333621155471
-    jsonschema           invalid    ==> 1.6309524956159294
-    jsonspec             valid      ==> 10.576010060030967
-    jsonspec             invalid    ==> 2.6199211929924786
-    validictory          valid      ==> 0.6349993739277124
-    validictory          invalid    ==> 0.03125431900843978
+    fast_compiled        valid      ==> 0.026877017982769758
+    fast_compiled        invalid    ==> 0.0015628149849362671
+    fast_file            valid      ==> 0.025493122986517847
+    fast_file            invalid    ==> 0.0012430319911800325
+    fast_not_compiled    valid      ==> 4.790547857992351
+    fast_not_compiled    invalid    ==> 1.2642899919883348
+    jsonschema           valid      ==> 5.036152001994196
+    jsonschema           invalid    ==> 1.1929481109953485
+    jsonspec             valid      ==> 7.196442283981014
+    jsonspec             invalid    ==> 1.7245555499684997
+    validictory          valid      ==> 0.36818933801259845
+    validictory          invalid    ==> 0.022672351042274386
 
 This library follows and implements `JSON schema draft-04 <http://json-schema.org>`_. Sometimes
 it's not perfectly clear so I recommend also check out this `understaning json schema
@@ -43,13 +45,17 @@ Note that there are some differences compared to JSON schema standard:
 Support only for Python 3.3 and higher.
 """
 
+from os.path import exists
+
 from .exceptions import JsonSchemaException
 from .generator import CodeGenerator
 from .ref_resolver import RefResolver
+from .version import VERSION
 
-__all__ = ('JsonSchemaException', 'compile')
+__all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
 
 
+# pylint: disable=redefined-builtin,dangerous-default-value,exec-used
 def compile(definition, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``. Example:
@@ -82,11 +88,45 @@ def compile(definition, handlers={}):
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    resolver = RefResolver.from_schema(definition, handlers=handlers)
-    # get main function name
-    name = resolver.get_scope_name()
-    code_generator = CodeGenerator(definition, resolver=resolver)
-    # Do not pass local state so it can recursively call itself.
+    resolver, code_generator = _factory(definition, handlers)
     global_state = code_generator.global_state
+    # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
-    return global_state[name]
+    return global_state[resolver.get_scope_name()]
+
+
+# pylint: disable=dangerous-default-value
+def compile_to_code(definition, handlers={}):
+    """
+    Generates validation function for validating JSON schema by ``definition``
+    and returns compiled code. Example:
+
+    .. code-block:: python
+
+        import fastjsonschema
+
+        code = fastjsonschema.compile_to_code({'type': 'string'})
+        with open('your_file.py', 'w') as f:
+            f.write(code)
+
+    You can also use it as a script:
+
+    .. code-block:: bash
+
+        echo "{'type': 'string'}" | pytohn3 -m fastjsonschema > your_file.py
+        pytohn3 -m fastjsonschema "{'type': 'string'}" > your_file.py
+
+    Exception :any:`JsonSchemaException` is thrown when validation fails.
+    """
+    _, code_generator = _factory(definition, handlers)
+    return (
+        'VERSION = "' + VERSION + '"\n' +
+        code_generator.global_state_code + '\n' +
+        code_generator.func_code
+    )
+
+
+def _factory(definition, handlers):
+    resolver = RefResolver.from_schema(definition, handlers=handlers)
+    code_generator = CodeGenerator(definition, resolver=resolver)
+    return resolver, code_generator
