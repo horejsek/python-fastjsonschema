@@ -2,26 +2,20 @@
 __pycache__/
 .cache/
 *.pyc
-<<<<<<< HEAD
 .cache
-.vscode
-.testmondata
-__pycache__
-.tox
-.pytest_cache
-.coverage
-=======
 *.pyo
 
 # Test files
 .pytest_cache/
 temp/
+.tox
+.coverage
+.testmondata
 
 # Deb files
 debian/files
 debian/*debhelper*
 debian/*substvars
->>>>>>> upstream/master
 
 # Build files
 .eggs/
@@ -30,3 +24,6 @@ build/
 _build/
 dist/
 venv/
+
+# Editors
+.vscode
