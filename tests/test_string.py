@@ -66,7 +66,7 @@ exc = JsonSchemaException('data must be a valid regex')
     ('[a-z]', '[a-z]'),
     ('[a-z', exc),
 ])
-def test_pattern(asserter, value, expected):
+def test_regex_pattern(asserter, value, expected):
     asserter({
         'format': 'regex',
         'type': 'string'
