@@ -30,7 +30,7 @@ You can try it for yourself with included script:
     validictory          valid      ==> 0.36818933801259845
     validictory          invalid    ==> 0.022672351042274386
 
-This library follows and implements `JSON schema v4 <http://json-schema.org>`_. Sometimes
+This library follows and implements `JSON schema draft-04 <http://json-schema.org>`_. Sometimes
 it's not perfectly clear so I recommend also check out this `understaning json schema
 <https://spacetelescope.github.io/understanding-json-schema>`_.
 
@@ -80,6 +80,11 @@ def compile(definition, handlers={}):
 
         data = validate({})
         assert data == {'a': 42}
+
+    Args:
+        definition (dict): Json schema definition
+        handlers (dict): A mapping from URI schemes to functions
+        that should be used to retrieve them.
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """

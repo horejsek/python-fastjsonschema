@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+import os
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+
+with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
+    LONG_DESCRIPTION = readme.read()
 
 # https://packaging.python.org/en/latest/single_source_version.html
 try:
@@ -36,11 +40,17 @@ setup(
     author='Michal Horejsek',
     author_email='horejsekmichal@gmail.com',
     description='Fastest Python implementation of JSON schema',
+    long_description=LONG_DESCRIPTION,
     license='BSD',
 
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: Implementation :: CPython",
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Development Status :: 5 - Production/Stable',

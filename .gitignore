@@ -2,11 +2,15 @@
 __pycache__/
 .cache/
 *.pyc
+.cache
 *.pyo
 
 # Test files
 .pytest_cache/
 temp/
+.tox
+.coverage
+.testmondata
 
 # Deb files
 debian/files
@@ -20,3 +24,6 @@ build/
 _build/
 dist/
 venv/
+
+# Editors
+.vscode
