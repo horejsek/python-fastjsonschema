@@ -74,7 +74,7 @@ def resolve_remote(uri, handlers):
     return result
 
 
-class RefResolver(object):
+class RefResolver:
     """
     Resolve JSON References.
 

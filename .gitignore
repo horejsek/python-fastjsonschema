@@ -1,9 +1,8 @@
 # Python files
-__pycache__/
-.cache/
 *.pyc
-.cache
 *.pyo
+__pycache__/
+.cache
 
 # Test files
 .pytest_cache/

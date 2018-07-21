@@ -14,7 +14,7 @@ Fast JSON schema for Python
 
 This project was made to come up with fast JSON validations. It is at
 least an order of magnitude faster than other Python implemantaions.
-See `documentation <https://seznam.github.io/python-fastjsonschema/>`_ for
+See `documentation <https://horejsek.github.io/python-fastjsonschema/>`_ for
 performance test details.
 
 Current version is implementation of `json-schema <http://json-schema.org/>`_ draft-04.
@@ -40,5 +40,4 @@ Support for Python 3.3 and higher.
 Documentation
 -------------
 
-Documentation: `https://seznam.github.io/python-fastjsonschema/
-<https://seznam.github.io/python-fastjsonschema/>`_
+Documentation: `https://horejsek.github.io/python-fastjsonschema<https://horejsek.github.io/python-fastjsonschema>`_

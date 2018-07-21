@@ -25,7 +25,7 @@ $(VENV_NAME)/bin/activate: setup.py
 test: venv
 	${PYTHON} -m pytest
 test-lf: venv
-	${PYTHON} -m pytest --last-failed tests
+	${PYTHON} -m pytest --last-failed
 
 lint: venv
 	${PYTHON} -m pylint fastjsonschema
