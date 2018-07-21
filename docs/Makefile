@@ -8,5 +8,6 @@ SPHINXOPTS=-n -W -d $(BUILDDIR)/doctrees .
 sphinx:
 	sphinx-build -b html $(SPHINXOPTS) $(BUILDDIR)/html
 
+.PHONY: clean
 clean:
 	rm -rf build

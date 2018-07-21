@@ -1,4 +1,4 @@
-.PHONY: all venv test lint lint-js lint-web test test-web watch compile run makemessages compilemessages clean-dev deb
+.PHONY: all venv lint test test-lf performance doc upload deb clean
 SHELL=/bin/bash
 
 VENV_NAME?=venv
@@ -22,13 +22,13 @@ $(VENV_NAME)/bin/activate: setup.py
 	${PYTHON} -m pip install -e .[devel]
 	touch $(VENV_NAME)/bin/activate
 
+lint: venv
+	${PYTHON} -m pylint fastjsonschema
+
 test: venv
 	${PYTHON} -m pytest
 test-lf: venv
 	${PYTHON} -m pytest --last-failed
-
-lint: venv
-	${PYTHON} -m pylint fastjsonschema
 
 performance: venv
 	${PYTHON} performance.py
