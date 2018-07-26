@@ -621,9 +621,9 @@ class CodeGenerator:
             self.create_variable_keys()
             add_prop_definition = self._definition["additionalProperties"]
             if add_prop_definition:
-                properties_keys = self._definition.get("properties", {}).keys()
+                properties_keys = list(self._definition.get("properties", {}).keys())
                 with self.l('for {variable}_key in {variable}_keys:'):
-                    with self.l('if {variable}_key not in "{}":', properties_keys):
+                    with self.l('if {variable}_key not in {}:', properties_keys):
                         self.l('{variable}_value = {variable}.get({variable}_key)')
                         self.generate_func_code_block(
                             add_prop_definition,

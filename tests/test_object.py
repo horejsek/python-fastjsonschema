@@ -130,11 +130,29 @@ def test_pattern_properties(asserter, value, expected):
         'additionalProperties': False,
     }, value, expected)
 
+
+@pytest.mark.parametrize('value, expected', [
+    ({}, {}),
+    ({'a': 1}, {'a': 1}),
+    ({'b': True}, {'b': True}),
+    ({'c': ''}, {'c': ''}),
+    ({'d': 1}, JsonSchemaException('data.d must be string')),
+])
+def test_additional_properties(asserter, value, expected):
+    asserter({
+        'type': 'object',
+        "properties": {
+            "a": {"type": "number"},
+            "b": {"type": "boolean"},
+        },
+        "additionalProperties": {"type": "string"}
+    }, value, expected)
+
+
 @pytest.mark.parametrize('value, expected', [
     ({'id': 1}, {'id': 1}),
     ({'id': 'a'}, JsonSchemaException('data.id must be integer')),
 ])
-
 def test_object_with_id_property(asserter, value, expected):
     asserter({
         "type": "object",
@@ -143,11 +161,11 @@ def test_object_with_id_property(asserter, value, expected):
         }
     }, value, expected)
 
+
 @pytest.mark.parametrize('value, expected', [
     ({'$ref': 'ref://to.somewhere'}, {'$ref': 'ref://to.somewhere'}),
     ({'$ref': 1}, JsonSchemaException('data.$ref must be string')),
 ])
-
 def test_object_with_ref_property(asserter, value, expected):
     asserter({
         "type": "object",
