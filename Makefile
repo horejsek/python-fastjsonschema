@@ -55,6 +55,9 @@ benchmark-save: venv jsonschemasuitcases
 performance: venv
 	${PYTHON} performance.py
 
+printcode: venv
+	cat schema.json | python3 -m fastjsonschema
+
 doc:
 	cd docs; make
 

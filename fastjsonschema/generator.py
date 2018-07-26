@@ -205,14 +205,35 @@ class CodeGenerator:
     def create_variable_keys(self):
         """
         Append code for creating variable with keys of that variable (dictionary)
-        with name ``{variable}_len``. It can be called several times and always
-        it's done only when that variable still does not exists.
+        with a name ``{variable}_keys``. Similar to `create_variable_with_length`.
         """
         variable_name = '{}_keys'.format(self._variable)
         if variable_name in self._variables:
             return
         self._variables.add(variable_name)
         self.l('{variable}_keys = set({variable}.keys())')
+
+    def create_variable_is_list(self):
+        """
+        Append code for creating variable with bool if it's instance of list
+        with a name ``{variable}_is_list``. Similar to `create_variable_with_length`.
+        """
+        variable_name = '{}_is_list'.format(self._variable)
+        if variable_name in self._variables:
+            return
+        self._variables.add(variable_name)
+        self.l('{variable}_is_list = isinstance({variable}, list)')
+
+    def create_variable_is_dict(self):
+        """
+        Append code for creating variable with bool if it's instance of list
+        with a name ``{variable}_is_dict``. Similar to `create_variable_with_length`.
+        """
+        variable_name = '{}_is_dict'.format(self._variable)
+        if variable_name in self._variables:
+            return
+        self._variables.add(variable_name)
+        self.l('{variable}_is_dict = isinstance({variable}, dict)')
 
     def generate_func_code(self):
         """
@@ -304,7 +325,6 @@ class CodeGenerator:
 
         with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
             self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
-
 
     def generate_enum(self):
         """
@@ -473,13 +493,15 @@ class CodeGenerator:
                 self.l('raise JsonSchemaException("{name} must be multiple of {multipleOf}")')
 
     def generate_min_items(self):
-        with self.l('if isinstance({variable}, list):'):
+        self.create_variable_is_list()
+        with self.l('if {variable}_is_list:'):
             self.create_variable_with_length()
             with self.l('if {variable}_len < {minItems}:'):
                 self.l('raise JsonSchemaException("{name} must contain at least {minItems} items")')
 
     def generate_max_items(self):
-        with self.l('if isinstance({variable}, list):'):
+        self.create_variable_is_list()
+        with self.l('if {variable}_is_list:'):
             self.create_variable_with_length()
             with self.l('if {variable}_len > {maxItems}:'):
                 self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxItems} items")')
@@ -504,7 +526,8 @@ class CodeGenerator:
             self.l('raise JsonSchemaException("{name} must contain unique items")')
 
     def generate_items(self):
-        with self.l('if isinstance({variable}, list):'):
+        self.create_variable_is_list()
+        with self.l('if {variable}_is_list:'):
             self.create_variable_with_length()
             if isinstance(self._definition['items'], list):
                 for x, item_definition in enumerate(self._definition['items']):
@@ -538,25 +561,29 @@ class CodeGenerator:
                         )
 
     def generate_min_properties(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_with_length()
             with self.l('if {variable}_len < {minProperties}:'):
                 self.l('raise JsonSchemaException("{name} must contain at least {minProperties} properties")')
 
     def generate_max_properties(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_with_length()
             with self.l('if {variable}_len > {maxProperties}:'):
                 self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxProperties} properties")')
 
     def generate_required(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_with_length()
             with self.l('if not all(prop in {variable} for prop in {required}):'):
                 self.l('raise JsonSchemaException("{name} must contain {required} properties")')
 
     def generate_properties(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             for key, prop_definition in self._definition['properties'].items():
                 key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
@@ -572,7 +599,8 @@ class CodeGenerator:
                     self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
     def generate_pattern_properties(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             for pattern, definition in self._definition['patternProperties'].items():
                 self._compile_regexps['{}'.format(pattern)] = re.compile(pattern)
@@ -588,7 +616,8 @@ class CodeGenerator:
                         )
 
     def generate_additional_properties(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             add_prop_definition = self._definition["additionalProperties"]
             if add_prop_definition:
@@ -606,7 +635,8 @@ class CodeGenerator:
                     self.l('raise JsonSchemaException("{name} must contain only specified properties")')
 
     def generate_dependencies(self):
-        with self.l('if isinstance({variable}, dict):'):
+        self.create_variable_is_dict()
+        with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             for key, values in self._definition["dependencies"].items():
                 with self.l('if "{}" in {variable}_keys:', key):
