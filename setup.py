@@ -31,6 +31,7 @@ setup(
             'json-spec',
             'pylint',
             'pytest',
+            'pytest-benchmark',
             'pytest-cache',
             'validictory',
         ],

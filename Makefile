@@ -1,4 +1,4 @@
-.PHONY: all venv lint test test-lf performance doc upload deb clean
+.PHONY: all venv lint test test-lf benchmark benchmark-save performance doc upload deb clean
 SHELL=/bin/bash
 
 VENV_NAME?=venv
@@ -25,10 +25,32 @@ $(VENV_NAME)/bin/activate: setup.py
 lint: venv
 	${PYTHON} -m pylint fastjsonschema
 
-test: venv
-	${PYTHON} -m pytest
-test-lf: venv
-	${PYTHON} -m pytest --last-failed
+jsonschemasuitcases:
+	git submodule init
+	git submodule update
+
+test: venv jsonschemasuitcases
+	${PYTHON} -m pytest --benchmark-skip
+test-lf: venv jsonschemasuitcases
+	${PYTHON} -m pytest --benchmark-skip --last-failed
+
+# Call make benchmark-save before change and then make benchmark to compare results.
+benchmark: venv jsonschemasuitcases
+	${PYTHON} -m pytest \
+		--benchmark-only \
+		--benchmark-sort=name \
+		--benchmark-group-by=fullfunc \
+		--benchmark-disable-gc \
+		--benchmark-compare \
+		--benchmark-compare-fail='min:5%'
+benchmark-save: venv jsonschemasuitcases
+	${PYTHON} -m pytest \
+		--benchmark-only \
+		--benchmark-sort=name \
+		--benchmark-group-by=fullfunc \
+		--benchmark-disable-gc \
+		--benchmark-save=benchmark \
+		--benchmark-save-data
 
 performance: venv
 	${PYTHON} performance.py
