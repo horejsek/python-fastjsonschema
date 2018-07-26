@@ -376,6 +376,7 @@ class CodeGenerator:
         """
         self.l('{variable}_any_of_count = 0')
         for definition_item in self._definition['anyOf']:
+            # When we know it's passing (at least once), we do not need to do another expensive try-except.
             with self.l('if not {variable}_any_of_count:'):
                 with self.l('try:'):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
@@ -403,10 +404,12 @@ class CodeGenerator:
         """
         self.l('{variable}_one_of_count = 0')
         for definition_item in self._definition['oneOf']:
-            with self.l('try:'):
-                self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
-                self.l('{variable}_one_of_count += 1')
-            self.l('except JsonSchemaException: pass')
+            # When we know it's failing (one of means exactly once), we do not need to do another expensive try-except.
+            with self.l('if {variable}_one_of_count < 2:'):
+                with self.l('try:'):
+                    self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
+                    self.l('{variable}_one_of_count += 1')
+                self.l('except JsonSchemaException: pass')
 
         with self.l('if {variable}_one_of_count != 1:'):
             self.l('raise JsonSchemaException("{name} must be valid exactly by one of oneOf definition")')
