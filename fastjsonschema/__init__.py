@@ -1,3 +1,9 @@
+#    ___
+#    \./     DANGER: This project implements some code generation
+# .--.O.--.          techniques involving string concatenation.
+#  \/   \/           If you look at it, you might die.
+#
+
 """
 This project was made to come up with fast JSON validations. Just let's see some numbers first:
 
@@ -48,7 +54,9 @@ Support only for Python 3.3 and higher.
 from os.path import exists
 
 from .exceptions import JsonSchemaException
-from .generator import CodeGenerator
+from .draft04 import CodeGeneratorDraft04
+from .draft06 import CodeGeneratorDraft06
+from .draft07 import CodeGeneratorDraft07
 from .ref_resolver import RefResolver
 from .version import VERSION
 
@@ -56,7 +64,7 @@ __all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
 
 
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, handlers={}):
+def compile(definition, version=7, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``. Example:
 
@@ -88,7 +96,7 @@ def compile(definition, handlers={}):
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    resolver, code_generator = _factory(definition, handlers)
+    resolver, code_generator = _factory(definition, version, handlers)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
@@ -96,7 +104,7 @@ def compile(definition, handlers={}):
 
 
 # pylint: disable=dangerous-default-value
-def compile_to_code(definition, handlers={}):
+def compile_to_code(definition, version=7, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``
     and returns compiled code. Example:
@@ -118,7 +126,7 @@ def compile_to_code(definition, handlers={}):
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    _, code_generator = _factory(definition, handlers)
+    _, code_generator = _factory(definition, version, handlers)
     return (
         'VERSION = "' + VERSION + '"\n' +
         code_generator.global_state_code + '\n' +
@@ -126,7 +134,17 @@ def compile_to_code(definition, handlers={}):
     )
 
 
-def _factory(definition, handlers):
+def _factory(definition, version, handlers):
     resolver = RefResolver.from_schema(definition, handlers=handlers)
-    code_generator = CodeGenerator(definition, resolver=resolver)
+    code_generator = _get_code_generator_class(version)(definition, resolver=resolver)
     return resolver, code_generator
+
+
+def _get_code_generator_class(version):
+    if version == 4:
+        return CodeGeneratorDraft04
+    if version == 6:
+        return CodeGeneratorDraft06
+    if version == 7:
+        return CodeGeneratorDraft07
+    raise JsonSchemaException('Unsupported JSON schema version. Supported are 4, 6 and 7.')

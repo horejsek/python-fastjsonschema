@@ -5,13 +5,22 @@ from .utils import template_test, resolve_param_values_and_ids
 
 def pytest_generate_tests(metafunc):
     param_values, param_ids = resolve_param_values_and_ids(
-        suite_dir='JSON-Schema-Test-Suite/tests/draft6',
+        version=7,
+        suite_dir='JSON-Schema-Test-Suite/tests/draft7',
         ignored_suite_files=[
             'bignum.json',
             'ecmascript-regex.json',
             'zeroTerminatedFloats.json',
             'boolean_schema.json',
             'contains.json',
+            'content.json',
+            'if-then-else.json',
+            'idn-email.json',
+            'idn-hostname.json',
+            'iri-reference.json',
+            'iri.json',
+            'relative-json-pointer.json',
+            'time.json',
             'const.json',
         ],
         ignore_tests=[
@@ -38,6 +47,7 @@ def pytest_generate_tests(metafunc):
             'base URI change - change folder in subschema',
             'base URI change',
             'root ref in remote ref',
+            'validation of date strings',
             'allOf with boolean schemas, all true',
             'allOf with boolean schemas, some false',
             'allOf with boolean schemas, all false',
@@ -56,7 +66,7 @@ def pytest_generate_tests(metafunc):
             '$ref to boolean schema false',
         ],
     )
-    metafunc.parametrize(['schema', 'data', 'is_valid'], param_values, ids=param_ids)
+    metafunc.parametrize(['version', 'schema', 'data', 'is_valid'], param_values, ids=param_ids)
 
 
 # Real test function to be used with parametrization by previous hook function.

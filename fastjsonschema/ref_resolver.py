@@ -5,12 +5,13 @@ https://tools.ietf.org/id/draft-zyp-json-schema-04.html#rfc.section.7
 
 Code adapted from https://github.com/Julian/jsonschema
 """
+
 import contextlib
+import json
 import re
 from urllib import parse as urlparse
 from urllib.parse import unquote
 from urllib.request import urlopen
-import json
 
 import requests
 
@@ -85,7 +86,6 @@ class RefResolver:
         first resolution
     :argument dict handlers: a mapping from URI schemes to functions that
         should be used to retrieve them
-
     """
 
     # pylint: disable=dangerous-default-value,too-many-arguments
@@ -105,7 +105,6 @@ class RefResolver:
 
         :argument schema schema: the referring schema
         :rtype: :class:`RefResolver`
-
         """
         return cls(schema.get('id', ''), schema, handlers=handlers, **kwargs)
 
@@ -125,7 +124,6 @@ class RefResolver:
         resolution scope of this ref.
 
         :argument str ref: reference to resolve
-
         """
         new_uri = urlparse.urljoin(self.resolution_scope, ref)
         uri, fragment = urlparse.urldefrag(new_uri)
