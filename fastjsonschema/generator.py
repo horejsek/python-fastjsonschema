@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import re
 
 from .exceptions import JsonSchemaException
@@ -60,13 +61,15 @@ class CodeGenerator:
         # add main function to `self._needed_validation_functions`
         self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()
 
-        self.generate_func_code()
+        self._json_keywords_to_function = OrderedDict()
 
     @property
     def func_code(self):
         """
         Returns generated code of whole validation function as string.
         """
+        self._generate_func_code()
+
         return '\n'.join(self._code)
 
     @property
@@ -76,6 +79,8 @@ class CodeGenerator:
         compiled regular expressions and imports, so it does not have to do it every
         time when validation function is called.
         """
+        self._generate_func_code()
+
         return dict(
             REGEX_PATTERNS=self._compile_regexps,
             re=re,
@@ -88,6 +93,8 @@ class CodeGenerator:
         Returns global variables for generating function from ``func_code`` as code.
         Includes compiled regular expressions and imports.
         """
+        self._generate_func_code()
+
         if self._compile_regexps:
             return '\n'.join(
                 [
@@ -109,6 +116,84 @@ class CodeGenerator:
                 '',
             ]
         )
+
+
+    def _generate_func_code(self):
+        if not self._code:
+            self.generate_func_code()
+
+    def generate_func_code(self):
+        """
+        Creates base code of validation function and calls helper
+        for creating code by definition.
+        """
+        self.l('NoneType = type(None)')
+        # Generate parts that are referenced and not yet generated
+        while self._needed_validation_functions:
+            # During generation of validation function, could be needed to generate
+            # new one that is added again to `_needed_validation_functions`.
+            # Therefore usage of while instead of for loop.
+            uri, name = self._needed_validation_functions.popitem()
+            self.generate_validation_function(uri, name)
+
+    def generate_validation_function(self, uri, name):
+        """
+        Generate validation function for given uri with given name
+        """
+        self._validation_functions_done.add(uri)
+        self.l('')
+        with self._resolver.resolving(uri) as definition:
+            with self.l('def {}(data):', name):
+                self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
+                self.l('return data')
+
+    def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
+        """
+        Creates validation rules for current definition.
+        """
+        backup = self._definition, self._variable, self._variable_name
+        self._definition, self._variable, self._variable_name = definition, variable, variable_name
+        if clear_variables:
+            backup_variables = self._variables
+            self._variables = set()
+
+        if '$ref' in definition:
+            # needed because ref overrides any sibling keywords
+            self.generate_ref()
+        else:
+            self.run_generate_functions(definition)
+
+        self._definition, self._variable, self._variable_name = backup
+        if clear_variables:
+            self._variables = backup_variables
+
+    def run_generate_functions(self, definition):
+        for key, func in self._json_keywords_to_function.items():
+            if key in definition:
+                func()
+
+    def generate_ref(self):
+        """
+        Ref can be link to remote or local definition.
+
+        .. code-block:: python
+
+            {'$ref': 'http://json-schema.org/draft-04/schema#'}
+            {
+                'properties': {
+                    'foo': {'type': 'integer'},
+                    'bar': {'$ref': '#/properties/foo'}
+                }
+            }
+        """
+        with self._resolver.in_scope(self._definition['$ref']):
+            name = self._resolver.get_scope_name()
+            uri = self._resolver.get_uri()
+            if uri not in self._validation_functions_done:
+                self._needed_validation_functions[uri] = name
+            # call validation function
+            self.l('{}({variable})', name)
+
 
     # pylint: disable=invalid-name
     @indent
@@ -189,75 +274,3 @@ class CodeGenerator:
             return
         self._variables.add(variable_name)
         self.l('{variable}_is_dict = isinstance({variable}, dict)')
-
-    def generate_func_code(self):
-        """
-        Creates base code of validation function and calls helper
-        for creating code by definition.
-        """
-        self.l('NoneType = type(None)')
-        # Generate parts that are referenced and not yet generated
-        while self._needed_validation_functions:
-            # During generation of validation function, could be needed to generate
-            # new one that is added again to `_needed_validation_functions`.
-            # Therefore usage of while instead of for loop.
-            uri, name = self._needed_validation_functions.popitem()
-            self.generate_validation_function(uri, name)
-
-    def generate_validation_function(self, uri, name):
-        """
-        Generate validation function for given uri with given name
-        """
-        self._validation_functions_done.add(uri)
-        self.l('')
-        with self._resolver.resolving(uri) as definition:
-            with self.l('def {}(data):', name):
-                self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
-                self.l('return data')
-
-    def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
-        """
-        Creates validation rules for current definition.
-        """
-        backup = self._definition, self._variable, self._variable_name
-        self._definition, self._variable, self._variable_name = definition, variable, variable_name
-        if clear_variables:
-            backup_variables = self._variables
-            self._variables = set()
-
-        if '$ref' in definition:
-            # needed because ref overrides any sibling keywords
-            self.generate_ref()
-        else:
-            self.run_generate_functions(definition)
-
-        self._definition, self._variable, self._variable_name = backup
-        if clear_variables:
-            self._variables = backup_variables
-
-    def run_generate_functions(self, definition):
-        for key, func in self._json_keywords_to_function.items():
-            if key in definition:
-                func()
-
-    def generate_ref(self):
-        """
-        Ref can be link to remote or local definition.
-
-        .. code-block:: python
-
-            {'$ref': 'http://json-schema.org/draft-04/schema#'}
-            {
-                'properties': {
-                    'foo': {'type': 'integer'},
-                    'bar': {'$ref': '#/properties/foo'}
-                }
-            }
-        """
-        with self._resolver.in_scope(self._definition['$ref']):
-            name = self._resolver.get_scope_name()
-            uri = self._resolver.get_uri()
-            if uri not in self._validation_functions_done:
-                self._needed_validation_functions[uri] = name
-            # call validation function
-            self.l('{}({variable})', name)

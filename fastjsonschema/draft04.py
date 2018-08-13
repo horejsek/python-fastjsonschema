@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import re
 
 from .generator import CodeGenerator, enforce_list
@@ -18,7 +17,8 @@ FORMAT_REGEXS = {
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class CodeGeneratorDraft04(CodeGenerator):
     def __init__(self, definition, resolver=None):
-        self._json_keywords_to_function = OrderedDict((
+        super().__init__(definition, resolver)
+        self._json_keywords_to_function.update((
             ('type', self.generate_type),
             ('enum', self.generate_enum),
             ('allOf', self.generate_all_of),
@@ -44,8 +44,6 @@ class CodeGeneratorDraft04(CodeGenerator):
             ('additionalProperties', self.generate_additional_properties),
             ('dependencies', self.generate_dependencies),
         ))
-
-        super().__init__(definition, resolver)
 
     def generate_type(self):
         """
@@ -273,13 +271,13 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_list:'):
             self.create_variable_with_length()
             if isinstance(self._definition['items'], list):
-                for x, item_definition in enumerate(self._definition['items']):
-                    with self.l('if {variable}_len > {}:', x):
-                        self.l('{variable}_{0} = {variable}[{0}]', x)
+                for idx, item_definition in enumerate(self._definition['items']):
+                    with self.l('if {variable}_len > {}:', idx):
+                        self.l('{variable}_{0} = {variable}[{0}]', idx)
                         self.generate_func_code_block(
                             item_definition,
-                            '{}_{}'.format(self._variable, x),
-                            '{}[{}]'.format(self._variable_name, x),
+                            '{}_{}'.format(self._variable, idx),
+                            '{}[{}]'.format(self._variable_name, idx),
                         )
                     if 'default' in item_definition:
                         self.l('else: {variable}.append({})', repr(item_definition['default']))
