@@ -28,16 +28,6 @@ class CodeGenerator:
 
     INDENT = 4  # spaces
 
-    JSON_TYPE_TO_PYTHON_TYPE = {
-        'null': 'NoneType',
-        'boolean': 'bool',
-        'number': 'int, float',
-        'integer': 'int',
-        'string': 'str',
-        'array': 'list',
-        'object': 'dict',
-    }
-
     def __init__(self, definition, resolver=None):
         self._code = []
         self._compile_regexps = {}

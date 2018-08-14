@@ -3,6 +3,17 @@ import re
 from .generator import CodeGenerator, enforce_list
 
 
+JSON_TYPE_TO_PYTHON_TYPE = {
+    'null': 'NoneType',
+    'boolean': 'bool',
+    'number': 'int, float',
+    'integer': 'int',
+    'string': 'str',
+    'array': 'list',
+    'object': 'dict',
+}
+
+
 # pylint: disable=line-too-long
 FORMAT_REGEXS = {
     'date-time': r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z)?$',
@@ -55,7 +66,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             {'type': ['string', 'number']}
         """
         types = enforce_list(self._definition['type'])
-        python_types = ', '.join(self.JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
+        python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
 
         extra = ''
         if ('number' in types or 'integer' in types) and 'boolean' not in types:

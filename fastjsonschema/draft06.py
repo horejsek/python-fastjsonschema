@@ -1,4 +1,16 @@
 from .draft04 import CodeGeneratorDraft04
+from .generator import enforce_list
+
+
+JSON_TYPE_TO_PYTHON_TYPE = {
+    'null': 'NoneType',
+    'boolean': 'bool',
+    'number': 'int, float',
+    'integer': 'int',
+    'string': 'str',
+    'array': 'list',
+    'object': 'dict',
+}
 
 
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
@@ -11,6 +23,31 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             ('contains', self.generate_contains),
             ('const', self.generate_const),
         ))
+
+    def generate_type(self):
+        """
+        Validation of type. Can be one type or list of types.
+
+        Since draft 06 a float without fractional part is an integer.
+
+        .. code-block:: python
+
+            {'type': 'string'}
+            {'type': ['string', 'number']}
+        """
+        types = enforce_list(self._definition['type'])
+        python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
+
+        extra = ''
+
+        if 'integer' in types:
+            extra += ' and not (isinstance({variable}, float) and {variable}.is_integer())'.format(variable=self._variable)
+
+        if ('number' in types or 'integer' in types) and 'boolean' not in types:
+            extra += ' or isinstance({variable}, bool)'.format(variable=self._variable)
+
+        with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
+            self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
 
     def generate_exclusive_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
