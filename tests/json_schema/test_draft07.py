@@ -8,6 +8,7 @@ def pytest_generate_tests(metafunc):
         version=7,
         suite_dir='JSON-Schema-Test-Suite/tests/draft7',
         ignored_suite_files=[
+            # Optional.
             'ecmascript-regex.json',
             'idn-email.json',
             'idn-hostname.json',
