@@ -174,13 +174,21 @@ class CodeGeneratorDraft04(CodeGenerator):
             {'not': {'type': 'null'}}
 
         Valid values for this definitions are 'hello', 42, {} ... but not None.
+
+        Since draft 06 definition can be boolean. False means nothing, True
+        means everything is invalid.
         """
-        if not self._definition['not']:
+        not_definition = self._definition['not']
+        if not_definition is True:
+            self.l('raise JsonSchemaException("{name} must not be there")')
+        elif not_definition is False:
+            return
+        elif not not_definition:
             with self.l('if {}:', self._variable):
                 self.l('raise JsonSchemaException("{name} must not be valid by not definition")')
         else:
             with self.l('try:'):
-                self.generate_func_code_block(self._definition['not'], self._variable, self._variable_name)
+                self.generate_func_code_block(not_definition, self._variable, self._variable_name)
             self.l('except JsonSchemaException: pass')
             self.l('else: raise JsonSchemaException("{name} must not be valid by not definition")')
 
@@ -316,7 +324,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             '{}_{}'.format(self._variable, idx),
                             '{}[{}]'.format(self._variable_name, idx),
                         )
-                    if 'default' in item_definition:
+                    if isinstance(item_definition, dict) and 'default' in item_definition:
                         self.l('else: {variable}.append({})', repr(item_definition['default']))
 
                 if 'additionalItems' in self._definition:
@@ -373,7 +381,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                         '{}_{}'.format(self._variable, key_name),
                         '{}.{}'.format(self._variable_name, key),
                     )
-                if 'default' in prop_definition:
+                if isinstance(prop_definition, dict) and 'default' in prop_definition:
                     self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
     def generate_pattern_properties(self):

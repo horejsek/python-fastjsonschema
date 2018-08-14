@@ -106,7 +106,12 @@ class RefResolver:
         :argument schema schema: the referring schema
         :rtype: :class:`RefResolver`
         """
-        return cls(schema.get('id', ''), schema, handlers=handlers, **kwargs)
+        return cls(
+            schema.get('id', '') if isinstance(schema, dict) else '',
+            schema,
+            handlers=handlers,
+            **kwargs
+        )
 
     @contextlib.contextmanager
     def in_scope(self, scope):
@@ -158,7 +163,9 @@ class RefResolver:
         """
         Walk thru schema and dereferencing ``id`` and ``$ref`` instances
         """
-        if '$ref' in node and isinstance(node['$ref'], str):
+        if isinstance(node, bool):
+            pass
+        elif '$ref' in node and isinstance(node['$ref'], str):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
         elif 'id' in node and isinstance(node['id'], str):

@@ -9,7 +9,6 @@ def pytest_generate_tests(metafunc):
         suite_dir='JSON-Schema-Test-Suite/tests/draft6',
         ignored_suite_files=[
             'ecmascript-regex.json',
-            'boolean_schema.json',
         ],
         ignore_tests=[
             'invalid definition',
@@ -17,10 +16,6 @@ def pytest_generate_tests(metafunc):
             'Recursive references between schemas',
             'remote ref, containing refs itself',
             'validation of URI References',
-            'items with boolean schemas',
-            'not with boolean schema true',
-            'not with boolean schema false',
-            'properties with boolean schema',
             'base URI change - change folder',
             'base URI change - change folder in subschema',
             'base URI change',
