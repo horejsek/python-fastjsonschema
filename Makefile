@@ -30,7 +30,7 @@ jsonschemasuitcases:
 	git submodule update
 
 test: venv jsonschemasuitcases
-	${PYTHON} -m pytest --benchmark-skip
+	${PYTHON} -m pytest --benchmark-skip -v
 test-lf: venv jsonschemasuitcases
 	${PYTHON} -m pytest --benchmark-skip --last-failed
 

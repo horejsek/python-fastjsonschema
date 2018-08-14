@@ -1,19 +1,18 @@
-from .draft04 import CodeGeneratorDraft04
+from .draft04 import CodeGeneratorDraft04, JSON_TYPE_TO_PYTHON_TYPE
 from .generator import enforce_list
 
 
-JSON_TYPE_TO_PYTHON_TYPE = {
-    'null': 'NoneType',
-    'boolean': 'bool',
-    'number': 'int, float',
-    'integer': 'int',
-    'string': 'str',
-    'array': 'list',
-    'object': 'dict',
-}
-
-
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
+    FORMAT_REGEXS = dict(CodeGeneratorDraft04.FORMAT_REGEXS, **{
+        'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$',
+        'uri-template': (
+            r'^(?:(?:[^\x00-\x20\"\'<>%\\^`{|}]|%[0-9a-f]{2})|'
+            r'\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+'
+            r'(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+'
+            r'(?::[1-9][0-9]{0,3}|\*)?)*\})*$'
+        ),
+    })
+
     def __init__(self, definition, resolver=None):
         super().__init__(definition, resolver)
         self._json_keywords_to_function.update((

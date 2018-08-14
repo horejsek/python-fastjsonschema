@@ -14,15 +14,12 @@ def pytest_generate_tests(metafunc):
             'idn-hostname.json',
             'iri-reference.json',
             'iri.json',
-            'relative-json-pointer.json',
-            'time.json',
         ],
         ignore_tests=[
             'invalid definition',
             'valid definition',
             'Recursive references between schemas',
             'remote ref, containing refs itself',
-            'format: uri-template',
             'validation of URI References',
             'items with boolean schemas',
             'not with boolean schema true',
@@ -32,7 +29,6 @@ def pytest_generate_tests(metafunc):
             'base URI change - change folder in subschema',
             'base URI change',
             'root ref in remote ref',
-            'validation of date strings',
             'validation of JSON-pointers (JSON String Representation)',
         ],
     )
