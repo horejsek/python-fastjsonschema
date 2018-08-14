@@ -24,6 +24,23 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             ('const', self.generate_const),
         ))
 
+    def _generate_func_code_block(self, definition):
+        if isinstance(definition, bool):
+            self.generate_boolean_schema()
+        elif '$ref' in definition:
+            # needed because ref overrides any sibling keywords
+            self.generate_ref()
+        else:
+            self.run_generate_functions(definition)
+
+    def generate_boolean_schema(self):
+        """
+        Means that schema can be specified by boolean.
+        True means everything is valid, False everything is invalid.
+        """
+        if self._definition is False:
+            self.l('raise JsonSchemaException("{name} must not be there")')
+
     def generate_type(self):
         """
         Validation of type. Can be one type or list of types.

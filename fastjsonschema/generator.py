@@ -147,15 +147,18 @@ class CodeGenerator:
             backup_variables = self._variables
             self._variables = set()
 
+        self._generate_func_code_block(definition)
+
+        self._definition, self._variable, self._variable_name = backup
+        if clear_variables:
+            self._variables = backup_variables
+
+    def _generate_func_code_block(self, definition):
         if '$ref' in definition:
             # needed because ref overrides any sibling keywords
             self.generate_ref()
         else:
             self.run_generate_functions(definition)
-
-        self._definition, self._variable, self._variable_name = backup
-        if clear_variables:
-            self._variables = backup_variables
 
     def run_generate_functions(self, definition):
         for key, func in self._json_keywords_to_function.items():
