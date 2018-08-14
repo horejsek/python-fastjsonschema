@@ -19,6 +19,7 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
 
     def __init__(self, definition, resolver=None):
         super().__init__(definition, resolver)
+        # pylint: disable=duplicate-code
         self._json_keywords_to_function.update((
             ('if', self.generate_if_then_else),
             ('contentEncoding', self.generate_content_encoding),

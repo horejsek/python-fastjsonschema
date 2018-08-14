@@ -58,7 +58,9 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         extra = ''
 
         if 'integer' in types:
-            extra += ' and not (isinstance({variable}, float) and {variable}.is_integer())'.format(variable=self._variable)
+            extra += ' and not (isinstance({variable}, float) and {variable}.is_integer())'.format(
+                variable=self._variable,
+            )
 
         if ('number' in types or 'integer' in types) and 'boolean' not in types:
             extra += ' or isinstance({variable}, bool)'.format(variable=self._variable)
