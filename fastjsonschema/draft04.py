@@ -387,12 +387,33 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.l('raise JsonSchemaException("{name} must contain only specified properties")')
 
     def generate_dependencies(self):
+        """
+        Means when object has property, it needs to have also other property.
+
+        .. code-block:: python
+
+            {
+                'dependencies': {
+                    'bar': ['foo'],
+                },
+            }
+
+        Valid object is containing only foo, both bar and foo or none of them, but not
+        object with only bar.
+
+        Since draft 06 definition can be boolean or empty array. True and empty array
+        means nothing, False means that key cannot be there at all.
+        """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             for key, values in self._definition["dependencies"].items():
+                if values == [] or values is True:
+                    continue
                 with self.l('if "{}" in {variable}_keys:', key):
-                    if isinstance(values, list):
+                    if values is False:
+                        self.l('raise JsonSchemaException("{} in {name} must not be there")', key)
+                    elif isinstance(values, list):
                         for value in values:
                             with self.l('if "{}" not in {variable}_keys:', value):
                                 self.l('raise JsonSchemaException("{name} missing dependency {} for {}")', value, key)

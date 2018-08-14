@@ -16,8 +16,6 @@ def pytest_generate_tests(metafunc):
             'valid definition',
             'Recursive references between schemas',
             'remote ref, containing refs itself',
-            'dependencies with boolean subschemas',
-            'dependencies with empty array',
             'format: uri-template',
             'validation of URI References',
             'items with boolean schema (true)',
