@@ -24,7 +24,6 @@ def pytest_generate_tests(metafunc):
             'base URI change - change folder in subschema',
             'base URI change',
             'root ref in remote ref',
-            'validation of JSON-pointers (JSON String Representation)',
         ],
     )
     metafunc.parametrize(['version', 'schema', 'data', 'is_valid'], param_values, ids=param_ids)

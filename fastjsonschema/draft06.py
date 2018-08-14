@@ -4,7 +4,8 @@ from .generator import enforce_list
 
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
     FORMAT_REGEXS = dict(CodeGeneratorDraft04.FORMAT_REGEXS, **{
-        'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$',
+        'json-pointer': r'^(/(([^/~])|(~[01]))*)*$',
+        #'uri-reference': r'',
         'uri-template': (
             r'^(?:(?:[^\x00-\x20\"\'<>%\\^`{|}]|%[0-9a-f]{2})|'
             r'\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+'
