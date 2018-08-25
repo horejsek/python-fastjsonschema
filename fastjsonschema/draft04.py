@@ -151,7 +151,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 ],
             }
 
-        Valid values for this definitions are 3, 5, 6, ... but not 15 for example.
+        Valid values for this definition are 3, 5, 6, ... but not 15 for example.
         """
         self.l('{variable}_one_of_count = 0')
         for definition_item in self._definition['oneOf']:
@@ -173,7 +173,7 @@ class CodeGeneratorDraft04(CodeGenerator):
 
             {'not': {'type': 'null'}}
 
-        Valid values for this definitions are 'hello', 42, {} ... but not None.
+        Valid values for this definition are 'hello', 42, {} ... but not None.
 
         Since draft 06 definition can be boolean. False means nothing, True
         means everything is invalid.
@@ -211,6 +211,15 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
 
     def generate_format(self):
+        """
+        Means that value have to be in specified format. For example date, email or other.
+
+        .. code-block:: python
+
+            {'format': 'email'}
+
+        Valid value for this definition is user@example.com but not @username
+        """
         with self.l('if isinstance({variable}, str):'):
             format_ = self._definition['format']
             if format_ in self.FORMAT_REGEXS:
@@ -368,6 +377,19 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self.l('raise JsonSchemaException("{name} must contain {required} properties")')
 
     def generate_properties(self):
+        """
+        Means object with defined keys.
+
+        .. code-block:: python
+
+            {
+                'properties': {
+                    'key': {'type': 'number'},
+                },
+            }
+
+        Valid object is containing key called 'key' and value any number.
+        """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
@@ -385,6 +407,19 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
 
     def generate_pattern_properties(self):
+        """
+        Means object with defined keys as patterns.
+
+        .. code-block:: python
+
+            {
+                'patternProperties': {
+                    '^x': {'type': 'number'},
+                },
+            }
+
+        Valid object is containing key starting with a 'x' and value any number.
+        """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
@@ -402,6 +437,21 @@ class CodeGeneratorDraft04(CodeGenerator):
                         )
 
     def generate_additional_properties(self):
+        """
+        Means object with keys with values defined by definition.
+
+        .. code-block:: python
+
+            {
+                'properties': {
+                    'key': {'type': 'number'},
+                }
+                'additionalProperties': {'type': 'string'},
+            }
+
+        Valid object is containing key called 'key' and it's value any number and
+        any other key with any string.
+        """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
