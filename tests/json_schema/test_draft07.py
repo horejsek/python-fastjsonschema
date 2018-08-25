@@ -16,10 +16,7 @@ def pytest_generate_tests(metafunc):
             'iri.json',
         ],
         ignore_tests=[
-            'invalid definition',
-            'valid definition',
             'Recursive references between schemas',
-            'remote ref, containing refs itself',
             'validation of URI References',
             'base URI change - change folder',
             'base URI change - change folder in subschema',

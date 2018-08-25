@@ -121,8 +121,8 @@ def compile_to_code(definition, version=7, handlers={}):
 
     .. code-block:: bash
 
-        echo "{'type': 'string'}" | pytohn3 -m fastjsonschema > your_file.py
-        pytohn3 -m fastjsonschema "{'type': 'string'}" > your_file.py
+        echo "{'type': 'string'}" | python3 -m fastjsonschema > your_file.py
+        python3 -m fastjsonschema "{'type': 'string'}" > your_file.py
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
