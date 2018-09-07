@@ -21,7 +21,10 @@ def asserter():
         print(code_generator.func_code)
         pprint(code_generator.global_state)
 
-        validator = compile(definition, version=4)
+        # By default old tests are written for draft-04.
+        definition.setdefault('$schema', 'http://json-schema.org/draft-04/schema')
+
+        validator = compile(definition)
         if isinstance(expected, JsonSchemaException):
             with pytest.raises(JsonSchemaException) as exc:
                 validator(value)

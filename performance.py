@@ -11,6 +11,7 @@ from jsonspec.validators import load
 NUMBER = 1000
 
 JSON_SCHEMA = {
+    '$schema': 'http://json-schema.org/draft-04/schema#',
     'type': 'array',
     'items': [
         {

@@ -23,40 +23,39 @@ You can try it for yourself with included script:
 .. code-block:: bash
 
     $ make performance
-    fast_compiled        valid      ==> 0.026877017982769758
-    fast_compiled        invalid    ==> 0.0015628149849362671
-    fast_file            valid      ==> 0.025493122986517847
-    fast_file            invalid    ==> 0.0012430319911800325
-    fast_not_compiled    valid      ==> 4.790547857992351
-    fast_not_compiled    invalid    ==> 1.2642899919883348
-    jsonschema           valid      ==> 5.036152001994196
-    jsonschema           invalid    ==> 1.1929481109953485
-    jsonspec             valid      ==> 7.196442283981014
-    jsonspec             invalid    ==> 1.7245555499684997
-    validictory          valid      ==> 0.36818933801259845
-    validictory          invalid    ==> 0.022672351042274386
+    fast_compiled        valid      ==> 0.030474655970465392
+    fast_compiled        invalid    ==> 0.0017561429995112121
+    fast_file            valid      ==> 0.028758891974575818
+    fast_file            invalid    ==> 0.0017655809642747045
+    fast_not_compiled    valid      ==> 4.597834145999514
+    fast_not_compiled    invalid    ==> 1.139162228035275
+    jsonschema           valid      ==> 5.014410221017897
+    jsonschema           invalid    ==> 1.1362981660058722
+    jsonspec             valid      ==> 8.1144932230236
+    jsonspec             invalid    ==> 2.0143173419637606
+    validictory          valid      ==> 0.4084212710149586
+    validictory          invalid    ==> 0.026061681972350925
 
-This library follows and implements `JSON schema draft-04 <http://json-schema.org>`_. Sometimes
-it's not perfectly clear so I recommend also check out this `understaning json schema
-<https://spacetelescope.github.io/understanding-json-schema>`_.
+This library follows and implements `JSON schema draft-04, draft-06 and draft-07
+<http://json-schema.org>`_. Sometimes it's not perfectly clear so I recommend also
+check out this `understaning json schema <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
  * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
    to allow everything and also it's faster to compile without limits. So keep in mind that when
-   you will use more advanced regular expression, it may not work with other library.
+   you will use more advanced regular expression, it may not work with other library or in
+   other language.
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
    uses that and always returns transformed input data.
 
 Support only for Python 3.3 and higher.
 """
 
-from os.path import exists
-
-from .exceptions import JsonSchemaException
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
 from .draft07 import CodeGeneratorDraft07
+from .exceptions import JsonSchemaException
 from .ref_resolver import RefResolver
 from .version import VERSION
 
@@ -64,7 +63,7 @@ __all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
 
 
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, version=7, handlers={}):
+def compile(definition, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``. Example:
 
@@ -89,14 +88,23 @@ def compile(definition, version=7, handlers={}):
         data = validate({})
         assert data == {'a': 42}
 
-    Args:
-        definition (dict): Json schema definition
-        handlers (dict): A mapping from URI schemes to functions
-        that should be used to retrieve them.
+    Supported implementations are draft-04, draft-06 and draft-07. Which version
+    should be used is determined by `$draft` in your ``definition``. When not
+    specified, the latest implementation is used (draft-07).
+
+    .. code-block:: python
+
+        validate = fastjsonschema.compile({
+            '$schema': 'http://json-schema.org/draft-04/schema',
+            'type': 'number',
+        })
+
+    You can pass mapping from URI to function that should be used to retrieve
+    remote schemes used in your ``definition`` in parameter ``handlers``.
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    resolver, code_generator = _factory(definition, version, handlers)
+    resolver, code_generator = _factory(definition, handlers)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
@@ -104,7 +112,7 @@ def compile(definition, version=7, handlers={}):
 
 
 # pylint: disable=dangerous-default-value
-def compile_to_code(definition, version=7, handlers={}):
+def compile_to_code(definition, handlers={}):
     """
     Generates validation function for validating JSON schema by ``definition``
     and returns compiled code. Example:
@@ -126,7 +134,7 @@ def compile_to_code(definition, version=7, handlers={}):
 
     Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
-    _, code_generator = _factory(definition, version, handlers)
+    _, code_generator = _factory(definition, handlers)
     return (
         'VERSION = "' + VERSION + '"\n' +
         code_generator.global_state_code + '\n' +
@@ -134,17 +142,18 @@ def compile_to_code(definition, version=7, handlers={}):
     )
 
 
-def _factory(definition, version, handlers):
+def _factory(definition, handlers):
     resolver = RefResolver.from_schema(definition, handlers=handlers)
-    code_generator = _get_code_generator_class(version)(definition, resolver=resolver)
+    code_generator = _get_code_generator_class(definition)(definition, resolver=resolver)
     return resolver, code_generator
 
 
-def _get_code_generator_class(version):
-    if version == 4:
-        return CodeGeneratorDraft04
-    if version == 6:
-        return CodeGeneratorDraft06
-    if version == 7:
-        return CodeGeneratorDraft07
-    raise JsonSchemaException('Unsupported JSON schema version. Supported are 4, 6 and 7.')
+def _get_code_generator_class(schema):
+    # Schema in from draft-06 can be just the boolean value.
+    if isinstance(schema, dict):
+        schema_version = schema.get('$schema', '')
+        if 'draft-04' in schema_version:
+            return CodeGeneratorDraft04
+        if 'draft-06' in schema_version:
+            return CodeGeneratorDraft06
+    return CodeGeneratorDraft07

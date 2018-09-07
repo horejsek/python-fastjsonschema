@@ -1,4 +1,4 @@
-.PHONY: all venv lint test test-lf benchmark benchmark-save performance doc upload deb clean
+.PHONY: all venv lint jsonschemasuitcases test test-lf benchmark benchmark-save performance printcode doc upload deb clean
 SHELL=/bin/bash
 
 VENV_NAME?=venv
