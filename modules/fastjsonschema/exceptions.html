@@ -30,14 +30,14 @@
           <div class="body" role="main">
             
   <h1>Source code for fastjsonschema.exceptions</h1><div class="highlight"><pre>
-<span></span>
-<div class="viewcode-block" id="JsonSchemaException"><a class="viewcode-back" href="../../index.html#fastjsonschema.JsonSchemaException">[docs]</a><span class="k">class</span> <span class="nc">JsonSchemaException</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<div class="viewcode-block" id="JsonSchemaException"><a class="viewcode-back" href="../../index.html#fastjsonschema.JsonSchemaException">[docs]</a><span></span><span class="k">class</span> <span class="nc">JsonSchemaException</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Exception raised by validation function. Contains ``message`` with</span>
 <span class="sd">    information what is wrong.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 </pre></div>
 
@@ -73,7 +73,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2016-2018, Seznam.cz.
+      &copy;2016-2018, Michal Horejsek.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.3</a>
