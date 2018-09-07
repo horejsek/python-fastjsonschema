@@ -23,11 +23,6 @@ def resolve_path(schema, fragment):
     Return definition from path.
 
     Path is unescaped according https://tools.ietf.org/html/rfc6901
-
-    :argument schema: the referrant schema document
-    :argument str fragment: a URI fragment to resolve within it
-    :returns: the retrieved schema definition
-
     """
     fragment = fragment.lstrip('/')
     parts = unquote(fragment).split('/') if fragment else []
@@ -59,11 +54,6 @@ def resolve_remote(uri, handlers):
         For unknown schemes urlib is used with UTF-8 encoding.
 
     .. _Requests: http://pypi.python.org/pypi/requests/
-
-    :argument str uri: the URI to resolve
-    :argument dict handlers: the URI resolver functions for each scheme
-    :returns: the retrieved schema document
-
     """
     scheme = urlparse.urlsplit(uri).scheme
     if scheme in handlers:
@@ -78,18 +68,13 @@ def resolve_remote(uri, handlers):
 class RefResolver:
     """
     Resolve JSON References.
-
-    :argument str base_uri: URI of the referring document
-    :argument schema: the actual referring schema document
-    :argument dict store: a mapping from URIs to documents to cache
-    :argument bool cache: whether remote refs should be cached after
-        first resolution
-    :argument dict handlers: a mapping from URI schemes to functions that
-        should be used to retrieve them
     """
 
     # pylint: disable=dangerous-default-value,too-many-arguments
     def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
+        """
+        `base_uri` is URI of the referring document from the `schema`.
+        """
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
@@ -102,19 +87,19 @@ class RefResolver:
     def from_schema(cls, schema, handlers={}, **kwargs):
         """
         Construct a resolver from a JSON schema object.
-
-        :argument schema schema: the referring schema
-        :rtype: :class:`RefResolver`
         """
         return cls(
-            schema.get('id', '') if isinstance(schema, dict) else '',
+            schema.get('$id', schema.get('id', '')) if isinstance(schema, dict) else '',
             schema,
             handlers=handlers,
             **kwargs
         )
 
     @contextlib.contextmanager
-    def in_scope(self, scope):
+    def in_scope(self, scope: str):
+        """
+        Context manager to handle current scope.
+        """
         old_scope = self.resolution_scope
         self.resolution_scope = urlparse.urljoin(old_scope, scope)
         try:
@@ -123,12 +108,10 @@ class RefResolver:
             self.resolution_scope = old_scope
 
     @contextlib.contextmanager
-    def resolving(self, ref):
+    def resolving(self, ref: str):
         """
         Context manager which resolves a JSON ``ref`` and enters the
         resolution scope of this ref.
-
-        :argument str ref: reference to resolve
         """
         new_uri = urlparse.urljoin(self.resolution_scope, ref)
         uri, fragment = urlparse.urldefrag(new_uri)
@@ -154,6 +137,9 @@ class RefResolver:
         return normalize(self.resolution_scope)
 
     def get_scope_name(self):
+        """
+        Get current scope and return it as a valid function name.
+        """
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_')
         name = re.sub(r'[:/#\.\-\%]', '_', name)
         name = name.lower().rstrip('_')

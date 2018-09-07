@@ -29,7 +29,7 @@ def remotes_handler(uri):
     return requests.get(uri).json()
 
 
-def resolve_param_values_and_ids(version, suite_dir, ignored_suite_files, ignore_tests):
+def resolve_param_values_and_ids(version, suite_dir, ignored_suite_files=[], ignore_tests=[]):
     suite_dir_path = Path(suite_dir).resolve()
     test_file_paths = sorted(set(suite_dir_path.glob("**/*.json")))
 

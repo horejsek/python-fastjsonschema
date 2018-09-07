@@ -10,18 +10,7 @@ def pytest_generate_tests(metafunc):
         ignored_suite_files=[
             # Optional.
             'ecmascript-regex.json',
-            'idn-email.json',
             'idn-hostname.json',
-            'iri-reference.json',
-            'iri.json',
-        ],
-        ignore_tests=[
-            'Recursive references between schemas',
-            'validation of URI References',
-            'base URI change - change folder',
-            'base URI change - change folder in subschema',
-            'base URI change',
-            'root ref in remote ref',
         ],
     )
     metafunc.parametrize(['version', 'schema', 'data', 'is_valid'], param_values, ids=param_ids)
