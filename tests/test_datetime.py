@@ -1,4 +1,3 @@
-
 import pytest
 
 from fastjsonschema import JsonSchemaException
