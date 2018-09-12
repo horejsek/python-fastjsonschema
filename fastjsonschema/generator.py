@@ -93,7 +93,7 @@ class CodeGenerator:
                     '',
                 ]
             )
-        regexs = ['"{}": {}'.format(key, value) for key, value in self._compile_regexps.items()]
+        regexs = ['"{}": re.compile(r"{}")'.format(key, value.pattern) for key, value in self._compile_regexps.items()]
         return '\n'.join(
             [
                 'import re',
