@@ -40,4 +40,4 @@ Support only for Python 3.3 and higher.
 Documentation
 -------------
 
-Documentation: `https://horejsek.github.io/python-fastjsonschema<https://horejsek.github.io/python-fastjsonschema>`_
+Documentation: `https://horejsek.github.io/python-fastjsonschema <https://horejsek.github.io/python-fastjsonschema>`_
