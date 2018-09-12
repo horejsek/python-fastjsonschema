@@ -18,7 +18,7 @@ JSON_TYPE_TO_PYTHON_TYPE = {
 class CodeGeneratorDraft04(CodeGenerator):
     # pylint: disable=line-too-long
     FORMAT_REGEXS = {
-        'date-time': r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z)?$',
+        'date-time': r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:\.\d+)?(?:[+-][0-2]\d:[0-5]\d|Z)?$',
         'email': r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
         'hostname': (
             r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*'
