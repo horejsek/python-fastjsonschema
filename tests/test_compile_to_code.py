@@ -15,12 +15,13 @@ def run_around_tests():
     # Code that will run after your test, for example:
     shutil.rmtree(temp_dir)
 
+
 def test_compile_to_code():
     code = compile_to_code({
         'properties': {
             'a': {'type': 'string'},
             'b': {'type': 'integer'},
-            'c': {'format': 'hostname'},
+            'c': {'format': 'hostname'},  # Test generation of regex patterns to the file.
         }
     })
     with open('temp/schema_1.py', 'w') as f:
