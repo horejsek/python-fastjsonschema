@@ -85,7 +85,7 @@ class CodeGenerator:
         """
         self._generate_func_code()
 
-        if self._compile_regexps:
+        if not self._compile_regexps:
             return '\n'.join(
                 [
                     'from fastjsonschema import JsonSchemaException',

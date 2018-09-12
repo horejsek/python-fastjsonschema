@@ -1,3 +1,8 @@
+=== 2.1 (2018-09-12) ===
+
+* Fix code generation with regex patterns
+
+
 === 2.0 (2018-09-07) ===
 
 * Support of draft-06
