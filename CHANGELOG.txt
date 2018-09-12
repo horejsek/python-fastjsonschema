@@ -1,3 +1,9 @@
+=== 2.2 (2018-09-12) ===
+
+* Fix code generation with long regex patterns
+* Fix regex of date-time (allow time without miliseconds)
+
+
 === 2.1 (2018-09-12) ===
 
 * Fix code generation with regex patterns
