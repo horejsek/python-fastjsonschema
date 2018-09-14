@@ -1,3 +1,8 @@
+=== 2.3 (2018-09-14) ===
+
+* Fix regex of hostname
+
+
 === 2.2 (2018-09-12) ===
 
 * Fix code generation with long regex patterns
