@@ -5,5 +5,5 @@ class JsonSchemaException(ValueError):
     """
 
     def __init__(self, message):
-        super().__init__()
+        super().__init__(message)
         self.message = message
