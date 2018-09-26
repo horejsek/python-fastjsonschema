@@ -292,7 +292,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             2.1439831256866455
         """
         self.create_variable_with_length()
-        with self.l('if {variable}_len > len(set(str(x) for x in {variable})):'):
+        with self.l('if {variable}_len > len(set(str({variable}_x) for {variable}_x in {variable})):'):
             self.l('raise JsonSchemaException("{name} must contain unique items")')
 
     def generate_items(self):

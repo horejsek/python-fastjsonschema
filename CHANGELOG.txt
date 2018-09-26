@@ -1,3 +1,8 @@
+=== 2.4 (unreleased)
+
+* Fix overriding variables (in pattern properties, property names, unique items and contains)
+
+
 === 2.3 (2018-09-14) ===
 
 * Fix regex of hostname

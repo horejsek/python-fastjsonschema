@@ -105,11 +105,11 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                 self.create_variable_with_length()
                 with self.l('if {variable}_len != 0:'):
                     self.l('{variable}_property_names = True')
-                    with self.l('for key in {variable}:'):
+                    with self.l('for {variable}_key in {variable}:'):
                         with self.l('try:'):
                             self.generate_func_code_block(
                                 property_names_definition,
-                                'key',
+                                '{}_key'.format(self._variable),
                                 self._variable_name,
                                 clear_variables=True,
                             )
@@ -143,11 +143,11 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                     self.l('raise JsonSchemaException("{name} must not be empty")')
             else:
                 self.l('{variable}_contains = False')
-                with self.l('for key in {variable}:'):
+                with self.l('for {variable}_key in {variable}:'):
                     with self.l('try:'):
                         self.generate_func_code_block(
                             contains_definition,
-                            'key',
+                            '{}_key'.format(self._variable),
                             self._variable_name,
                             clear_variables=True,
                         )
