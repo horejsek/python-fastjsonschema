@@ -424,15 +424,15 @@ class CodeGeneratorDraft04(CodeGenerator):
             self.create_variable_keys()
             for pattern, definition in self._definition['patternProperties'].items():
                 self._compile_regexps['{}'.format(pattern)] = re.compile(pattern)
-            with self.l('for key, val in {variable}.items():'):
+            with self.l('for {variable}_key, {variable}_val in {variable}.items():'):
                 for pattern, definition in self._definition['patternProperties'].items():
-                    with self.l('if REGEX_PATTERNS["{}"].search(key):', pattern):
-                        with self.l('if key in {variable}_keys:'):
-                            self.l('{variable}_keys.remove(key)')
+                    with self.l('if REGEX_PATTERNS["{}"].search({variable}_key):', pattern):
+                        with self.l('if {variable}_key in {variable}_keys:'):
+                            self.l('{variable}_keys.remove({variable}_key)')
                         self.generate_func_code_block(
                             definition,
-                            'val',
-                            '{}.{{key}}'.format(self._variable_name),
+                            '{}_val'.format(self._variable),
+                            '{}.{{{}_key}}'.format(self._variable_name, self._variable),
                         )
 
     def generate_additional_properties(self):
