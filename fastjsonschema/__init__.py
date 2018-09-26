@@ -7,18 +7,18 @@
 """
 This project was made to come up with fast JSON validations. Just let's see some numbers first:
 
- * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds for valid inputs
+ * Probably most popular ``jsonschema`` can take up to 5 seconds for valid inputs
    and 1.2 seconds for invalid inputs.
- * Secondly most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
- * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it does not
+ * Second most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
+ * Last ``validictory`` is much better with 370 or 23 milliseconds, but it does not
    follow all standards and it can be still slow for some purposes.
 
 That's why this project exists. It compiles definition into Python most stupid code
-which people would had hard time to write by themselfs because of not-written-rule DRY
-(don't repeat yourself). When you compile definition, then times are 25 miliseconds for
-valid inputs and less than 2 miliseconds for invalid inputs. Pretty amazing, right? :-)
+which people would have hard time to write by themselves because of not-written-rule DRY
+(don't repeat yourself). When you compile definition, then times are 25 milliseconds for
+valid inputs and less than 2 milliseconds for invalid inputs. Pretty amazing, right? :-)
 
-You can try it for yourself with included script:
+You can try it for yourself with an included script:
 
 .. code-block:: bash
 
@@ -36,16 +36,16 @@ You can try it for yourself with included script:
     validictory          valid      ==> 0.4084212710149586
     validictory          invalid    ==> 0.026061681972350925
 
-This library follows and implements `JSON schema draft-04, draft-06 and draft-07
+This library follows and implements `JSON schema draft-04, draft-06, and draft-07
 <http://json-schema.org>`_. Sometimes it's not perfectly clear so I recommend also
-check out this `understaning json schema <https://spacetelescope.github.io/understanding-json-schema>`_.
+check out this `understanding json schema <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
  * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
    to allow everything and also it's faster to compile without limits. So keep in mind that when
-   you will use more advanced regular expression, it may not work with other library or in
-   other language.
+   you will use a more advanced regular expression, it may not work with other library or in
+   other languages.
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
    uses that and always returns transformed input data.
 
@@ -65,7 +65,8 @@ __all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
 def compile(definition, handlers={}):
     """
-    Generates validation function for validating JSON schema by ``definition``. Example:
+    Generates validation function for validating JSON schema passed in ``definition``.
+    Example:
 
     .. code-block:: python
 
@@ -102,7 +103,8 @@ def compile(definition, handlers={}):
     You can pass mapping from URI to function that should be used to retrieve
     remote schemes used in your ``definition`` in parameter ``handlers``.
 
-    Exception :any:`JsonSchemaException` is thrown when validation fails.
+    Exception :any:`JsonSchemaException` is thrown when generation code fail
+    (wrong definition) or validation fails (data does not follow definition).
     """
     resolver, code_generator = _factory(definition, handlers)
     global_state = code_generator.global_state
@@ -114,8 +116,8 @@ def compile(definition, handlers={}):
 # pylint: disable=dangerous-default-value
 def compile_to_code(definition, handlers={}):
     """
-    Generates validation function for validating JSON schema by ``definition``
-    and returns compiled code. Example:
+    Generates validation code for validating JSON schema passed in ``definition``.
+    Example:
 
     .. code-block:: python
 
@@ -131,8 +133,6 @@ def compile_to_code(definition, handlers={}):
 
         echo "{'type': 'string'}" | python3 -m fastjsonschema > your_file.py
         python3 -m fastjsonschema "{'type': 'string'}" > your_file.py
-
-    Exception :any:`JsonSchemaException` is thrown when validation fails.
     """
     _, code_generator = _factory(definition, handlers)
     return (
