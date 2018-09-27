@@ -1,5 +1,6 @@
 import re
 
+from .exceptions import JsonSchemaDefinitionException
 from .generator import CodeGenerator, enforce_list
 
 
@@ -65,7 +66,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             {'type': ['string', 'number']}
         """
         types = enforce_list(self._definition['type'])
-        python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
+        try:
+            python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE[t] for t in types)
+        except KeyError as exc:
+            raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
 
         extra = ''
         if ('number' in types or 'integer' in types) and 'boolean' not in types:
@@ -84,6 +88,8 @@ class CodeGeneratorDraft04(CodeGenerator):
                 'enum': ['a', 'b'],
             }
         """
+        if not isinstance(self._definition['enum'], (list, tuple)):
+            raise JsonSchemaDefinitionException('enum must be an array')
         with self.l('if {variable} not in {enum}:'):
             self.l('raise JsonSchemaException("{name} must be one of {enum}")')
 
@@ -192,20 +198,25 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_min_length(self):
         with self.l('if isinstance({variable}, str):'):
             self.create_variable_with_length()
+            if not isinstance(self._definition['minLength'], int):
+                raise JsonSchemaDefinitionException('minLength must be a number')
             with self.l('if {variable}_len < {minLength}:'):
                 self.l('raise JsonSchemaException("{name} must be longer than or equal to {minLength} characters")')
 
     def generate_max_length(self):
         with self.l('if isinstance({variable}, str):'):
             self.create_variable_with_length()
+            if not isinstance(self._definition['maxLength'], int):
+                raise JsonSchemaDefinitionException('maxLength must be a number')
             with self.l('if {variable}_len > {maxLength}:'):
                 self.l('raise JsonSchemaException("{name} must be shorter than or equal to {maxLength} characters")')
 
     def generate_pattern(self):
         with self.l('if isinstance({variable}, str):'):
-            self._compile_regexps['{}'.format(self._definition['pattern'])] = re.compile(self._definition['pattern'])
-            with self.l('if not REGEX_PATTERNS["{}"].search({variable}):', self._definition['pattern']):
-                self.l('raise JsonSchemaException("{name} must match pattern {pattern}")')
+            safe_pattern = self._definition['pattern'].replace('"', '\\"')
+            self._compile_regexps[self._definition['pattern']] = re.compile(self._definition['pattern'])
+            with self.l('if not REGEX_PATTERNS["{}"].search({variable}):', safe_pattern):
+                self.l('raise JsonSchemaException("{name} must match pattern {}")', safe_pattern)
 
     def generate_format(self):
         """
@@ -240,6 +251,8 @@ class CodeGeneratorDraft04(CodeGenerator):
 
     def generate_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            if not isinstance(self._definition['minimum'], (int, float)):
+                raise JsonSchemaDefinitionException('minimum must be a number')
             if self._definition.get('exclusiveMinimum', False):
                 with self.l('if {variable} <= {minimum}:'):
                     self.l('raise JsonSchemaException("{name} must be bigger than {minimum}")')
@@ -249,6 +262,8 @@ class CodeGeneratorDraft04(CodeGenerator):
 
     def generate_maximum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            if not isinstance(self._definition['maximum'], (int, float)):
+                raise JsonSchemaDefinitionException('maximum must be a number')
             if self._definition.get('exclusiveMaximum', False):
                 with self.l('if {variable} >= {maximum}:'):
                     self.l('raise JsonSchemaException("{name} must be smaller than {maximum}")')
@@ -258,6 +273,8 @@ class CodeGeneratorDraft04(CodeGenerator):
 
     def generate_multiple_of(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            if not isinstance(self._definition['multipleOf'], (int, float)):
+                raise JsonSchemaDefinitionException('multipleOf must be a number')
             self.l('quotient = {variable} / {multipleOf}')
             with self.l('if int(quotient) != quotient:'):
                 self.l('raise JsonSchemaException("{name} must be multiple of {multipleOf}")')
@@ -265,6 +282,8 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_min_items(self):
         self.create_variable_is_list()
         with self.l('if {variable}_is_list:'):
+            if not isinstance(self._definition['minItems'], int):
+                raise JsonSchemaDefinitionException('minItems must be a number')
             self.create_variable_with_length()
             with self.l('if {variable}_len < {minItems}:'):
                 self.l('raise JsonSchemaException("{name} must contain at least {minItems} items")')
@@ -272,6 +291,8 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_max_items(self):
         self.create_variable_is_list()
         with self.l('if {variable}_is_list:'):
+            if not isinstance(self._definition['maxItems'], int):
+                raise JsonSchemaDefinitionException('maxItems must be a number')
             self.create_variable_with_length()
             with self.l('if {variable}_len > {maxItems}:'):
                 self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxItems} items")')
@@ -357,6 +378,8 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_min_properties(self):
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
+            if not isinstance(self._definition['minProperties'], int):
+                raise JsonSchemaDefinitionException('minProperties must be a number')
             self.create_variable_with_length()
             with self.l('if {variable}_len < {minProperties}:'):
                 self.l('raise JsonSchemaException("{name} must contain at least {minProperties} properties")')
@@ -364,6 +387,8 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_max_properties(self):
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
+            if not isinstance(self._definition['maxProperties'], int):
+                raise JsonSchemaDefinitionException('maxProperties must be a number')
             self.create_variable_with_length()
             with self.l('if {variable}_len > {maxProperties}:'):
                 self.l('raise JsonSchemaException("{name} must contain less than or equal to {maxProperties} properties")')
@@ -371,6 +396,8 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_required(self):
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
+            if not isinstance(self._definition['required'], (list, tuple)):
+                raise JsonSchemaDefinitionException('required must be an array')
             self.create_variable_with_length()
             with self.l('if not all(prop in {variable} for prop in {required}):'):
                 self.l('raise JsonSchemaException("{name} must contain {required} properties")')

@@ -7,3 +7,9 @@ class JsonSchemaException(ValueError):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
+
+
+class JsonSchemaDefinitionException(JsonSchemaException):
+    """
+    Exception raised by generator of validation function.
+    """

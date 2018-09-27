@@ -1,4 +1,5 @@
 from .draft04 import CodeGeneratorDraft04, JSON_TYPE_TO_PYTHON_TYPE
+from .exceptions import JsonSchemaDefinitionException
 from .generator import enforce_list
 
 
@@ -53,7 +54,10 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             {'type': ['string', 'number']}
         """
         types = enforce_list(self._definition['type'])
-        python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE.get(t) for t in types)
+        try:
+            python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE[t] for t in types)
+        except KeyError as exc:
+            raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
 
         extra = ''
 
@@ -70,11 +74,15 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
 
     def generate_exclusive_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            if not isinstance(self._definition['exclusiveMinimum'], (int, float)):
+                raise JsonSchemaDefinitionException('exclusiveMinimum must be an integer or a float')
             with self.l('if {variable} <= {exclusiveMinimum}:'):
                 self.l('raise JsonSchemaException("{name} must be bigger than {exclusiveMinimum}")')
 
     def generate_exclusive_maximum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
+            if not isinstance(self._definition['exclusiveMaximum'], (int, float)):
+                raise JsonSchemaDefinitionException('exclusiveMaximum must be an integer or a float')
             with self.l('if {variable} >= {exclusiveMaximum}:'):
                 self.l('raise JsonSchemaException("{name} must be smaller than {exclusiveMaximum}")')
 
