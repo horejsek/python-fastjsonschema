@@ -18,6 +18,10 @@ JSON_TYPE_TO_PYTHON_TYPE = {
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class CodeGeneratorDraft04(CodeGenerator):
     # pylint: disable=line-too-long
+    # I was thinking about using ipaddress module instead of regexps for example, but it's big
+    # difference in performance. With a module I got this difference: over 100 ms with a module
+    # vs. 9 ms with a regex! Other modules are also unefective or not available in standard
+    # library. Some regexps are not 100% precise but good enough, fast and without dependencies.
     FORMAT_REGEXS = {
         'date-time': r'^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:\.\d+)?(?:[+-][0-2]\d:[0-5]\d|Z)?$',
         'email': r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
