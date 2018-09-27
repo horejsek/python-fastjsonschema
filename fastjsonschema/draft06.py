@@ -170,5 +170,8 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
 
         Only valid value is 42 in this example.
         """
-        with self.l('if {variable} != {}:', self._definition['const']):
+        const = self._definition['const']
+        if isinstance(const, str):
+            const = '"{}"'.format(const)
+        with self.l('if {variable} != {}:', const):
             self.l('raise JsonSchemaException("{name} must be same as const definition")')
