@@ -3,6 +3,7 @@
 * Fix overriding variables (in pattern properties, property names, unique items and contains)
 * Fix string in const
 * Improve security: not generating code from any definition
+* Added validate function for lazy programmers
 
 
 === 2.3 (2018-09-14) ===

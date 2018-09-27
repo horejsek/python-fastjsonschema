@@ -55,11 +55,30 @@ Support only for Python 3.3 and higher.
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
 from .draft07 import CodeGeneratorDraft07
-from .exceptions import JsonSchemaException
+from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
 from .ref_resolver import RefResolver
 from .version import VERSION
 
-__all__ = ('VERSION', 'JsonSchemaException', 'compile', 'compile_to_code')
+__all__ = ('VERSION', 'JsonSchemaException', 'validate', 'compile', 'compile_to_code')
+
+
+def validate(definition, data):
+    """
+    Validation function for lazy programmers or for use cases, when you need
+    to call validation only once, so you do not have to compile it first.
+    Use it only when you do not care about performance (even thought it will
+    be still faster than alternative implementations).
+
+    .. code-block:: python
+
+        import fastjsonschema
+
+        validate({'type': 'string'}, 'hello')
+        # same as: compile({'type': 'string'})('hello')
+
+    Preffered is to use :any:`compile` function.
+    """
+    return compile(definition)(data)
 
 
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
@@ -103,8 +122,11 @@ def compile(definition, handlers={}):
     You can pass mapping from URI to function that should be used to retrieve
     remote schemes used in your ``definition`` in parameter ``handlers``.
 
-    Exception :any:`JsonSchemaException` is thrown when generation code fail
-    (wrong definition) or validation fails (data does not follow definition).
+    Exception :any:`JsonSchemaDefinitionException` is raised when generating the
+    code fails (bad definition).
+
+    Exception :any:`JsonSchemaException` is raised from generated funtion when
+    validation fails (data do not follow the definition).
     """
     resolver, code_generator = _factory(definition, handlers)
     global_state = code_generator.global_state
@@ -133,6 +155,9 @@ def compile_to_code(definition, handlers={}):
 
         echo "{'type': 'string'}" | python3 -m fastjsonschema > your_file.py
         python3 -m fastjsonschema "{'type': 'string'}" > your_file.py
+
+    Exception :any:`JsonSchemaDefinitionException` is raised when generating the
+    code fails (bad definition).
     """
     _, code_generator = _factory(definition, handlers)
     return (
