@@ -59,7 +59,7 @@ from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
 from .ref_resolver import RefResolver
 from .version import VERSION
 
-__all__ = ('VERSION', 'JsonSchemaException', 'validate', 'compile', 'compile_to_code')
+__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
 
 
 def validate(definition, data):
