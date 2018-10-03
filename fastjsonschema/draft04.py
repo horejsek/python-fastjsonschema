@@ -424,7 +424,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             for key, prop_definition in self._definition['properties'].items():
-                key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
+                key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key) if type(key) == str else key
                 with self.l('if "{}" in {variable}_keys:', key):
                     self.l('{variable}_keys.remove("{}")', key)
                     self.l('{variable}_{0} = {variable}["{1}"]', key_name, key)
