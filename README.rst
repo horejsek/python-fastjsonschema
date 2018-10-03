@@ -13,7 +13,7 @@ Fast JSON schema for Python
    :target: https://pypi.python.org/pypi/fastjsonschema
 
 This project was made to come up with fast JSON validations. It is at
-least an order of magnitude faster than other Python implemantaions.
+least an order of magnitude faster than other Python implementations.
 See `documentation <https://horejsek.github.io/python-fastjsonschema/>`_ for
 performance test details.
 
