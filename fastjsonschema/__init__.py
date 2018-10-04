@@ -5,20 +5,26 @@
 #
 
 """
-This project was made to come up with fast JSON validations. Just let's see some numbers first:
+``fastjsonschema`` implements validation of JSON documents by JSON schema.
+The library implements JSON schema drafts 04, 06 and 07. The main purpose is
+to have a really fast implementation. See some numbers:
 
  * Probably most popular ``jsonschema`` can take up to 5 seconds for valid inputs
    and 1.2 seconds for invalid inputs.
  * Second most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
- * Last ``validictory`` is much better with 370 or 23 milliseconds, but it does not
-   follow all standards and it can be still slow for some purposes.
+ * Last ``validictory``, now deprecated, is much better with 370 or 23 milliseconds,
+   but it does not follow all standards and it can be still slow for some purposes.
 
-That's why this project exists. It compiles definition into Python most stupid code
-which people would have hard time to write by themselves because of not-written-rule DRY
-(don't repeat yourself). When you compile definition, then times are 25 milliseconds for
-valid inputs and less than 2 milliseconds for invalid inputs. Pretty amazing, right? :-)
+With this library you can gain big improvements as ``fastjsonschema`` takes
+only about 25 milliseconds for valid inputs and 2 milliseconds for invalid ones.
+Pretty amazing, right? :-)
 
-You can try it for yourself with an included script:
+Technically it works by generating the most stupid code on the fly which is fast but
+is hard to write by hand. The best efficiency is achieved when compiled once and used
+many times, of course. It works similarly like regular expressions. But you can also
+generate the code to the file which is even slightly faster.
+
+You can do the performance on your computer or server with an included script:
 
 .. code-block:: bash
 
@@ -38,7 +44,7 @@ You can try it for yourself with an included script:
 
 This library follows and implements `JSON schema draft-04, draft-06, and draft-07
 <http://json-schema.org>`_. Sometimes it's not perfectly clear so I recommend also
-check out this `understanding json schema <https://spacetelescope.github.io/understanding-json-schema>`_.
+check out this `understanding JSON schema <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
@@ -48,8 +54,6 @@ Note that there are some differences compared to JSON schema standard:
    other languages.
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
    uses that and always returns transformed input data.
-
-Support only for Python 3.3 and higher.
 """
 
 from .draft04 import CodeGeneratorDraft04
