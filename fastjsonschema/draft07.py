@@ -6,7 +6,7 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         'date': r'^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$',
         'iri': r'^\w+:(\/?\/?)[^\s]+$',
         'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?$',
-        'idn-email': r'^\w+@\w+\.\w+$',
+        'idn-email': r'^[^@]+@[^@]+\.[^@]+$',
         #'idn-hostname': r'',
         'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$',
         #'regex': r'',
