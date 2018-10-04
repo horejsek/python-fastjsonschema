@@ -1,17 +1,5 @@
-fastjsonschema documentation
-############################
-
-Installation
-************
-
-.. code-block:: bash
-
-    pip install fastjsonschema
-
-Support only for Python 3.3 and higher.
-
-Documentation
-*************
+Fast JSON schema for Python
+###########################
 
 .. automodule:: fastjsonschema
     :members:

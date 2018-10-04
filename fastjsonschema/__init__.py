@@ -5,6 +5,18 @@
 #
 
 """
+Installation
+************
+
+.. code-block:: bash
+
+    pip install fastjsonschema
+
+Support only for Python 3.3 and higher.
+
+About
+*****
+
 ``fastjsonschema`` implements validation of JSON documents by JSON schema.
 The library implements JSON schema drafts 04, 06 and 07. The main purpose is
 to have a really fast implementation. See some numbers:
@@ -54,6 +66,9 @@ Note that there are some differences compared to JSON schema standard:
    other languages.
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
    uses that and always returns transformed input data.
+
+API
+***
 """
 
 from .draft04 import CodeGeneratorDraft04
