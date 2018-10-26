@@ -54,6 +54,7 @@ exc = JsonSchemaException('data must match pattern ^[ab]*[^ab]+(c{2}|d)$')
     ('aacc', exc),
     ('aaccc', 'aaccc'),
     ('aacd', 'aacd'),
+    ('aacd\n', exc),
 ])
 def test_pattern(asserter, value, expected):
     asserter({

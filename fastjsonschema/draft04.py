@@ -14,6 +14,8 @@ JSON_TYPE_TO_PYTHON_TYPE = {
     'object': 'dict',
 }
 
+DOLLAR_FINDER = re.compile(r"(?<!\\)\$")  # Finds any un-escaped $ (including inside []-sets)
+
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 class CodeGeneratorDraft04(CodeGenerator):
@@ -217,8 +219,10 @@ class CodeGeneratorDraft04(CodeGenerator):
 
     def generate_pattern(self):
         with self.l('if isinstance({variable}, str):'):
-            safe_pattern = self._definition['pattern'].replace('"', '\\"')
-            self._compile_regexps[self._definition['pattern']] = re.compile(self._definition['pattern'])
+            pattern = self._definition['pattern']
+            safe_pattern = pattern.replace('"', '\\"')
+            end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\Z', pattern)
+            self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
             with self.l('if not REGEX_PATTERNS["{}"].search({variable}):', safe_pattern):
                 self.l('raise JsonSchemaException("{name} must match pattern {}")', safe_pattern)
 
