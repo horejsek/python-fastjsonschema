@@ -3,17 +3,17 @@ from .draft06 import CodeGeneratorDraft06
 
 class CodeGeneratorDraft07(CodeGeneratorDraft06):
     FORMAT_REGEXS = dict(CodeGeneratorDraft06.FORMAT_REGEXS, **{
-        'date': r'^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})$',
-        'iri': r'^\w+:(\/?\/?)[^\s]+$',
-        'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?$',
-        'idn-email': r'^[^@]+@[^@]+\.[^@]+$',
+        'date': r'^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})\Z',
+        'iri': r'^\w+:(\/?\/?)[^\s]+\Z',
+        'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
+        'idn-email': r'^[^@]+@[^@]+\.[^@]+\Z',
         #'idn-hostname': r'',
-        'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$',
+        'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',
         #'regex': r'',
         'time': (
             r'^(?P<hour>\d{1,2}):(?P<minute>\d{1,2})'
             r'(?::(?P<second>\d{1,2})(?:\.(?P<microsecond>\d{1,6}))?'
-            r'([zZ]|[+-]\d\d:\d\d)?)?$'
+            r'([zZ]|[+-]\d\d:\d\d)?)?\Z'
         ),
     })
 

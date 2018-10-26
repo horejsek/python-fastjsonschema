@@ -5,13 +5,13 @@ from .generator import enforce_list
 
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
     FORMAT_REGEXS = dict(CodeGeneratorDraft04.FORMAT_REGEXS, **{
-        'json-pointer': r'^(/(([^/~])|(~[01]))*)*$',
-        'uri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?$',
+        'json-pointer': r'^(/(([^/~])|(~[01]))*)*\Z',
+        'uri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
         'uri-template': (
             r'^(?:(?:[^\x00-\x20\"\'<>%\\^`{|}]|%[0-9a-f]{2})|'
             r'\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+'
             r'(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+'
-            r'(?::[1-9][0-9]{0,3}|\*)?)*\})*$'
+            r'(?::[1-9][0-9]{0,3}|\*)?)*\})*\Z'
         ),
     })
 
