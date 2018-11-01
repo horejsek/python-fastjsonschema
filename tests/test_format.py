@@ -7,6 +7,7 @@ exc = JsonSchemaException('data must be date-time')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
     ('bla', exc),
+    ('2018-02-05T14:17:10.00Z\n', exc),
     ('2018-02-05T14:17:10.00Z', '2018-02-05T14:17:10.00Z'),
     ('2018-02-05T14:17:10Z', '2018-02-05T14:17:10Z'),
 ])
@@ -20,6 +21,7 @@ exc = JsonSchemaException('data must be hostname')
     ('LDhsjf878&d', exc),
     ('bla.bla-', exc),
     ('example.example.com-', exc),
+    ('example.example.com\n', exc),
     ('localhost', 'localhost'),
     ('example.com', 'example.com'),
     ('example.de', 'example.de'),
