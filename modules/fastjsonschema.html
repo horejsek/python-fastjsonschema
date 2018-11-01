@@ -37,20 +37,38 @@
 <span class="c1">#</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This project was made to come up with fast JSON validations. Just let&#39;s see some numbers first:</span>
+<span class="sd">Installation</span>
+<span class="sd">************</span>
 
-<span class="sd"> * Probalby most popular ``jsonschema`` can take in tests up to 5 seconds for valid inputs</span>
+<span class="sd">.. code-block:: bash</span>
+
+<span class="sd">    pip install fastjsonschema</span>
+
+<span class="sd">Support only for Python 3.3 and higher.</span>
+
+<span class="sd">About</span>
+<span class="sd">*****</span>
+
+<span class="sd">``fastjsonschema`` implements validation of JSON documents by JSON schema.</span>
+<span class="sd">The library implements JSON schema drafts 04, 06 and 07. The main purpose is</span>
+<span class="sd">to have a really fast implementation. See some numbers:</span>
+
+<span class="sd"> * Probably most popular ``jsonschema`` can take up to 5 seconds for valid inputs</span>
 <span class="sd">   and 1.2 seconds for invalid inputs.</span>
-<span class="sd"> * Secondly most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.</span>
-<span class="sd"> * Lastly ``validictory`` is much better with 370 or 23 miliseconds, but it does not</span>
-<span class="sd">   follow all standards and it can be still slow for some purposes.</span>
+<span class="sd"> * Second most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.</span>
+<span class="sd"> * Last ``validictory``, now deprecated, is much better with 370 or 23 milliseconds,</span>
+<span class="sd">   but it does not follow all standards and it can be still slow for some purposes.</span>
 
-<span class="sd">That&#39;s why this project exists. It compiles definition into Python most stupid code</span>
-<span class="sd">which people would had hard time to write by themselfs because of not-written-rule DRY</span>
-<span class="sd">(don&#39;t repeat yourself). When you compile definition, then times are 25 miliseconds for</span>
-<span class="sd">valid inputs and less than 2 miliseconds for invalid inputs. Pretty amazing, right? :-)</span>
+<span class="sd">With this library you can gain big improvements as ``fastjsonschema`` takes</span>
+<span class="sd">only about 25 milliseconds for valid inputs and 2 milliseconds for invalid ones.</span>
+<span class="sd">Pretty amazing, right? :-)</span>
 
-<span class="sd">You can try it for yourself with included script:</span>
+<span class="sd">Technically it works by generating the most stupid code on the fly which is fast but</span>
+<span class="sd">is hard to write by hand. The best efficiency is achieved when compiled once and used</span>
+<span class="sd">many times, of course. It works similarly like regular expressions. But you can also</span>
+<span class="sd">generate the code to the file which is even slightly faster.</span>
+
+<span class="sd">You can do the performance on your computer or server with an included script:</span>
 
 <span class="sd">.. code-block:: bash</span>
 
@@ -68,36 +86,60 @@
 <span class="sd">    validictory          valid      ==&gt; 0.4084212710149586</span>
 <span class="sd">    validictory          invalid    ==&gt; 0.026061681972350925</span>
 
-<span class="sd">This library follows and implements `JSON schema draft-04, draft-06 and draft-07</span>
+<span class="sd">This library follows and implements `JSON schema draft-04, draft-06, and draft-07</span>
 <span class="sd">&lt;http://json-schema.org&gt;`_. Sometimes it&#39;s not perfectly clear so I recommend also</span>
-<span class="sd">check out this `understaning json schema &lt;https://spacetelescope.github.io/understanding-json-schema&gt;`_.</span>
+<span class="sd">check out this `understanding JSON schema &lt;https://spacetelescope.github.io/understanding-json-schema&gt;`_.</span>
 
 <span class="sd">Note that there are some differences compared to JSON schema standard:</span>
 
 <span class="sd"> * Regular expressions are full Python ones, not only what JSON schema allows. It&#39;s easier</span>
 <span class="sd">   to allow everything and also it&#39;s faster to compile without limits. So keep in mind that when</span>
-<span class="sd">   you will use more advanced regular expression, it may not work with other library or in</span>
-<span class="sd">   other language.</span>
+<span class="sd">   you will use a more advanced regular expression, it may not work with other library or in</span>
+<span class="sd">   other languages.</span>
+<span class="sd"> * Because Python matches new line for a dollar in regular expressions (``a$`` matches ``a`` and ``a\\n``),</span>
+<span class="sd">   instead of ``$`` is used ``\Z`` and all dollars in your regular expression are changed to ``\\Z``</span>
+<span class="sd">   as well. When you want to use dollar as regular character, you have to escape it (``\$``).</span>
 <span class="sd"> * JSON schema says you can use keyword ``default`` for providing default values. This implementation</span>
 <span class="sd">   uses that and always returns transformed input data.</span>
 
-<span class="sd">Support only for Python 3.3 and higher.</span>
+<span class="sd">API</span>
+<span class="sd">***</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">.draft04</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft04</span>
 <span class="kn">from</span> <span class="nn">.draft06</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft06</span>
 <span class="kn">from</span> <span class="nn">.draft07</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft07</span>
-<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">JsonSchemaException</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">JsonSchemaException</span><span class="p">,</span> <span class="n">JsonSchemaDefinitionException</span>
 <span class="kn">from</span> <span class="nn">.ref_resolver</span> <span class="k">import</span> <span class="n">RefResolver</span>
 <span class="kn">from</span> <span class="nn">.version</span> <span class="k">import</span> <span class="n">VERSION</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;VERSION&#39;</span><span class="p">,</span> <span class="s1">&#39;JsonSchemaException&#39;</span><span class="p">,</span> <span class="s1">&#39;compile&#39;</span><span class="p">,</span> <span class="s1">&#39;compile_to_code&#39;</span><span class="p">)</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;VERSION&#39;</span><span class="p">,</span> <span class="s1">&#39;JsonSchemaException&#39;</span><span class="p">,</span> <span class="s1">&#39;JsonSchemaDefinitionException&#39;</span><span class="p">,</span> <span class="s1">&#39;validate&#39;</span><span class="p">,</span> <span class="s1">&#39;compile&#39;</span><span class="p">,</span> <span class="s1">&#39;compile_to_code&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="validate"><a class="viewcode-back" href="../index.html#fastjsonschema.validate">[docs]</a><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validation function for lazy programmers or for use cases, when you need</span>
+<span class="sd">    to call validation only once, so you do not have to compile it first.</span>
+<span class="sd">    Use it only when you do not care about performance (even thought it will</span>
+<span class="sd">    be still faster than alternative implementations).</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import fastjsonschema</span>
+
+<span class="sd">        validate({&#39;type&#39;: &#39;string&#39;}, &#39;hello&#39;)</span>
+<span class="sd">        # same as: compile({&#39;type&#39;: &#39;string&#39;})(&#39;hello&#39;)</span>
+
+<span class="sd">    Preffered is to use :any:`compile` function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span></div>
 
 
 <span class="c1"># pylint: disable=redefined-builtin,dangerous-default-value,exec-used</span>
 <div class="viewcode-block" id="compile"><a class="viewcode-back" href="../index.html#fastjsonschema.compile">[docs]</a><span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{}):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates validation function for validating JSON schema by ``definition``. Example:</span>
+<span class="sd">    Generates validation function for validating JSON schema passed in ``definition``.</span>
+<span class="sd">    Example:</span>
 
 <span class="sd">    .. code-block:: python</span>
 
@@ -134,7 +176,11 @@
 <span class="sd">    You can pass mapping from URI to function that should be used to retrieve</span>
 <span class="sd">    remote schemes used in your ``definition`` in parameter ``handlers``.</span>
 
-<span class="sd">    Exception :any:`JsonSchemaException` is thrown when validation fails.</span>
+<span class="sd">    Exception :any:`JsonSchemaDefinitionException` is raised when generating the</span>
+<span class="sd">    code fails (bad definition).</span>
+
+<span class="sd">    Exception :any:`JsonSchemaException` is raised from generated funtion when</span>
+<span class="sd">    validation fails (data do not follow the definition).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">)</span>
     <span class="n">global_state</span> <span class="o">=</span> <span class="n">code_generator</span><span class="o">.</span><span class="n">global_state</span>
@@ -146,8 +192,8 @@
 <span class="c1"># pylint: disable=dangerous-default-value</span>
 <div class="viewcode-block" id="compile_to_code"><a class="viewcode-back" href="../index.html#fastjsonschema.compile_to_code">[docs]</a><span class="k">def</span> <span class="nf">compile_to_code</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{}):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates validation function for validating JSON schema by ``definition``</span>
-<span class="sd">    and returns compiled code. Example:</span>
+<span class="sd">    Generates validation code for validating JSON schema passed in ``definition``.</span>
+<span class="sd">    Example:</span>
 
 <span class="sd">    .. code-block:: python</span>
 
@@ -164,7 +210,8 @@
 <span class="sd">        echo &quot;{&#39;type&#39;: &#39;string&#39;}&quot; | python3 -m fastjsonschema &gt; your_file.py</span>
 <span class="sd">        python3 -m fastjsonschema &quot;{&#39;type&#39;: &#39;string&#39;}&quot; &gt; your_file.py</span>
 
-<span class="sd">    Exception :any:`JsonSchemaException` is thrown when validation fails.</span>
+<span class="sd">    Exception :any:`JsonSchemaDefinitionException` is raised when generating the</span>
+<span class="sd">    code fails (bad definition).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span>
