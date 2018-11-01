@@ -64,6 +64,9 @@ Note that there are some differences compared to JSON schema standard:
    to allow everything and also it's faster to compile without limits. So keep in mind that when
    you will use a more advanced regular expression, it may not work with other library or in
    other languages.
+ * Because Python matches new line for a dollar in regular expressions (`a$` matches `a` and `a\n`),
+   instead of `$` is used `\Z` and all dollars in your regular expression are changed to `\Z`.
+   When you want to use dollar as regular character, you have to escape it (`\$`).
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
    uses that and always returns transformed input data.
 
