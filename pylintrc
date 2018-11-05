@@ -3,8 +3,8 @@
 ignore=tests
 
 [MESSAGES CONTROL]
-# missing-docstring only for now, remove after this issue is deployed https://github.com/PyCQA/pylint/issues/1164
-disable=missing-docstring
+# missing-docstring can be removed after this issue is deployed https://github.com/PyCQA/pylint/issues/1164
+disable=duplicate-code,missing-docstring
 
 [REPORTS]
 output-format=colorized

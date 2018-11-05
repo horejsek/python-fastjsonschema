@@ -4,7 +4,7 @@
 #  \/   \/           If you look at it, you might die.
 #
 
-"""
+r"""
 Installation
 ************
 
