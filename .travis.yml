@@ -1,0 +1,17 @@
+language: python
+matrix:
+  include:
+    - python: 3.4
+      dist: trusty
+    - python: 3.5
+      dist: trusty
+    - python: 3.6
+      dist: trusty
+    - python: 3.7
+      dist: xenial
+      sudo: true
+install:
+  - pip install tox-travis
+script:
+  - tox
+sudo: false
