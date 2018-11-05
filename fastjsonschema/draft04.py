@@ -221,7 +221,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if isinstance({variable}, str):'):
             pattern = self._definition['pattern']
             safe_pattern = pattern.replace('"', '\\"')
-            end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\Z', pattern)
+            end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\\Z', pattern)
             self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
             with self.l('if not REGEX_PATTERNS["{}"].search({variable}):', safe_pattern):
                 self.l('raise JsonSchemaException("{name} must match pattern {}")', safe_pattern)
