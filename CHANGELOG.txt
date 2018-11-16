@@ -1,3 +1,8 @@
+=== 2.7 (2018-11-16)
+
+* Fix regexps for Python 3.7
+
+
 === 2.6 (2018-11-01)
 
 * Swap $ in regexps to \Z to follow ECMA 262 ($ matches really the end of the string, not the end or new line and the end). Because of that your regular expressions have to escape dollar when used as regular character.
@@ -5,7 +10,7 @@
 
 === 2.5 (2018-10-22)
 
-* E-mail regex allows any e-mail with @.
+* E-mail regex allows any e-mail with @
 
 
 === 2.4 (2018-09-27)
