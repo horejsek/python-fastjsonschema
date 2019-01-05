@@ -4,7 +4,7 @@ import pytest
 from fastjsonschema import JsonSchemaException
 
 
-exc = JsonSchemaException('data must be one of [1, 2, \'a\']')
+exc = JsonSchemaException('data must be one of [1, 2, \'a\', "b\'c"]')
 @pytest.mark.parametrize('value, expected', [
     (1, 1),
     (2, 2),
@@ -13,7 +13,7 @@ exc = JsonSchemaException('data must be one of [1, 2, \'a\']')
     ('aa', exc),
 ])
 def test_enum(asserter, value, expected):
-    asserter({'enum': [1, 2, 'a']}, value, expected)
+    asserter({'enum': [1, 2, 'a', "b'c"]}, value, expected)
 
 
 exc = JsonSchemaException('data must be string or number')

@@ -94,10 +94,12 @@ class CodeGeneratorDraft04(CodeGenerator):
                 'enum': ['a', 'b'],
             }
         """
-        if not isinstance(self._definition['enum'], (list, tuple)):
+        enum = self._definition['enum']
+        if not isinstance(enum, (list, tuple)):
             raise JsonSchemaDefinitionException('enum must be an array')
         with self.l('if {variable} not in {enum}:'):
-            self.l('raise JsonSchemaException("{name} must be one of {enum}")')
+            enum = str(enum).replace('"', '\\"')
+            self.l('raise JsonSchemaException("{name} must be one of {}")', enum)
 
     def generate_all_of(self):
         """
