@@ -20,10 +20,6 @@ setup(
     name='fastjsonschema',
     version=VERSION,
     packages=['fastjsonschema'],
-
-    install_requires=[
-        'requests',
-    ],
     extras_require={
         'devel': [
             'colorama',

@@ -13,7 +13,6 @@ from urllib import parse as urlparse
 from urllib.parse import unquote
 from urllib.request import urlopen
 
-import requests
 
 from .exceptions import JsonSchemaException
 
@@ -47,21 +46,18 @@ def resolve_remote(uri, handlers):
 
     .. note::
 
-        Requests_ library is used to fetch ``http`` or ``https``
-        requests from the remote ``uri``, if handlers does not
-        define otherwise.
+        urllib library is used to fetch requests from the remote ``uri``
+        if handlers does notdefine otherwise.
 
-        For unknown schemes urlib is used with UTF-8 encoding.
 
-    .. _Requests: http://pypi.python.org/pypi/requests/
     """
     scheme = urlparse.urlsplit(uri).scheme
     if scheme in handlers:
         result = handlers[scheme](uri)
-    elif scheme in ['http', 'https']:
-        result = requests.get(uri).json()
     else:
-        result = json.loads(urlopen(uri).read().decode('utf-8'))
+        req = urlopen(uri)
+        encoding = req.info().get_content_charset() or 'utf-8'
+        result = json.loads(req.read().decode(encoding),)
     return result
 
 
