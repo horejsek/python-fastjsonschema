@@ -48,8 +48,6 @@ def resolve_remote(uri, handlers):
 
         urllib library is used to fetch requests from the remote ``uri``
         if handlers does notdefine otherwise.
-
-
     """
     scheme = urlparse.urlsplit(uri).scheme
     if scheme in handlers:
