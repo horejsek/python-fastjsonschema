@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
-import requests
+from urllib.request import urlopen
 
 from fastjsonschema import RefResolver, JsonSchemaException, compile, _get_code_generator_class
 
@@ -26,7 +26,9 @@ REMOTES = {
 def remotes_handler(uri):
     if uri in REMOTES:
         return REMOTES[uri]
-    return requests.get(uri).json()
+    req = urlopen(uri)
+    encoding = req.info().get_content_charset() or 'utf-8'
+    return json.loads(req.read().decode(encoding),)
 
 
 def resolve_param_values_and_ids(schema_version, suite_dir, ignored_suite_files=[], ignore_tests=[]):
