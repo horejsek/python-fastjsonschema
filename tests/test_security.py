@@ -35,6 +35,9 @@ def test_not_generate_code_from_definition(schema):
     ({'properties': {
         'validate(10)': {'type': 'string'},
     }}, {'validate(10)': '10'}),
+    ({'patternProperties': {
+        'validate(10)': {'type': 'string'},
+    }}, {'validate(10)': '10'}),
 ])
 def test_generate_code_with_proper_variable_names(asserter, schema, value):
     asserter({

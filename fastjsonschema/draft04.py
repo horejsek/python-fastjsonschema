@@ -225,7 +225,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             safe_pattern = pattern.replace('"', '\\"')
             end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\\Z', pattern)
             self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
-            with self.l('if not REGEX_PATTERNS["{}"].search({variable}):', safe_pattern):
+            with self.l('if not REGEX_PATTERNS[{}].search({variable}):', repr(pattern)):
                 self.l('raise JsonSchemaException("{name} must match pattern {}")', safe_pattern)
 
     def generate_format(self):
@@ -460,7 +460,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             for pattern, definition in self._definition['patternProperties'].items():
-                self._compile_regexps['{}'.format(pattern)] = re.compile(pattern)
+                self._compile_regexps[pattern] = re.compile(pattern)
             with self.l('for {variable}_key, {variable}_val in {variable}.items():'):
                 for pattern, definition in self._definition['patternProperties'].items():
                     with self.l('if REGEX_PATTERNS["{}"].search({variable}_key):', pattern):

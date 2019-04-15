@@ -62,6 +62,18 @@ def test_pattern(asserter, value, expected):
         'pattern': '^[ab]*[^ab]+(c{2}|d)$',
     }, value, expected)
 
+
+@pytest.mark.parametrize('pattern', [
+    ' ',
+    '\\x20',
+])
+def test_pattern_with_space(asserter, pattern):
+    asserter({
+        'type': 'string',
+        'pattern': pattern,
+    }, ' ', ' ')
+
+
 exc = JsonSchemaException('data must be a valid regex')
 @pytest.mark.parametrize('value, expected', [
     ('[a-z]', '[a-z]'),

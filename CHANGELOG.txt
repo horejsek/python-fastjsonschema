@@ -1,3 +1,8 @@
+=== 2.10 (2019-04-15)
+
+* Fix pattern regexps with a space.
+
+
 === 2.9 (2019-03-04)
 
 * Use of urllib instead of requests for smaller memory usage.
