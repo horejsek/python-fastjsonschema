@@ -44,3 +44,20 @@ def test_generate_code_with_proper_variable_names(asserter, schema, value):
         '$schema': 'http://json-schema.org/draft-07/schema',
         **schema
     }, value, value)
+
+
+def test_generate_code_without_overriding_variables(asserter):
+    # We use variable name by property name. In the code is automatically generated
+    # FOO_keys which could colide with keys parameter. Then the variable is reused and
+    # for example additionalProperties feature is not working well. We need to make
+    # sure the name not colide.
+    value = {
+        'keys': [1, 2, 3],
+    }
+    asserter({
+        'type': 'object',
+        'properties': {
+            'keys': {'type': 'array'},
+        },
+        'additionalProperties': False,
+    }, value, value)

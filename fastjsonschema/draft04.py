@@ -357,10 +357,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             elif isinstance(items_definition, list):
                 for idx, item_definition in enumerate(items_definition):
                     with self.l('if {variable}_len > {}:', idx):
-                        self.l('{variable}_{0} = {variable}[{0}]', idx)
+                        self.l('{variable}__{0} = {variable}[{0}]', idx)
                         self.generate_func_code_block(
                             item_definition,
-                            '{}_{}'.format(self._variable, idx),
+                            '{}__{}'.format(self._variable, idx),
                             '{}[{}]'.format(self._variable_name, idx),
                         )
                     if isinstance(item_definition, dict) and 'default' in item_definition:
@@ -433,10 +433,10 @@ class CodeGeneratorDraft04(CodeGenerator):
                 key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
                 with self.l('if "{}" in {variable}_keys:', key):
                     self.l('{variable}_keys.remove("{}")', key)
-                    self.l('{variable}_{0} = {variable}["{1}"]', key_name, key)
+                    self.l('{variable}__{0} = {variable}["{1}"]', key_name, key)
                     self.generate_func_code_block(
                         prop_definition,
-                        '{}_{}'.format(self._variable, key_name),
+                        '{}__{}'.format(self._variable, key_name),
                         '{}.{}'.format(self._variable_name, key),
                     )
                 if isinstance(prop_definition, dict) and 'default' in prop_definition:
