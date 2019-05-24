@@ -24,3 +24,16 @@ def test_dont_override_variable_names(asserter):
             },
         },
     }, value, value)
+
+
+def test_clear_variables(asserter):
+    value = {
+        'bar': {'baz': 'foo'}
+    }
+    asserter({
+        'type': 'object',
+        'patternProperties': {
+            'foo': {'type': 'object', 'required': ['baz']},
+            'bar': {'type': 'object', 'required': ['baz']}
+        }
+    }, value, value)

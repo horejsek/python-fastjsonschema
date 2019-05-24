@@ -1,3 +1,8 @@
+=== 2.12 (2019-05-24)
+
+* Fix of properties (local variable referenced before assignment).
+
+
 === 2.11 (2019-04-16)
 
 * Fix of additionalProperties (colliding variable names).
