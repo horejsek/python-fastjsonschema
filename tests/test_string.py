@@ -74,6 +74,16 @@ def test_pattern_with_space(asserter, pattern):
     }, ' ', ' ')
 
 
+def test_pattern_with_escape_no_warnings(asserter):
+    with pytest.warns(None) as record:
+        asserter({
+            'type': 'string',
+            'pattern': '\\s'
+        }, ' ', ' ')
+
+    assert len(record) == 0
+
+
 exc = JsonSchemaException('data must be a valid regex')
 @pytest.mark.parametrize('value, expected', [
     ('[a-z]', '[a-z]'),

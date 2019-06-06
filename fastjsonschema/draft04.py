@@ -222,7 +222,7 @@ class CodeGeneratorDraft04(CodeGenerator):
     def generate_pattern(self):
         with self.l('if isinstance({variable}, str):'):
             pattern = self._definition['pattern']
-            safe_pattern = pattern.replace('"', '\\"')
+            safe_pattern = pattern.replace('\\', '\\\\').replace('"', '\\"')
             end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\\Z', pattern)
             self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
             with self.l('if not REGEX_PATTERNS[{}].search({variable}):', repr(pattern)):
