@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_dont_override_variable_names(asserter):
     value = {
         'foo:bar': {
@@ -37,3 +40,31 @@ def test_clear_variables(asserter):
             'bar': {'type': 'object', 'required': ['baz']}
         }
     }, value, value)
+
+
+def test_pattern_with_escape(asserter):
+    value = {
+        '\\n': {}
+    }
+    asserter({
+        'type': 'object',
+        'patternProperties': {
+            '\\\\n': {'type': 'object'}
+        }
+    }, value, value)
+
+
+def test_pattern_with_escape_no_warnings(asserter):
+    value = {
+        'bar': {}
+    }
+
+    with pytest.warns(None) as record:
+        asserter({
+            'type': 'object',
+            'patternProperties': {
+                '\\w+': {'type': 'object'}
+            }
+        }, value, value)
+
+    assert len(record) == 0

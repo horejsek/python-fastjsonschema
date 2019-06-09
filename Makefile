@@ -30,13 +30,14 @@ jsonschemasuitcases:
 	git submodule update
 
 test: venv jsonschemasuitcases
-	${PYTHON} -m pytest --benchmark-skip
+	${PYTHON} -m pytest -W default --benchmark-skip
 test-lf: venv jsonschemasuitcases
-	${PYTHON} -m pytest --benchmark-skip --last-failed
+	${PYTHON} -m pytest -W default --benchmark-skip --last-failed
 
 # Call make benchmark-save before change and then make benchmark to compare results.
 benchmark: venv jsonschemasuitcases
 	${PYTHON} -m pytest \
+		-W default \
 		--benchmark-only \
 		--benchmark-sort=name \
 		--benchmark-group-by=fullfunc \
@@ -45,6 +46,7 @@ benchmark: venv jsonschemasuitcases
 		--benchmark-compare-fail='min:5%'
 benchmark-save: venv jsonschemasuitcases
 	${PYTHON} -m pytest \
+		-W default \
 		--benchmark-only \
 		--benchmark-sort=name \
 		--benchmark-group-by=fullfunc \
