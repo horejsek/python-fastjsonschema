@@ -1,3 +1,11 @@
+=== 2.13 (2019-06-10)
+
+* Resolved Python 3.7 warnings
+* Updated JSON Schema test suites
+    * Fix of date-time regexp (allow small T and Z).
+    * Fix escaping (proper handling of \n, \r or " everywhere).
+
+
 === 2.12 (2019-05-24)
 
 * Fix of properties (local variable referenced before assignment).
