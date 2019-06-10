@@ -220,7 +220,19 @@ class CodeGenerator:
             name=name,
             **kwds
         )
-        self._code.append(spaces + line.format(*args, **context))
+        line = line.format(*args, **context)
+        line = line.replace('\n', '\\n').replace('\r', '\\r')
+        self._code.append(spaces + line)
+
+    def e(self, string):
+        """
+        Short-cut of escape. Used for inserting user values into a string message.
+
+        .. code-block:: python
+
+            self.l('raise JsonSchemaException("Variable: {}")', self.e(variable))
+        """
+        return str(string).replace('"', '\\"')
 
     def create_variable_with_length(self):
         """

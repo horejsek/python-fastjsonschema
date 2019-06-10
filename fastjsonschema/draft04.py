@@ -98,8 +98,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         if not isinstance(enum, (list, tuple)):
             raise JsonSchemaDefinitionException('enum must be an array')
         with self.l('if {variable} not in {enum}:'):
-            enum = str(enum).replace('"', '\\"')
-            self.l('raise JsonSchemaException("{name} must be one of {}")', enum)
+            self.l('raise JsonSchemaException("{name} must be one of {}")', self.e(enum))
 
     def generate_all_of(self):
         """
@@ -410,7 +409,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 raise JsonSchemaDefinitionException('required must be an array')
             self.create_variable_with_length()
             with self.l('if not all(prop in {variable} for prop in {required}):'):
-                self.l('raise JsonSchemaException("{name} must contain {required} properties")')
+                self.l('raise JsonSchemaException("{name} must contain {} properties")', self.e(self._definition['required']))
 
     def generate_properties(self):
         """
@@ -431,17 +430,17 @@ class CodeGeneratorDraft04(CodeGenerator):
             self.create_variable_keys()
             for key, prop_definition in self._definition['properties'].items():
                 key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
-                with self.l('if "{}" in {variable}_keys:', key):
-                    self.l('{variable}_keys.remove("{}")', key)
-                    self.l('{variable}__{0} = {variable}["{1}"]', key_name, key)
+                with self.l('if "{}" in {variable}_keys:', self.e(key)):
+                    self.l('{variable}_keys.remove("{}")', self.e(key))
+                    self.l('{variable}__{0} = {variable}["{1}"]', key_name, self.e(key))
                     self.generate_func_code_block(
                         prop_definition,
                         '{}__{}'.format(self._variable, key_name),
-                        '{}.{}'.format(self._variable_name, key),
+                        '{}.{}'.format(self._variable_name, self.e(key)),
                         clear_variables=True,
                     )
                 if isinstance(prop_definition, dict) and 'default' in prop_definition:
-                    self.l('else: {variable}["{}"] = {}', key, repr(prop_definition['default']))
+                    self.l('else: {variable}["{}"] = {}', self.e(key), repr(prop_definition['default']))
 
     def generate_pattern_properties(self):
         """
@@ -532,12 +531,12 @@ class CodeGeneratorDraft04(CodeGenerator):
             for key, values in self._definition["dependencies"].items():
                 if values == [] or values is True:
                     continue
-                with self.l('if "{}" in {variable}_keys:', key):
+                with self.l('if "{}" in {variable}_keys:', self.e(key)):
                     if values is False:
                         self.l('raise JsonSchemaException("{} in {name} must not be there")', key)
                     elif isinstance(values, list):
                         for value in values:
-                            with self.l('if "{}" not in {variable}_keys:', value):
-                                self.l('raise JsonSchemaException("{name} missing dependency {} for {}")', value, key)
+                            with self.l('if "{}" not in {variable}_keys:', self.e(value)):
+                                self.l('raise JsonSchemaException("{name} missing dependency {} for {}")', self.e(value), self.e(key))
                     else:
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
