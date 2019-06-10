@@ -11,6 +11,7 @@ def pytest_generate_tests(metafunc):
             # Optional.
             'ecmascript-regex.json',
             'idn-hostname.json',
+            'iri.json',
         ],
     )
     metafunc.parametrize(['schema_version', 'schema', 'data', 'is_valid'], param_values, ids=param_ids)
