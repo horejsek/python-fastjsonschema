@@ -25,7 +25,7 @@ class CodeGeneratorDraft04(CodeGenerator):
     # vs. 9 ms with a regex! Other modules are also unefective or not available in standard
     # library. Some regexps are not 100% precise but good enough, fast and without dependencies.
     FORMAT_REGEXS = {
-        'date-time': r'^\d{4}-[01]\d-[0-3]\d(t|T)[0-2]\d:[0-5]\d:[0-5]\d(?:\.\d+)?(?:[+-][0-2]\d:[0-5]\d|z|Z)?\Z',
+        'date-time': r'^\d{4}-[01]\d-[0-3]\d(t|T)[0-2]\d:[0-5]\d:[0-5]\d(?:\.\d+)?(?:[+-][0-2]\d:[0-5]\d|z|Z)\Z',
         'email': r'^[^@]+@[^@]+\.[^@]+\Z',
         'hostname': r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{0,61}[A-Za-z0-9])\Z',
         'ipv4': r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\Z',
