@@ -33,8 +33,8 @@ class CodeGeneratorDraft04(CodeGenerator):
         'uri': r'^\w+:(\/?\/?)[^\s]+\Z',
     }
 
-    def __init__(self, definition, resolver=None, format_checkers={}):
-        super().__init__(definition, resolver, format_checkers)
+    def __init__(self, definition, resolver=None, formats={}):
+        super().__init__(definition, resolver, formats)
         self._json_keywords_to_function.update((
             ('type', self.generate_type),
             ('enum', self.generate_enum),
@@ -249,10 +249,10 @@ class CodeGeneratorDraft04(CodeGenerator):
                 with self.l('except Exception:'):
                     self.l('raise JsonSchemaException("{name} must be a valid regex")')
 
-            # format checking from format_checker
-            if format_ in self._format_checkers:
+            # format checking from format callable
+            if format_ in self._formats:
                 with self.l('try:'):
-                    self.l('format_checkers[{}]({variable})', repr(format_))
+                    self.l('formats[{}]({variable})', repr(format_))
                 with self.l('except Exception as e:'):
                     self.l('raise JsonSchemaException("{name} is not a valid {variable}") from e')
             else:
