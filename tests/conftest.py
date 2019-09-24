@@ -15,7 +15,7 @@ from fastjsonschema.draft07 import CodeGeneratorDraft07
 
 @pytest.fixture
 def asserter():
-    def f(definition, value, expected):
+    def f(definition, value, expected, formats={}):
         # When test fails, it will show up code.
         code_generator = CodeGeneratorDraft07(definition)
         print(code_generator.func_code)
@@ -24,7 +24,7 @@ def asserter():
         # By default old tests are written for draft-04.
         definition.setdefault('$schema', 'http://json-schema.org/draft-04/schema')
 
-        validator = compile(definition)
+        validator = compile(definition, formats=formats)
         if isinstance(expected, JsonSchemaException):
             with pytest.raises(JsonSchemaException) as exc:
                 validator(value)

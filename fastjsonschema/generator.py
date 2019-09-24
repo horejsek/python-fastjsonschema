@@ -28,7 +28,7 @@ class CodeGenerator:
 
     INDENT = 4  # spaces
 
-    def __init__(self, definition, resolver=None):
+    def __init__(self, definition, resolver=None, formats={}):
         self._code = []
         self._compile_regexps = {}
 
@@ -48,6 +48,15 @@ class CodeGenerator:
         if resolver is None:
             resolver = RefResolver.from_schema(definition)
         self._resolver = resolver
+
+        # Initialize formats values as callable
+        for key, value in formats.items():
+            if isinstance(value, str):
+                formats[key] = lambda data: re.match(value, data)
+            elif isinstance(value, re.Pattern):
+                formats[key] = lambda data: value.match(data)
+        self._formats = formats
+
         # add main function to `self._needed_validation_functions`
         self._needed_validation_functions[self._resolver.get_uri()] = self._resolver.get_scope_name()
 
@@ -75,6 +84,7 @@ class CodeGenerator:
             REGEX_PATTERNS=self._compile_regexps,
             re=re,
             JsonSchemaException=JsonSchemaException,
+            formats=self._formats
         )
 
     @property

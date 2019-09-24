@@ -84,7 +84,7 @@ from .version import VERSION
 __all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
 
 
-def validate(definition, data):
+def validate(definition, data, handlers={}, formats={}):
     """
     Validation function for lazy programmers or for use cases, when you need
     to call validation only once, so you do not have to compile it first.
@@ -100,11 +100,11 @@ def validate(definition, data):
 
     Preffered is to use :any:`compile` function.
     """
-    return compile(definition)(data)
+    return compile(definition, handlers, formats)(data)
 
 
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, handlers={}):
+def compile(definition, handlers={}, formats={}):
     """
     Generates validation function for validating JSON schema passed in ``definition``.
     Example:
@@ -150,7 +150,7 @@ def compile(definition, handlers={}):
     Exception :any:`JsonSchemaException` is raised from generated funtion when
     validation fails (data do not follow the definition).
     """
-    resolver, code_generator = _factory(definition, handlers)
+    resolver, code_generator = _factory(definition, handlers, formats)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
@@ -189,9 +189,9 @@ def compile_to_code(definition, handlers={}):
     )
 
 
-def _factory(definition, handlers):
+def _factory(definition, handlers, formats={}):
     resolver = RefResolver.from_schema(definition, handlers=handlers)
-    code_generator = _get_code_generator_class(definition)(definition, resolver=resolver)
+    code_generator = _get_code_generator_class(definition)(definition, resolver=resolver, formats=formats)
     return resolver, code_generator
 
 
