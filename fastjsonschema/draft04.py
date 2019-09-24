@@ -34,7 +34,8 @@ class CodeGeneratorDraft04(CodeGenerator):
     }
 
     def __init__(self, definition, resolver=None, formats={}):
-        super().__init__(definition, resolver, formats)
+        super().__init__(definition, resolver)
+        self._custom_formats = formats
         self._json_keywords_to_function.update((
             ('type', self.generate_type),
             ('enum', self.generate_enum),
@@ -61,6 +62,12 @@ class CodeGeneratorDraft04(CodeGenerator):
             ('additionalProperties', self.generate_additional_properties),
             ('dependencies', self.generate_dependencies),
         ))
+
+    @property
+    def global_state(self):
+        res = super().global_state
+        res['custom_formats'] = self._custom_formats
+        return res
 
     def generate_type(self):
         """
@@ -239,24 +246,26 @@ class CodeGeneratorDraft04(CodeGenerator):
         """
         with self.l('if isinstance({variable}, str):'):
             format_ = self._definition['format']
-            if format_ in self.FORMAT_REGEXS:
+            # Checking custom formats - user is allowed to override default formats.
+            if format_ in self._custom_formats:
+                custom_format = self._custom_formats[format_]
+                if isinstance(custom_format, str):
+                    self._generate_format(format_, format_ + '_re_pattern', custom_format)
+                else:
+                    with self.l('if not custom_formats["{}"]({variable}):', format_):
+                        self.l('raise JsonSchemaException("{name} must be {}")', format_)
+            elif format_ in self.FORMAT_REGEXS:
                 format_regex = self.FORMAT_REGEXS[format_]
                 self._generate_format(format_, format_ + '_re_pattern', format_regex)
-            # format regex is used only in meta schemas
+            # Format regex is used only in meta schemas.
             elif format_ == 'regex':
                 with self.l('try:'):
                     self.l('re.compile({variable})')
                 with self.l('except Exception:'):
                     self.l('raise JsonSchemaException("{name} must be a valid regex")')
-
-            # format checking from format callable
-            if format_ in self._formats:
-                with self.l('try:'):
-                    self.l('formats[{}]({variable})', repr(format_))
-                with self.l('except Exception as e:'):
-                    self.l('raise JsonSchemaException("{name} is not a valid {variable}") from e')
             else:
-                self.l('pass')
+                raise JsonSchemaDefinitionException('Undefined format %s'.format(format_))
+
 
     def _generate_format(self, format_name, regexp_name, regexp):
         if self._definition['format'] == format_name:

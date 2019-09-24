@@ -144,6 +144,17 @@ def compile(definition, handlers={}, formats={}):
     You can pass mapping from URI to function that should be used to retrieve
     remote schemes used in your ``definition`` in parameter ``handlers``.
 
+    Also, you can pass mapping for custom formats. Key is the name of your
+    formatter and value can be regular expression which will be compiled or
+    callback returning `bool` (or you can raise your own exception).
+
+    .. code-block:: python
+
+        validate = fastjsonschema.compile(definition, formats={
+            'foo': r'foo|bar',
+            'bar': lambda value: value in ('foo', 'bar'),
+        })
+
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
 
@@ -158,7 +169,7 @@ def compile(definition, handlers={}, formats={}):
 
 
 # pylint: disable=dangerous-default-value
-def compile_to_code(definition, handlers={}):
+def compile_to_code(definition, handlers={}, formats={}):
     """
     Generates validation code for validating JSON schema passed in ``definition``.
     Example:
@@ -181,7 +192,7 @@ def compile_to_code(definition, handlers={}):
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
     """
-    _, code_generator = _factory(definition, handlers)
+    _, code_generator = _factory(definition, handlers, formats)
     return (
         'VERSION = "' + VERSION + '"\n' +
         code_generator.global_state_code + '\n' +

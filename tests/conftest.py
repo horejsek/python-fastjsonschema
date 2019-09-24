@@ -17,7 +17,7 @@ from fastjsonschema.draft07 import CodeGeneratorDraft07
 def asserter():
     def f(definition, value, expected, formats={}):
         # When test fails, it will show up code.
-        code_generator = CodeGeneratorDraft07(definition)
+        code_generator = CodeGeneratorDraft07(definition, formats=formats)
         print(code_generator.func_code)
         pprint(code_generator.global_state)
 
