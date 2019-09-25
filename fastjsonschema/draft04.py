@@ -446,6 +446,8 @@ class CodeGeneratorDraft04(CodeGenerator):
             self.create_variable_keys()
             for key, prop_definition in self._definition['properties'].items():
                 key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
+                if not isinstance(prop_definition, (dict, bool)):
+                    raise JsonSchemaDefinitionException('{}[{}] must be object'.format(self._variable, key_name))
                 with self.l('if "{}" in {variable}_keys:', self.e(key)):
                     self.l('{variable}_keys.remove("{}")', self.e(key))
                     self.l('{variable}__{0} = {variable}["{1}"]', key_name, self.e(key))

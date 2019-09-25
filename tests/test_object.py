@@ -1,7 +1,7 @@
-
 import pytest
 
-from fastjsonschema import JsonSchemaException
+import fastjsonschema
+from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaException
 
 
 exc = JsonSchemaException('data must be object')
@@ -71,6 +71,15 @@ def test_properties(asserter, value, expected):
             'b': {'type': 'string'},
         },
     }, value, expected)
+
+
+def test_invalid_properties(asserter):
+    with pytest.raises(JsonSchemaDefinitionException):
+        fastjsonschema.compile({
+            'properties': {
+                'item': ['wrong'],
+            },
+        })
 
 
 @pytest.mark.parametrize('value, expected', [

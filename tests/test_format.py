@@ -1,10 +1,7 @@
-from builtins import ValueError
-
 import datetime
+import re
 
 import pytest
-
-import re
 
 from fastjsonschema import JsonSchemaException
 
