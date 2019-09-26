@@ -1,5 +1,6 @@
 === 2.14 (unreleased)
 
+* Fix of uniqueItems when used with other than array type
 * Possibility to pass custom formats
 * Raise JsonSchemaDefinitionException when definition of property is not valid
 * Fix of date-time regexp (time zone is required by RFC 3339)

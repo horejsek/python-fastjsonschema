@@ -337,9 +337,11 @@ class CodeGeneratorDraft04(CodeGenerator):
             >>> timeit.timeit("np.unique(x).size == len(x)", "x=range(100)+range(100); import numpy as np", number=100000)
             2.1439831256866455
         """
-        self.create_variable_with_length()
-        with self.l('if {variable}_len > len(set(str({variable}_x) for {variable}_x in {variable})):'):
-            self.l('raise JsonSchemaException("{name} must contain unique items")')
+        self.create_variable_is_list()
+        with self.l('if {variable}_is_list:'):
+            self.create_variable_with_length()
+            with self.l('if {variable}_len > len(set(str({variable}_x) for {variable}_x in {variable})):'):
+                self.l('raise JsonSchemaException("{name} must contain unique items")')
 
     def generate_items(self):
         """

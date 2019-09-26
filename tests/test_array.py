@@ -60,6 +60,15 @@ def test_unique_items(asserter, value, expected):
     }, value, expected)
 
 
+def test_min_and_unique_items(asserter):
+    value = None
+    asserter({
+        'type': ['array', 'null'],
+        'minItems': 1,
+        'uniqueItems': True,
+    }, value, value)
+
+
 @pytest.mark.parametrize('value, expected', [
     ([], []),
     ([1], [1]),
