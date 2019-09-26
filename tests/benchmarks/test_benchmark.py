@@ -8,8 +8,7 @@ JSON_SCHEMA = {
     'items': [
         {
             'type': 'number',
-            'maximum': 10,
-            'exclusiveMaximum': True,
+            'exclusiveMaximum': 10,
         },
         {
             'type': 'string',

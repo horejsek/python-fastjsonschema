@@ -34,6 +34,7 @@ class CodeGenerator:
 
         self._variables = set()
         self._indent = 0
+        self._indent_last_line = None
         self._variable = None
         self._variable_name = None
         self._root_definition = definition
@@ -224,6 +225,7 @@ class CodeGenerator:
         line = line.format(*args, **context)
         line = line.replace('\n', '\\n').replace('\r', '\\r')
         self._code.append(spaces + line)
+        return line
 
     def e(self, string):
         """
