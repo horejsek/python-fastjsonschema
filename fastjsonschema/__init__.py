@@ -81,7 +81,8 @@ from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
 from .ref_resolver import RefResolver
 from .version import VERSION
 
-__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
+__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException',
+           'compile', 'compile_to_code', 'get_code_generator_class', 'validate')
 
 
 def validate(definition, data):
@@ -98,13 +99,13 @@ def validate(definition, data):
         validate({'type': 'string'}, 'hello')
         # same as: compile({'type': 'string'})('hello')
 
-    Preffered is to use :any:`compile` function.
+    Preferred is to use :any:`compile` function.
     """
     return compile(definition)(data)
 
 
-# pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, handlers={}):
+# pylint: disable=redefined-builtin,exec-used
+def compile(definition, handlers=None):
     """
     Generates validation function for validating JSON schema passed in ``definition``.
     Example:
@@ -150,15 +151,14 @@ def compile(definition, handlers={}):
     Exception :any:`JsonSchemaException` is raised from generated funtion when
     validation fails (data do not follow the definition).
     """
-    resolver, code_generator = _factory(definition, handlers)
+    resolver, code_generator = _factory(definition, handlers or {})
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
     return global_state[resolver.get_scope_name()]
 
 
-# pylint: disable=dangerous-default-value
-def compile_to_code(definition, handlers={}):
+def compile_to_code(definition, handlers=None):
     """
     Generates validation code for validating JSON schema passed in ``definition``.
     Example:
@@ -181,7 +181,7 @@ def compile_to_code(definition, handlers={}):
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
     """
-    _, code_generator = _factory(definition, handlers)
+    _, code_generator = _factory(definition, handlers or {})
     return (
         'VERSION = "' + VERSION + '"\n' +
         code_generator.global_state_code + '\n' +
@@ -191,11 +191,11 @@ def compile_to_code(definition, handlers={}):
 
 def _factory(definition, handlers):
     resolver = RefResolver.from_schema(definition, handlers=handlers)
-    code_generator = _get_code_generator_class(definition)(definition, resolver=resolver)
+    code_generator = get_code_generator_class(definition)(definition, resolver=resolver)
     return resolver, code_generator
 
 
-def _get_code_generator_class(schema):
+def get_code_generator_class(schema):
     # Schema in from draft-06 can be just the boolean value.
     if isinstance(schema, dict):
         schema_version = schema.get('$schema', '')
@@ -204,3 +204,8 @@ def _get_code_generator_class(schema):
         if 'draft-06' in schema_version:
             return CodeGeneratorDraft06
     return CodeGeneratorDraft07
+
+
+# backwards compatibality
+# pylint: disable=invalid-name
+_get_code_generator_class = get_code_generator_class

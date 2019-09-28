@@ -1,15 +1,33 @@
-from collections import OrderedDict
+from collections import defaultdict, deque, OrderedDict
+from contextlib import contextmanager
 import re
 
 from .exceptions import JsonSchemaException
 from .indent import indent
 from .ref_resolver import RefResolver
 
+MARKER = object()
+
 
 def enforce_list(variable):
     if isinstance(variable, list):
         return variable
     return [variable]
+
+
+def single_type_optimization(checked_type):
+    def outer(func):
+        def inner(self, *args, **kwargs):
+            if self.has_type(checked_type):
+                self.l('# type of {variable} is {} (enforced by exception)', checked_type)
+                return func(self, *args, **kwargs)
+            variable_suffix = '_is_{}'.format(checked_type)
+            variable_generator = getattr(self, 'create_variable{}'.format(variable_suffix))
+            duplicate = variable_generator()
+            with self.l('if {{variable}}{}:'.format(variable_suffix), deduplicate=duplicate):
+                return func(self, *args, **kwargs)
+        return inner
+    return outer
 
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
@@ -28,16 +46,19 @@ class CodeGenerator:
 
     INDENT = 4  # spaces
 
-    def __init__(self, definition, resolver=None):
+    def __init__(self, definition, resolver=None, verbose=False, root_name='data'):
         self._code = []
         self._compile_regexps = {}
-
+        self._verbose = verbose
+        self._root_name = root_name
         self._variables = set()
         self._indent = 0
         self._variable = None
         self._variable_name = None
         self._root_definition = definition
         self._definition = None
+        self._probing = 0
+        self._context = deque()
 
         # map schema URIs to validation function names for functions
         # that are not yet generated, but need to be generated
@@ -59,8 +80,9 @@ class CodeGenerator:
         Returns generated code of whole validation function as string.
         """
         self._generate_func_code()
-
-        return '\n'.join(self._code)
+        source = [(token, line) for token, line in self._code if token is not MARKER]
+        indented_code = ['{}{}'.format(' ' * self.INDENT * (depth or 0), line or '') for depth, line in source]
+        return '\n'.join(indented_code)
 
     @property
     def global_state(self):
@@ -107,7 +129,6 @@ class CodeGenerator:
             ]
         )
 
-
     def _generate_func_code(self):
         if not self._code:
             self.generate_func_code()
@@ -133,8 +154,10 @@ class CodeGenerator:
         self._validation_functions_done.add(uri)
         self.l('')
         with self._resolver.resolving(uri) as definition:
-            with self.l('def {}(data):', name):
-                self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
+            self.code_break()
+            with self.l('def {{}}(data, scope="{}"):'.format(self._root_name), name):
+                var_name = '{scope}' if self._verbose else 'data'
+                self.generate_func_code_block(definition, 'data', var_name, clear_variables=True)
                 self.l('return data')
 
     def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
@@ -163,7 +186,8 @@ class CodeGenerator:
     def run_generate_functions(self, definition):
         for key, func in self._json_keywords_to_function.items():
             if key in definition:
-                func()
+                with self.in_context(key):
+                    func()
 
     def generate_ref(self):
         """
@@ -187,10 +211,104 @@ class CodeGenerator:
             # call validation function
             self.l('{}({variable})', name)
 
+    def _emit(self, indentation, source_line, deduplicate=False):
+        """
+        Store or ignore the generated line and indentation information.
+
+        If deduplicate is set, try to find an identical line of code at the same indent level and
+        if such exists do not store it - DRY!
+
+        Information is stored as tuple(indentation, source_line).
+        There are two abused values for indentation:
+        - None  which means end of scope of a functional block
+        - marker which marks a special case, e.g. types to instruct the compiler about last checked type of a variable
+
+        :param indentation: level of indentation (it's level and not space-count)
+        :param source_line: python-line source
+        :param deduplicate: check for repetitive code
+        :return:
+        """
+        if deduplicate:
+            for ind, code in reversed(self._code):
+                if ind is None:
+                    break
+                if ind == indentation:
+                    commented = '# {}'.format(source_line)
+                    if code in (source_line, commented):
+                        self._code.append((indentation, commented))
+                        return
+                    break
+        self._code.append((indentation, source_line))
+
+    def code_break(self):
+        self._emit(None, None)
+
+    def mark_type(self, variable, types):
+        for ind, code in reversed(self._code):
+            if ind is None:
+                break
+            if ind is MARKER:
+                code['types'][variable] = types
+                return
+        self._emit(MARKER, defaultdict(types={variable: types}))
+
+    def get_mark(self, mark):
+        for ind, code in reversed(self._code):
+            if ind is None:
+                return None
+            if ind is MARKER:
+                return code[mark]
+        return None
+
+    def has_type(self, atype):
+        types = self.get_mark('types')
+        return types and self._variable in types and atype in types[self._variable]
+
+    @contextmanager
+    def in_context(self, path):
+        """
+        Tracks the context path of the schema definition.
+        :param path: Element to add to the path upon invocation
+        :return:
+        """
+        self._context.append(path)
+        try:
+            yield
+        finally:
+            self._context.pop()
+
+    def context_path(self):
+        path = self._context.copy()
+        return '{} in schema{}'.format(repr(path.pop()), ''.join('[{}]'.format(repr(item)) for item in path))
+
+    @contextmanager
+    def probing(self):
+        """
+        Context manager to keep track of probing blocks to support quick exception generation.
+
+        When using exceptions in constructs like `oneOf` parts of input are probed if they satisfy some definition.
+        One can spot this be `self.l('except JsonSchemaException: pass')` catching exceptions with `pass` statement.
+        In those cases the message held by exception is meaningless so expanding them is useless. That block of code
+        should be executed in the context of:
+
+        ... code-block:: python
+            with self.probing():
+                for definition_item in self._definition['oneOf']:
+                    ..
+        """
+        self._probing += 1
+        try:
+            yield
+        finally:
+            self._probing -= 1
+
+    @property
+    def is_probing(self):
+        return bool(self._probing)
 
     # pylint: disable=invalid-name
     @indent
-    def l(self, line, *args, **kwds):
+    def l(self, line, *args, deduplicate=False, expand_locals=True, **kwds):
         """
         Short-cut of line. Used for inserting line. It's formated with parameters
         ``variable``, ``variable_name`` (as ``name`` for short-cut), all keys from
@@ -208,19 +326,54 @@ class CodeGenerator:
             with self.l('if {variable} not in {enum}:'):
                 self.l('raise JsonSchemaException("Wrong!")')
         """
-        spaces = ' ' * self.INDENT * self._indent
-
         name = self._variable_name
-        if name and '{' in name:
+        if expand_locals and name and '{' in name:
             name = '"+"{}".format(**locals())+"'.format(self._variable_name)
 
         context = dict(
             self._definition or {},
             variable=self._variable,
             name=name,
-            **kwds
+            **kwds,
         )
-        self._code.append(spaces + line.format(*args, **context))
+        code = line.format(*args, **context)
+        self._emit(self._indent, code, deduplicate)
+
+    def throw(self, message: str, *args, **kwargs):
+        """
+        Generate code for `raise JsonSchemaException(...)`
+
+        This function has two purposes:
+        - to keep the code less verbose
+        - distinguish between final validation failures and probing validation failures
+
+        :param message: string to be included in the exception
+        """
+        expand = not self.is_probing
+        if self._verbose:
+            message += '\\n  caused by {path} {rule}'
+            kwargs.update(path=self.context_path(), rule=self._definition)
+        self.l('raise JsonSchemaException("{}")'.format(message if expand else ''),
+               expand_locals=expand, *args, **kwargs)
+
+    def declare_var(self, suffix: str, initializer: str = None) -> bool:
+        """
+        Add a new variable into the current scope and initialize it if appropriate.
+
+        :param suffix: full variable name is formed by adding suffic to the variable in scope
+        :param initializer: value to initialize the variable with
+        :return: True if the variable was already declared
+        """
+        variable_name = '{}_{}'.format(self._variable, suffix)
+        result = variable_name in self._variables
+        if not result:
+            self._variables.add(variable_name)
+            if initializer is not None:
+                self.l('{} = {}'.format(variable_name, initializer))
+        return result
+
+    def create_variable_missing(self):
+        return self.declare_var('missing', '{{prop for prop in {required} if prop not in {variable}}}')
 
     def create_variable_with_length(self):
         """
@@ -229,41 +382,25 @@ class CodeGenerator:
         It can be called several times and always it's done only when that variable
         still does not exists.
         """
-        variable_name = '{}_len'.format(self._variable)
-        if variable_name in self._variables:
-            return
-        self._variables.add(variable_name)
-        self.l('{variable}_len = len({variable})')
+        return self.declare_var('len', 'len({variable})')
 
     def create_variable_keys(self):
         """
         Append code for creating variable with keys of that variable (dictionary)
         with a name ``{variable}_keys``. Similar to `create_variable_with_length`.
         """
-        variable_name = '{}_keys'.format(self._variable)
-        if variable_name in self._variables:
-            return
-        self._variables.add(variable_name)
-        self.l('{variable}_keys = set({variable}.keys())')
+        return self.declare_var('keys', 'set({variable}.keys())')
 
     def create_variable_is_list(self):
         """
         Append code for creating variable with bool if it's instance of list
         with a name ``{variable}_is_list``. Similar to `create_variable_with_length`.
         """
-        variable_name = '{}_is_list'.format(self._variable)
-        if variable_name in self._variables:
-            return
-        self._variables.add(variable_name)
-        self.l('{variable}_is_list = isinstance({variable}, list)')
+        return self.declare_var('is_list', 'isinstance({variable}, list)')
 
     def create_variable_is_dict(self):
         """
         Append code for creating variable with bool if it's instance of list
         with a name ``{variable}_is_dict``. Similar to `create_variable_with_length`.
         """
-        variable_name = '{}_is_dict'.format(self._variable)
-        if variable_name in self._variables:
-            return
-        self._variables.add(variable_name)
-        self.l('{variable}_is_dict = isinstance({variable}, dict)')
+        return self.declare_var('is_dict', 'isinstance({variable}, dict)')

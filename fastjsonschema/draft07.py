@@ -88,9 +88,9 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
                     self.l('import base64')
                     self.l('{variable} = base64.b64decode({variable})')
                 with self.l('except Exception:'):
-                    self.l('raise JsonSchemaException("{name} must be encoded by base64")')
+                    self.throw('{name} must be encoded by base64')
                 with self.l('if {variable} == "":'):
-                    self.l('raise JsonSchemaException("contentEncoding must be base64")')
+                    self.throw('contentEncoding must be base64')
 
     def generate_content_media_type(self):
         """
@@ -107,10 +107,10 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
                 with self.l('try:'):
                     self.l('{variable} = {variable}.decode("utf-8")')
                 with self.l('except Exception:'):
-                    self.l('raise JsonSchemaException("{name} must encoded by utf8")')
+                    self.throw('{name} must encoded by utf8')
             with self.l('if isinstance({variable}, str):'):
                 with self.l('try:'):
                     self.l('import json')
                     self.l('{variable} = json.loads({variable})')
                 with self.l('except Exception:'):
-                    self.l('raise JsonSchemaException("{name} must be valid JSON")')
+                    self.throw('{name} must be valid JSON')

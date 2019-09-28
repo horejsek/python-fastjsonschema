@@ -1,6 +1,5 @@
-from .draft04 import CodeGeneratorDraft04, JSON_TYPE_TO_PYTHON_TYPE
+from .draft04 import CodeGeneratorDraft04
 from .exceptions import JsonSchemaDefinitionException
-from .generator import enforce_list
 
 
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
@@ -40,9 +39,9 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         True means everything is valid, False everything is invalid.
         """
         if self._definition is False:
-            self.l('raise JsonSchemaException("{name} must not be there")')
+            self.throw('{name} must not be there')
 
-    def generate_type(self):
+    def _get_type_extra_test(self, types):
         """
         Validation of type. Can be one type or list of types.
 
@@ -53,14 +52,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             {'type': 'string'}
             {'type': ['string', 'number']}
         """
-        types = enforce_list(self._definition['type'])
-        try:
-            python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE[t] for t in types)
-        except KeyError as exc:
-            raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
-
         extra = ''
-
         if 'integer' in types:
             extra += ' and not (isinstance({variable}, float) and {variable}.is_integer())'.format(
                 variable=self._variable,
@@ -68,23 +60,21 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
 
         if ('number' in types or 'integer' in types) and 'boolean' not in types:
             extra += ' or isinstance({variable}, bool)'.format(variable=self._variable)
-
-        with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
-            self.l('raise JsonSchemaException("{name} must be {}")', ' or '.join(types))
+        return extra
 
     def generate_exclusive_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
             if not isinstance(self._definition['exclusiveMinimum'], (int, float)):
                 raise JsonSchemaDefinitionException('exclusiveMinimum must be an integer or a float')
             with self.l('if {variable} <= {exclusiveMinimum}:'):
-                self.l('raise JsonSchemaException("{name} must be bigger than {exclusiveMinimum}")')
+                self.throw('{name} must be bigger than {exclusiveMinimum}')
 
     def generate_exclusive_maximum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
             if not isinstance(self._definition['exclusiveMaximum'], (int, float)):
                 raise JsonSchemaDefinitionException('exclusiveMaximum must be an integer or a float')
             with self.l('if {variable} >= {exclusiveMaximum}:'):
-                self.l('raise JsonSchemaException("{name} must be smaller than {exclusiveMaximum}")')
+                self.throw('{name} must be smaller than {exclusiveMaximum}')
 
     def generate_property_names(self):
         """
@@ -106,7 +96,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         elif property_names_definition is False:
             self.create_variable_keys()
             with self.l('if {variable}_keys:'):
-                self.l('raise JsonSchemaException("{name} must not be there")')
+                self.throw('{name} must not be there')
         else:
             self.create_variable_is_dict()
             with self.l('if {variable}_is_dict:'):
@@ -124,7 +114,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                         with self.l('except JsonSchemaException:'):
                             self.l('{variable}_property_names = False')
                     with self.l('if not {variable}_property_names:'):
-                        self.l('raise JsonSchemaException("{name} must be named by propertyName definition")')
+                        self.throw('{name} must be named by propertyName definition')
 
     def generate_contains(self):
         """
@@ -145,26 +135,27 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             contains_definition = self._definition['contains']
 
             if contains_definition is False:
-                self.l('raise JsonSchemaException("{name} is always invalid")')
+                self.throw('{name} is always invalid')
             elif contains_definition is True:
                 with self.l('if not {variable}:'):
-                    self.l('raise JsonSchemaException("{name} must not be empty")')
+                    self.throw('{name} must not be empty')
             else:
                 self.l('{variable}_contains = False')
-                with self.l('for {variable}_key in {variable}:'):
-                    with self.l('try:'):
-                        self.generate_func_code_block(
-                            contains_definition,
-                            '{}_key'.format(self._variable),
-                            self._variable_name,
-                            clear_variables=True,
-                        )
-                        self.l('{variable}_contains = True')
-                        self.l('break')
-                    self.l('except JsonSchemaException: pass')
+                with self.probing():
+                    with self.l('for {variable}_key in {variable}:'):
+                        with self.l('try:'):
+                            self.generate_func_code_block(
+                                contains_definition,
+                                '{}_key'.format(self._variable),
+                                self._variable_name,
+                                clear_variables=True,
+                            )
+                            self.l('{variable}_contains = True')
+                            self.l('break')
+                        self.l('except JsonSchemaException: pass')
 
                 with self.l('if not {variable}_contains:'):
-                    self.l('raise JsonSchemaException("{name} must contain one of contains definition")')
+                    self.throw('{name} must contain one of contains definition')
 
     def generate_const(self):
         """
@@ -182,4 +173,4 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         if isinstance(const, str):
             const = '"{}"'.format(const)
         with self.l('if {variable} != {}:', const):
-            self.l('raise JsonSchemaException("{name} must be same as const definition")')
+            self.throw('{name} must be same as const definition')
