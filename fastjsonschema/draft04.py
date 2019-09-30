@@ -275,27 +275,31 @@ class CodeGeneratorDraft04(CodeGenerator):
 
         Valid value for this definition is user@example.com but not @username
         """
-        with self.l('if isinstance({variable}, str):'):
-            format_ = self._definition['format']
-            # Checking custom formats - user is allowed to override default formats.
-            if format_ in self._custom_formats:
-                custom_format = self._custom_formats[format_]
-                if isinstance(custom_format, str):
-                    self._generate_format(format_, format_ + '_re_pattern', custom_format)
+        format_ = self._definition['format']
+        is_custom = format_ in self._custom_formats
+        is_in_regex = format_ in self.FORMAT_REGEXS
+        is_regex = format_ == 'regex'
+        if is_custom or is_in_regex or is_regex:
+            with self.l('if isinstance({variable}, str):'):
+                # Checking custom formats - user is allowed to override default formats.
+                if is_custom:
+                    custom_format = self._custom_formats[format_]
+                    if isinstance(custom_format, str):
+                        self._generate_format(format_, format_ + '_re_pattern', custom_format)
+                    else:
+                        with self.l('if not custom_formats["{}"]({variable}):', format_):
+                            self.throw('{name} must be {}', format_)
+                elif is_in_regex:
+                    format_regex = self.FORMAT_REGEXS[format_]
+                    self._generate_format(format_, format_ + '_re_pattern', format_regex)
+                # Format regex is used only in meta schemas.
+                elif is_regex:
+                    with self.l('try:'):
+                        self.l('re.compile({variable})')
+                    with self.l('except Exception:'):
+                        self.throw('{name} must be a valid regex')
                 else:
-                    with self.l('if not custom_formats["{}"]({variable}):', format_):
-                        self.l('raise JsonSchemaException("{name} must be {}")', format_)
-            elif format_ in self.FORMAT_REGEXS:
-                format_regex = self.FORMAT_REGEXS[format_]
-                self._generate_format(format_, format_ + '_re_pattern', format_regex)
-            # Format regex is used only in meta schemas.
-            elif format_ == 'regex':
-                with self.l('try:'):
-                    self.l('re.compile({variable})')
-                with self.l('except Exception:'):
-                    self.l('raise JsonSchemaException("{name} must be a valid regex")')
-            else:
-                raise JsonSchemaDefinitionException('Undefined format {}'.format(format_))
+                    pass
 
     def _generate_format(self, format_name, regexp_name, regexp):
         if self._definition['format'] == format_name:
