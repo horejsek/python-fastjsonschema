@@ -85,7 +85,7 @@ __all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException',
            'compile', 'compile_to_code', 'get_code_generator_class', 'validate')
 
 
-def validate(definition, data, handlers: dict = None, formats: dict = None):
+def validate(definition, data, handlers: dict = None, formats: dict = None, **kwargs):
     """
     Validation function for lazy programmers or for use cases, when you need
     to call validation only once, so you do not have to compile it first.
@@ -101,11 +101,11 @@ def validate(definition, data, handlers: dict = None, formats: dict = None):
 
     Preferred is to use :any:`compile` function.
     """
-    return compile(definition, handlers, formats)(data)
+    return compile(definition, handlers, formats, **kwargs)(data)
 
 
 # pylint: disable=redefined-builtin,exec-used
-def compile(definition, handlers=None, formats=None):
+def compile(definition, handlers=None, formats=None, **kwargs):
     """
     Generates validation function for validating JSON schema passed in ``definition``.
     Example:
@@ -151,14 +151,14 @@ def compile(definition, handlers=None, formats=None):
     Exception :any:`JsonSchemaException` is raised from generated funtion when
     validation fails (data do not follow the definition).
     """
-    resolver, code_generator = _factory(definition, handlers, formats)
+    resolver, code_generator = _factory(definition, handlers, formats, **kwargs)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
     return global_state[resolver.get_scope_name()]
 
 
-def compile_to_code(definition, handlers=None, formats=None):
+def compile_to_code(definition, handlers=None, formats=None, **kwargs):
     """
     Generates validation code for validating JSON schema passed in ``definition``.
     Example:
@@ -181,7 +181,7 @@ def compile_to_code(definition, handlers=None, formats=None):
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
     """
-    _, code_generator = _factory(definition, handlers, formats)
+    _, code_generator = _factory(definition, handlers, formats, **kwargs)
     return (
         'VERSION = "' + VERSION + '"\n' +
         code_generator.global_state_code + '\n' +
@@ -189,9 +189,10 @@ def compile_to_code(definition, handlers=None, formats=None):
     )
 
 
-def _factory(definition, handlers=None, formats=None):
-    resolver = RefResolver.from_schema(definition, handlers=handlers or {})
-    code_generator = get_code_generator_class(definition)(definition, resolver=resolver, formats=formats or {})
+def _factory(definition, handlers=None, formats=None, **kwargs):
+    resolver = kwargs.pop('resolver', None) or RefResolver.from_schema(definition, handlers=handlers or {})
+    generator_class = get_code_generator_class(definition)
+    code_generator = generator_class(definition, resolver=resolver, formats=formats or {}, **kwargs)
     return resolver, code_generator
 
 
