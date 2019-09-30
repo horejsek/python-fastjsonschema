@@ -43,7 +43,7 @@ from fastjsonschema import JsonSchemaException
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'x': 'x', 'y': 'y'}, 'str', 5],
-        JsonSchemaException('data[3] must contain [\'a\', \'b\'] properties'),
+        JsonSchemaException('data[3] must contain [\'b\'] properties'),
     ),
     (
         [9, 'hello', [1], {}, 'str', 5],
