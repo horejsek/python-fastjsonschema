@@ -10,6 +10,7 @@ def indent(func):
         # do the check only once and keep it under one block.
         if optimize and last_line == line:
             self._code.pop()
+        self._indent_last_line = line
         return Indent(self, line)
     return wrapper
 
