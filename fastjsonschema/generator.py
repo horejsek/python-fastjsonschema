@@ -239,6 +239,12 @@ class CodeGenerator:
         """
         return str(string).replace('"', '\\"')
 
+    def exc(self, msg, *args):
+        """
+        """
+        msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition})'
+        self.l(msg, *args, definition=repr(self._definition))
+
     def create_variable_with_length(self):
         """
         Append code for creating variable with length of that variable

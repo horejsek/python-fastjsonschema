@@ -1,10 +1,9 @@
-
 import pytest
 
 from fastjsonschema import JsonSchemaException
 
 
-exc = JsonSchemaException('data must be null')
+exc = JsonSchemaException('data must be null', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (None, None),

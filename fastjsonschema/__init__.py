@@ -98,7 +98,7 @@ def validate(definition, data, handlers={}, formats={}):
         validate({'type': 'string'}, 'hello')
         # same as: compile({'type': 'string'})('hello')
 
-    Preffered is to use :any:`compile` function.
+    Preferred is to use :any:`compile` function.
     """
     return compile(definition, handlers, formats)(data)
 

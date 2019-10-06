@@ -1,9 +1,48 @@
-
 import pytest
 
 from fastjsonschema import JsonSchemaException
 
 
+definition = {
+    'type': 'array',
+    'items': [
+        {
+            'type': 'number',
+            'maximum': 10,
+            'exclusiveMaximum': True,
+        },
+        {
+            'type': 'string',
+            'enum': ['hello', 'world'],
+        },
+        {
+            'type': 'array',
+            'minItems': 1,
+            'maxItems': 3,
+            'items': [
+                {'type': 'number'},
+                {'type': 'string'},
+                {'type': 'boolean'},
+            ],
+        },
+        {
+            'type': 'object',
+            'required': ['a', 'b'],
+            'minProperties': 3,
+            'properties': {
+                'a': {'type': ['null', 'string']},
+                'b': {'type': ['null', 'string']},
+                'c': {'type': ['null', 'string'], 'default': 'abc'}
+            },
+            'additionalProperties': {'type': 'string'},
+        },
+        {'not': {'type': ['null']}},
+        {'oneOf': [
+            {'type': 'number', 'multipleOf': 3},
+            {'type': 'number', 'multipleOf': 5},
+        ]},
+    ],
+}
 @pytest.mark.parametrize('value, expected', [
     (
         [9, 'hello', [1, 'a', True], {'a': 'a', 'b': 'b', 'd': 'd'}, 42, 3],
@@ -27,78 +66,39 @@ from fastjsonschema import JsonSchemaException
     ),
     (
         [10, 'world', [1], {'a': 'a', 'b': 'b', 'c': 'xy'}, 'str', 5],
-        JsonSchemaException('data[0] must be smaller than 10'),
+        JsonSchemaException('data[0] must be smaller than 10', value=10, name='data[0]', definition=definition['items'][0]),
     ),
     (
         [9, 'xxx', [1], {'a': 'a', 'b': 'b', 'c': 'xy'}, 'str', 5],
-        JsonSchemaException('data[1] must be one of [\'hello\', \'world\']'),
+        JsonSchemaException('data[1] must be one of [\'hello\', \'world\']', value='xxx', name='data[1]', definition=definition['items'][1]),
     ),
     (
         [9, 'hello', [], {'a': 'a', 'b': 'b', 'c': 'xy'}, 'str', 5],
-        JsonSchemaException('data[2] must contain at least 1 items'),
+        JsonSchemaException('data[2] must contain at least 1 items', value=[], name='data[2]', definition=definition['items'][2]),
     ),
     (
         [9, 'hello', [1, 2, 3], {'a': 'a', 'b': 'b', 'c': 'xy'}, 'str', 5],
-        JsonSchemaException('data[2][1] must be string'),
+        JsonSchemaException('data[2][1] must be string', value=2, name='data[2][1]', definition={'type': 'string'}),
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'x': 'x', 'y': 'y'}, 'str', 5],
-        JsonSchemaException('data[3] must contain [\'a\', \'b\'] properties'),
+        JsonSchemaException('data[3] must contain [\'a\', \'b\'] properties', value={'a': 'a', 'x': 'x', 'y': 'y'}, name='data[3]', definition=definition['items'][3]),
     ),
     (
         [9, 'hello', [1], {}, 'str', 5],
-        JsonSchemaException('data[3] must contain at least 3 properties'),
+        JsonSchemaException('data[3] must contain at least 3 properties', value={}, name='data[3]', definition=definition['items'][3]),
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'b': 'b', 'x': 'x'}, None, 5],
-        JsonSchemaException('data[4] must not be valid by not definition'),
+        JsonSchemaException('data[4] must not be valid by not definition', value=None, name='data[4]', definition=definition['items'][4]),
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'b': 'b', 'x': 'x'}, 42, 15],
-        JsonSchemaException('data[5] must be valid exactly by one of oneOf definition'),
+        JsonSchemaException('data[5] must be valid exactly by one of oneOf definition', value=15, name='data[5]', definition=definition['items'][5]),
     ),
 ])
 def test_integration(asserter, value, expected):
-    asserter({
-        'type': 'array',
-        'items': [
-            {
-                'type': 'number',
-                'maximum': 10,
-                'exclusiveMaximum': True,
-            },
-            {
-                'type': 'string',
-                'enum': ['hello', 'world'],
-            },
-            {
-                'type': 'array',
-                'minItems': 1,
-                'maxItems': 3,
-                'items': [
-                    {'type': 'number'},
-                    {'type': 'string'},
-                    {'type': 'boolean'},
-                ],
-            },
-            {
-                'type': 'object',
-                'required': ['a', 'b'],
-                'minProperties': 3,
-                'properties': {
-                    'a': {'type': ['null', 'string']},
-                    'b': {'type': ['null', 'string']},
-                    'c': {'type': ['null', 'string'], 'default': 'abc'}
-                },
-                'additionalProperties': {'type': 'string'},
-            },
-            {'not': {'type': ['null']}},
-            {'oneOf': [
-                {'type': 'number', 'multipleOf': 3},
-                {'type': 'number', 'multipleOf': 5},
-            ]},
-        ],
-    }, value, expected)
+    asserter(definition, value, expected)
 
 
 def test_any_of_with_patterns(asserter):

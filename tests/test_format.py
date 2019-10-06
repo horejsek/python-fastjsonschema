@@ -6,7 +6,7 @@ import pytest
 from fastjsonschema import JsonSchemaException
 
 
-exc = JsonSchemaException('data must be date-time')
+exc = JsonSchemaException('data must be date-time', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
     ('bla', exc),
@@ -19,7 +19,7 @@ def test_datetime(asserter, value, expected):
     asserter({'type': 'string', 'format': 'date-time'}, value, expected)
 
 
-exc = JsonSchemaException('data must be hostname')
+exc = JsonSchemaException('data must be hostname', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
     ('LDhsjf878&d', exc),
@@ -36,7 +36,7 @@ def test_hostname(asserter, value, expected):
     asserter({'type': 'string', 'format': 'hostname'}, value, expected)
 
 
-exc = JsonSchemaException('data must be custom-format')
+exc = JsonSchemaException('data must be custom-format', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value,expected,custom_format', [
     ('', exc, r'^[ab]$'),
     ('', exc, lambda value: value in ('a', 'b')),

@@ -1,10 +1,9 @@
-
 import pytest
 
 from fastjsonschema import JsonSchemaException
 
 
-exc = JsonSchemaException('data must be string')
+exc = JsonSchemaException('data must be string', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (None, exc),
@@ -18,7 +17,7 @@ def test_string(asserter, value, expected):
     asserter({'type': 'string'}, value, expected)
 
 
-exc = JsonSchemaException('data must be shorter than or equal to 5 characters')
+exc = JsonSchemaException('data must be shorter than or equal to 5 characters', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     ('', ''),
     ('qwer', 'qwer'),
@@ -33,7 +32,7 @@ def test_max_length(asserter, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be longer than or equal to 5 characters')
+exc = JsonSchemaException('data must be longer than or equal to 5 characters', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
     ('qwer', exc),
@@ -48,7 +47,7 @@ def test_min_length(asserter, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must match pattern ^[ab]*[^ab]+(c{2}|d)$')
+exc = JsonSchemaException('data must match pattern ^[ab]*[^ab]+(c{2}|d)$', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
     ('aacc', exc),
@@ -84,7 +83,7 @@ def test_pattern_with_escape_no_warnings(asserter):
     assert len(record) == 0
 
 
-exc = JsonSchemaException('data must be a valid regex')
+exc = JsonSchemaException('data must be a valid regex', value='{data}', name='data', definition='{definition}')
 @pytest.mark.parametrize('value, expected', [
     ('[a-z]', '[a-z]'),
     ('[a-z', exc),
