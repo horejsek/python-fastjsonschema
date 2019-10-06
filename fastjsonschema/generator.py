@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import re
 
-from .exceptions import JsonSchemaException
+from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
 from .indent import indent
 from .ref_resolver import RefResolver
 
@@ -156,6 +156,8 @@ class CodeGenerator:
             self._variables = backup_variables
 
     def _generate_func_code_block(self, definition):
+        if not isinstance(definition, dict):
+            raise JsonSchemaDefinitionException("definition must be an object")
         if '$ref' in definition:
             # needed because ref overrides any sibling keywords
             self.generate_ref()

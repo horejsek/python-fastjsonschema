@@ -1,9 +1,9 @@
 === 2.14 (unreleased)
 
 * Optimization: do not do the same type checks, keep it in one block if possible
-* Fix of uniqueItems when used with other than array type
 * Possibility to pass custom formats
 * Raise JsonSchemaDefinitionException when definition of property is not valid
+* Fix of uniqueItems when used with other than array type
 * Fix of date-time regexp (time zone is required by RFC 3339)
 
 
