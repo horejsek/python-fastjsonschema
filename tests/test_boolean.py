@@ -3,7 +3,7 @@ import pytest
 from fastjsonschema import JsonSchemaException
 
 
-exc = JsonSchemaException('data must be boolean', value='{data}', name='data', definition='{definition}')
+exc = JsonSchemaException('data must be boolean', value='{data}', name='data', definition='{definition}', rule='type')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (None, exc),

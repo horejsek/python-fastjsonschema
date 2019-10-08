@@ -3,7 +3,7 @@ import pytest
 from fastjsonschema import JsonSchemaException
 
 
-exc = JsonSchemaException('data must be array', value='{data}', name='data', definition='{definition}')
+exc = JsonSchemaException('data must be array', value='{data}', name='data', definition='{definition}', rule='type')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (None, exc),
@@ -18,7 +18,7 @@ def test_array(asserter, value, expected):
     asserter({'type': 'array'}, value, expected)
 
 
-exc = JsonSchemaException('data must contain less than or equal to 1 items', value='{data}', name='data', definition='{definition}')
+exc = JsonSchemaException('data must contain less than or equal to 1 items', value='{data}', name='data', definition='{definition}', rule='maxItems')
 @pytest.mark.parametrize('value, expected', [
     ([], []),
     ([1], [1]),
@@ -32,7 +32,7 @@ def test_max_items(asserter, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must contain at least 2 items', value='{data}', name='data', definition='{definition}')
+exc = JsonSchemaException('data must contain at least 2 items', value='{data}', name='data', definition='{definition}', rule='minItems')
 @pytest.mark.parametrize('value, expected', [
     ([], exc),
     ([1], exc),
@@ -49,7 +49,7 @@ def test_min_items(asserter, value, expected):
 @pytest.mark.parametrize('value, expected', [
     ([], []),
     ([1], [1]),
-    ([1, 1], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}')),
+    ([1, 1], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
     ([1, 2, 3], [1, 2, 3]),
 ])
 def test_unique_items(asserter, value, expected):
@@ -71,7 +71,7 @@ def test_min_and_unique_items(asserter):
 @pytest.mark.parametrize('value, expected', [
     ([], []),
     ([1], [1]),
-    ([1, 'a'], JsonSchemaException('data[1] must be number', value='a', name='data[1]', definition={'type': 'number'})),
+    ([1, 'a'], JsonSchemaException('data[1] must be number', value='a', name='data[1]', definition={'type': 'number'}, rule='type')),
 ])
 def test_items_all_same(asserter, value, expected):
     asserter({
@@ -84,7 +84,7 @@ def test_items_all_same(asserter, value, expected):
     ([], []),
     ([1], [1]),
     ([1, 'a'], [1, 'a']),
-    ([1, 2], JsonSchemaException('data[1] must be string', value=2, name='data[1]', definition={'type': 'string'})),
+    ([1, 2], JsonSchemaException('data[1] must be string', value=2, name='data[1]', definition={'type': 'string'}, rule='type')),
     ([1, 'a', 2], [1, 'a', 2]),
     ([1, 'a', 'b'], [1, 'a', 'b']),
 ])
@@ -102,8 +102,8 @@ def test_different_items(asserter, value, expected):
     ([], []),
     ([1], [1]),
     ([1, 'a'], [1, 'a']),
-    ([1, 2], JsonSchemaException('data[1] must be string', value=2, name='data[1]', definition={'type': 'string'})),
-    ([1, 'a', 2], JsonSchemaException('data[2] must be string', value=2, name='data[2]', definition={'type': 'string'})),
+    ([1, 2], JsonSchemaException('data[1] must be string', value=2, name='data[1]', definition={'type': 'string'}, rule='type')),
+    ([1, 'a', 2], JsonSchemaException('data[2] must be string', value=2, name='data[2]', definition={'type': 'string'}, rule='type')),
     ([1, 'a', 'b'], [1, 'a', 'b']),
 ])
 def test_different_items_with_additional_items(asserter, value, expected):
@@ -121,9 +121,9 @@ def test_different_items_with_additional_items(asserter, value, expected):
     ([], []),
     ([1], [1]),
     ([1, 'a'], [1, 'a']),
-    ([1, 2], JsonSchemaException('data[1] must be string', value=2, name='data[1]', definition={'type': 'string'})),
-    ([1, 'a', 2], JsonSchemaException('data must contain only specified items', value='{data}', name='data', definition='{definition}')),
-    ([1, 'a', 'b'], JsonSchemaException('data must contain only specified items', value='{data}', name='data', definition='{definition}')),
+    ([1, 2], JsonSchemaException('data[1] must be string', value=2, name='data[1]', definition={'type': 'string'}, rule='type')),
+    ([1, 'a', 2], JsonSchemaException('data must contain only specified items', value='{data}', name='data', definition='{definition}', rule='items')),
+    ([1, 'a', 'b'], JsonSchemaException('data must contain only specified items', value='{data}', name='data', definition='{definition}', rule='items')),
 ])
 def test_different_items_without_additional_items(asserter, value, expected):
     asserter({

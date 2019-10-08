@@ -1,7 +1,7 @@
 === 2.14 (unreleased)
 
 * Optimization: do not do the same type checks, keep it in one block if possible
-* More context in JsonSchemaException (value, variable_name, variable_path and definition)
+* More context in JsonSchemaException (value, variable_name, variable_path, definition, rule and rule_definition)
 * Possibility to pass custom formats
 * Raise JsonSchemaDefinitionException when definition of property is not valid
 * Fix of uniqueItems when used with other than array type

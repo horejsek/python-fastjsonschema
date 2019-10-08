@@ -70,21 +70,21 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             extra += ' or isinstance({variable}, bool)'.format(variable=self._variable)
 
         with self.l('if not isinstance({variable}, ({})){}:', python_types, extra):
-            self.exc('{name} must be {}', ' or '.join(types))
+            self.exc('{name} must be {}', ' or '.join(types), rule='type')
 
     def generate_exclusive_minimum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
             if not isinstance(self._definition['exclusiveMinimum'], (int, float)):
                 raise JsonSchemaDefinitionException('exclusiveMinimum must be an integer or a float')
             with self.l('if {variable} <= {exclusiveMinimum}:'):
-                self.exc('{name} must be bigger than {exclusiveMinimum}')
+                self.exc('{name} must be bigger than {exclusiveMinimum}', rule='exclusiveMinimum')
 
     def generate_exclusive_maximum(self):
         with self.l('if isinstance({variable}, (int, float)):'):
             if not isinstance(self._definition['exclusiveMaximum'], (int, float)):
                 raise JsonSchemaDefinitionException('exclusiveMaximum must be an integer or a float')
             with self.l('if {variable} >= {exclusiveMaximum}:'):
-                self.exc('{name} must be smaller than {exclusiveMaximum}')
+                self.exc('{name} must be smaller than {exclusiveMaximum}', rule='exclusiveMaximum')
 
     def generate_property_names(self):
         """
@@ -106,7 +106,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         elif property_names_definition is False:
             self.create_variable_keys()
             with self.l('if {variable}_keys:'):
-                self.exc('{name} must not be there')
+                self.exc('{name} must not be there', rule='propertyNames')
         else:
             self.create_variable_is_dict()
             with self.l('if {variable}_is_dict:'):
@@ -124,7 +124,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                         with self.l('except JsonSchemaException:'):
                             self.l('{variable}_property_names = False')
                     with self.l('if not {variable}_property_names:'):
-                        self.exc('{name} must be named by propertyName definition')
+                        self.exc('{name} must be named by propertyName definition', rule='propertyNames')
 
     def generate_contains(self):
         """
@@ -145,10 +145,10 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
             contains_definition = self._definition['contains']
 
             if contains_definition is False:
-                self.exc('{name} is always invalid')
+                self.exc('{name} is always invalid', rule='contains')
             elif contains_definition is True:
                 with self.l('if not {variable}:'):
-                    self.exc('{name} must not be empty')
+                    self.exc('{name} must not be empty', rule='contains')
             else:
                 self.l('{variable}_contains = False')
                 with self.l('for {variable}_key in {variable}:'):
@@ -164,7 +164,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                     self.l('except JsonSchemaException: pass')
 
                 with self.l('if not {variable}_contains:'):
-                    self.exc('{name} must contain one of contains definition')
+                    self.exc('{name} must contain one of contains definition', rule='contains')
 
     def generate_const(self):
         """
@@ -182,4 +182,4 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         if isinstance(const, str):
             const = '"{}"'.format(const)
         with self.l('if {variable} != {}:', const):
-            self.exc('{name} must be same as const definition')
+            self.exc('{name} must be same as const definition', rule='const')

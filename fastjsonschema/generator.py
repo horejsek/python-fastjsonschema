@@ -239,11 +239,11 @@ class CodeGenerator:
         """
         return str(string).replace('"', '\\"')
 
-    def exc(self, msg, *args):
+    def exc(self, msg, *args, rule=None):
         """
         """
-        msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition})'
-        self.l(msg, *args, definition=repr(self._definition))
+        msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
+        self.l(msg, *args, definition=repr(self._definition), rule=repr(rule))
 
     def create_variable_with_length(self):
         """

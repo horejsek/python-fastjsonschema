@@ -32,6 +32,7 @@ def asserter():
             assert exc.value.value == (value if expected.value == '{data}' else expected.value)
             assert exc.value.name == expected.name
             assert exc.value.definition == (definition if expected.definition == '{definition}' else expected.definition)
+            assert exc.value.rule == expected.rule
         else:
             assert validator(value) == expected
     return f
