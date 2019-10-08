@@ -1,4 +1,4 @@
-=== 2.14 (unreleased)
+=== 2.14.0 (2019-10-08)
 
 * Optimization: do not do the same type checks, keep it in one block if possible
 * More context in JsonSchemaException (value, variable_name, variable_path, definition, rule and rule_definition)
