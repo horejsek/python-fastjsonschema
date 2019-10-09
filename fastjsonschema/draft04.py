@@ -265,7 +265,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 with self.l('except Exception:'):
                     self.exc('{name} must be a valid regex', rule='format')
             else:
-                raise JsonSchemaDefinitionException('Undefined format %s'.format(format_))
+                raise JsonSchemaDefinitionException('Unknown format: {}'.format(format_))
 
 
     def _generate_format(self, format_name, regexp_name, regexp):

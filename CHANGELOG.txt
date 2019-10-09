@@ -1,3 +1,8 @@
+=== unreleased
+
+* Fix of undefined format exception message
+
+
 === 2.14.0 (2019-10-08)
 
 * Optimization: do not do the same type checks, keep it in one block if possible
