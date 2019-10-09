@@ -1,4 +1,4 @@
-=== unreleased
+=== 2.14.1 (2019-10-09)
 
 * Fix of undefined format exception message
 
