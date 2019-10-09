@@ -15,6 +15,9 @@ class JsonSchemaException(ValueError):
      * the whole ``definition`` which the ``value`` has to fulfil (e.g. ``{'type': 'number', 'maximum': 42}``),
      * ``rule`` which the ``value`` is breaking (e.g. ``maximum``)
      * and ``rule_definition`` (e.g. ``42``).
+
+    .. versionchanged:: 2.14.0
+        Added all extra properties.
     """
 
     def __init__(self, message, value=None, name=None, definition=None, rule=None):
