@@ -95,7 +95,7 @@ def validate(definition, data, handlers={}, formats={}):
 
         import fastjsonschema
 
-        validate({'type': 'string'}, 'hello')
+        fastjsonschema.validate({'type': 'string'}, 'hello')
         # same as: compile({'type': 'string'})('hello')
 
     Preferred is to use :any:`compile` function.
