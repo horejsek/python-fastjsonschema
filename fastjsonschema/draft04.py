@@ -515,7 +515,9 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
             add_prop_definition = self._definition["additionalProperties"]
-            if add_prop_definition:
+            if add_prop_definition == True:
+                return
+            elif add_prop_definition:
                 properties_keys = list(self._definition.get("properties", {}).keys())
                 with self.l('for {variable}_key in {variable}_keys:'):
                     with self.l('if {variable}_key not in {}:', properties_keys):
