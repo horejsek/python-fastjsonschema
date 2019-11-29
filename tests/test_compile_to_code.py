@@ -2,7 +2,7 @@ import os
 import pytest
 import shutil
 
-from fastjsonschema import JsonSchemaException, compile_to_code
+from fastjsonschema import compile_to_code, compile as compile_spec
 
 @pytest.yield_fixture(autouse=True)
 def run_around_tests():
@@ -51,3 +51,36 @@ def test_compile_to_code_ipv6_regex():
     }) == {
         'ip': '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
     }
+
+# https://github.com/horejsek/python-fastjsonschema/issues/74
+def test_compile_complex_one_of_all_of():
+    compile_spec({
+        "oneOf": [
+            {
+                "required": [
+                    "schema"
+                ]
+            },
+            {
+                "required": [
+                    "content"
+                ],
+                "allOf": [
+                    {
+                        "not": {
+                            "required": [
+                                "style"
+                            ]
+                        }
+                    },
+                    {
+                        "not": {
+                            "required": [
+                                "explode"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    })
