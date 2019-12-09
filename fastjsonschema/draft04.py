@@ -146,7 +146,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         for definition_item in self._definition['anyOf']:
             # When we know it's passing (at least once), we do not need to do another expensive try-except.
             with self.l('if not {variable}_any_of_count:', optimize=False):
-                with self.l('try:'):
+                with self.l('try:', optimize=False):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_any_of_count += 1')
                 self.l('except JsonSchemaException: pass')
@@ -174,7 +174,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         for definition_item in self._definition['oneOf']:
             # When we know it's failing (one of means exactly once), we do not need to do another expensive try-except.
             with self.l('if {variable}_one_of_count < 2:', optimize=False):
-                with self.l('try:'):
+                with self.l('try:', optimize=False):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_one_of_count += 1')
                 self.l('except JsonSchemaException: pass')
@@ -204,7 +204,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             with self.l('if {}:', self._variable):
                 self.exc('{name} must not be valid by not definition', rule='not')
         else:
-            with self.l('try:'):
+            with self.l('try:', optimize=False):
                 self.generate_func_code_block(not_definition, self._variable, self._variable_name)
             self.l('except JsonSchemaException: pass')
             with self.l('else:'):
@@ -260,7 +260,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self._generate_format(format_, format_ + '_re_pattern', format_regex)
             # Format regex is used only in meta schemas.
             elif format_ == 'regex':
-                with self.l('try:'):
+                with self.l('try:', optimize=False):
                     self.l('re.compile({variable})')
                 with self.l('except Exception:'):
                     self.exc('{name} must be a valid regex', rule='format')
