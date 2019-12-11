@@ -111,6 +111,30 @@ def test_multiple_of(asserter, number_type, value, expected):
     }, value, expected)
 
 
+
+exc = JsonSchemaException('data must be multiple of 0.0001', value='{data}', name='data', definition='{definition}', rule='multipleOf')
+@pytest.mark.parametrize('value, expected', [
+    (0.00751, exc),
+    (0.0075, 0.0075),
+])
+def test_multiple_of_float(asserter, value, expected):
+    asserter({
+        'type': 'number',
+        'multipleOf': 0.0001,
+    }, value, expected)
+
+exc = JsonSchemaException('data must be multiple of 1.5', value='{data}', name='data', definition='{definition}', rule='multipleOf')
+@pytest.mark.parametrize('value, expected', [
+    (0, 0),
+    (4.5, 4.5),
+    (35, exc),
+])
+def test_multiple_of_float_1_5(asserter, value, expected):
+    asserter({
+        'type': 'number',
+        'multipleOf': 1.5,
+    }, value, expected)
+
 @pytest.mark.parametrize('value', (
     1.0,
     0.1,

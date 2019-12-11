@@ -301,7 +301,8 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if isinstance({variable}, (int, float)):'):
             if not isinstance(self._definition['multipleOf'], (int, float)):
                 raise JsonSchemaDefinitionException('multipleOf must be a number')
-            self.l('quotient = {variable} / {multipleOf}')
+            self.l('from decimal import Decimal')
+            self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
             with self.l('if int(quotient) != quotient:'):
                 self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
 
