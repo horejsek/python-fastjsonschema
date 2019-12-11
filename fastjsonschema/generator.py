@@ -32,6 +32,12 @@ class CodeGenerator:
         self._code = []
         self._compile_regexps = {}
 
+        # Any extra library should be here to be imported only once.
+        # Lines are imports to be printed in the file and objects
+        # key-value pair to pass to compile function directly.
+        self._extra_imports_lines = []
+        self._extra_imports_objects = {}
+
         self._variables = set()
         self._indent = 0
         self._indent_last_line = None
@@ -74,6 +80,7 @@ class CodeGenerator:
         self._generate_func_code()
 
         return dict(
+            **self._extra_imports_objects,
             REGEX_PATTERNS=self._compile_regexps,
             re=re,
             JsonSchemaException=JsonSchemaException,
@@ -88,26 +95,22 @@ class CodeGenerator:
         self._generate_func_code()
 
         if not self._compile_regexps:
-            return '\n'.join(
-                [
-                    'from fastjsonschema import JsonSchemaException',
-                    '',
-                    '',
-                ]
-            )
-        regexs = ['"{}": re.compile(r"{}")'.format(key, value.pattern) for key, value in self._compile_regexps.items()]
-        return '\n'.join(
-            [
-                'import re',
+            return '\n'.join(self._extra_imports_lines + [
                 'from fastjsonschema import JsonSchemaException',
                 '',
                 '',
-                'REGEX_PATTERNS = {',
-                '    ' + ',\n    '.join(regexs),
-                '}',
-                '',
-            ]
-        )
+            ])
+        regexs = ['"{}": re.compile(r"{}")'.format(key, value.pattern) for key, value in self._compile_regexps.items()]
+        return '\n'.join(self._extra_imports_lines + [
+            'import re',
+            'from fastjsonschema import JsonSchemaException',
+            '',
+            '',
+            'REGEX_PATTERNS = {',
+            '    ' + ',\n    '.join(regexs),
+            '}',
+            '',
+        ])
 
 
     def _generate_func_code(self):

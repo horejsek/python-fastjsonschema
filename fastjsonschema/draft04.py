@@ -1,3 +1,4 @@
+import decimal
 import re
 
 from .exceptions import JsonSchemaDefinitionException
@@ -301,8 +302,14 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if isinstance({variable}, (int, float)):'):
             if not isinstance(self._definition['multipleOf'], (int, float)):
                 raise JsonSchemaDefinitionException('multipleOf must be a number')
-            self.l('from decimal import Decimal')
-            self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
+            # For proper multiplication check of floats we need to use decimals,
+            # because for example 19.01 / 0.01 = 1901.0000000000002.
+            if isinstance(self._definition['multipleOf'], float):
+                self._extra_imports_lines.append('from decimal import Decimal')
+                self._extra_imports_objects['Decimal'] = decimal.Decimal
+                self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
+            else:
+                self.l('quotient = {variable} / {multipleOf}')
             with self.l('if int(quotient) != quotient:'):
                 self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
 

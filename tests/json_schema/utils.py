@@ -67,7 +67,10 @@ def template_test(schema_version, schema, data, is_valid):
     """
     # For debug purposes. When test fails, it will print stdout.
     resolver = RefResolver.from_schema(schema, handlers={'http': remotes_handler})
-    print(_get_code_generator_class(schema_version)(schema, resolver=resolver).func_code)
+
+    debug_generator = _get_code_generator_class(schema_version)(schema, resolver=resolver)
+    print(debug_generator.global_state_code)
+    print(debug_generator.func_code)
 
     # JSON schema test suits do not contain schema version.
     # Our library needs to know that or it would use always the latest implementation.

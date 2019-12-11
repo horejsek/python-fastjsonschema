@@ -1,6 +1,7 @@
 === unreleased
 
 * Fix of `additionalProperties=true` for JSON schema 4
+* Use decimal for multipleOf implementation and add respective tests
 
 
 === 2.14.1 (2019-10-09)
