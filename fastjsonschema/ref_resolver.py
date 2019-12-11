@@ -135,7 +135,7 @@ class RefResolver:
         Get current scope and return it as a valid function name.
         """
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_').replace('"', '')
-        name = re.sub(r'[:/#\.\-\%]', '_', name)
+        name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '_', name)
         name = name.lower().rstrip('_')
         return name
 

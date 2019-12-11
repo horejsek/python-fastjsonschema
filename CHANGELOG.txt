@@ -1,7 +1,8 @@
-=== unreleased
+=== 2.14.2 (2019-12-11)
 
 * Fix of `additionalProperties=true` for JSON schema 4
 * Use decimal for multipleOf implementation and add respective tests
+* Better escaping of definition names
 
 
 === 2.14.1 (2019-10-09)
