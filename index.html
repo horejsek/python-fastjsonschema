@@ -131,7 +131,7 @@ Use it only when you do not care about performance (even thought it will
 be still faster than alternative implementations).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">fastjsonschema</span>
 
-<span class="n">validate</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span> <span class="s1">&#39;hello&#39;</span><span class="p">)</span>
+<span class="n">fastjsonschema</span><span class="o">.</span><span class="n">validate</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">},</span> <span class="s1">&#39;hello&#39;</span><span class="p">)</span>
 <span class="c1"># same as: compile({&#39;type&#39;: &#39;string&#39;})(&#39;hello&#39;)</span>
 </pre></div>
 </div>
