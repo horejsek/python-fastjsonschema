@@ -1,5 +1,7 @@
-from textwrap import dedent
+import importlib.util
 import timeit
+import tempfile
+from textwrap import dedent
 
 # apt-get install jsonschema json-spec validictory
 import fastjsonschema
@@ -72,14 +74,35 @@ VALUES_BAD = (
 
 
 fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA)
-fast_compiled = lambda value, _: fastjsonschema_validate(value)
 
-fast_not_compiled = lambda value, json_schema: fastjsonschema.compile(json_schema)(value)
 
-with open('temp/performance.py', 'w') as f:
-    f.write(fastjsonschema.compile_to_code(JSON_SCHEMA))
-from temp.performance import validate
-fast_file = lambda value, _: validate(value)
+def fast_compiled(value, _):
+    fastjsonschema_validate(value)
+
+
+def fast_not_compiled(value, json_schema):
+    fastjsonschema.compile(json_schema)(value)
+
+
+validator_class = jsonschema.validators.validator_for(JSON_SCHEMA)
+validator = validator_class(JSON_SCHEMA)
+
+
+def jsonschema_compiled(value, _):
+    validator.validate(value)
+
+
+with tempfile.NamedTemporaryFile('w', suffix='.py') as tmp_file:
+    tmp_file.write(fastjsonschema.compile_to_code(JSON_SCHEMA))
+    tmp_file.flush()
+    spec = importlib.util.spec_from_file_location("temp.performance", tmp_file.name)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+
+def fast_file(value, _):
+    module.validate(value)
+
 
 jsonspec = load(JSON_SCHEMA)
 
@@ -97,6 +120,7 @@ def t(func, valid_values=True):
         fast_compiled,
         fast_file,
         fast_not_compiled,
+        jsonschema_compiled,
     )
     """
 
@@ -115,7 +139,7 @@ def t(func, valid_values=True):
         """.format(func))
 
     res = timeit.timeit(code, setup, number=NUMBER)
-    print('{:<20} {:<10} ==> {}'.format(module, 'valid' if valid_values else 'invalid', res))
+    print('{:<20} {:<10} ==> {:10.7f}'.format(module, 'valid' if valid_values else 'invalid', res))
 
 
 print('Number: {}'.format(NUMBER))
@@ -131,6 +155,9 @@ t('fast_not_compiled', valid_values=False)
 
 t('jsonschema.validate')
 t('jsonschema.validate', valid_values=False)
+
+t('jsonschema_compiled')
+t('jsonschema_compiled', valid_values=False)
 
 t('jsonspec.validate')
 t('jsonspec.validate', valid_values=False)
