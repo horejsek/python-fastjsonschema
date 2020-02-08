@@ -20,7 +20,7 @@ class JsonSchemaException(ValueError):
         Added all extra properties.
     """
 
-    def __init__(self, message, value=None, name=None, definition=None, rule=None):
+    def __init__(self, message, value=None, name=None, definition=None, rule=None, path=None):
         super().__init__(message)
         self.message = message
         self.value = value
@@ -28,9 +28,11 @@ class JsonSchemaException(ValueError):
         self.definition = definition
         self.rule = rule
 
-    @property
-    def path(self):
-        return [item for item in SPLIT_RE.split(self.name) if item != '']
+        # Make a copy of the path
+        self.path = list(path)
+
+    def path_to_string(self):
+        return '/' + '/'.join(self.path) if (self.path is not None and len(self.path) > 0) else ''
 
     @property
     def rule_definition(self):

@@ -388,6 +388,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             item_definition,
                             '{}__{}'.format(self._variable, idx),
                             '{}[{}]'.format(self._variable_name, idx),
+                            '{}'.format(idx)
                         )
                     if isinstance(item_definition, dict) and 'default' in item_definition:
                         self.l('else: {variable}.append({})', repr(item_definition['default']))
@@ -402,6 +403,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                                 self._definition['additionalItems'],
                                 '{}_item'.format(self._variable),
                                 '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
+                                '{}_x'.format(self._variable)
                             )
             else:
                 if items_definition:
@@ -410,6 +412,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             items_definition,
                             '{}_item'.format(self._variable),
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
+                            '{}_x'.format(self._variable)
                         )
 
     def generate_min_properties(self):
@@ -467,7 +470,8 @@ class CodeGeneratorDraft04(CodeGenerator):
                         prop_definition,
                         '{}__{}'.format(self._variable, key_name),
                         '{}.{}'.format(self._variable_name, self.e(key)),
-                        clear_variables=True,
+                        '"{}"'.format(self.e(key)),
+                        clear_variables=True
                     )
                 if isinstance(prop_definition, dict) and 'default' in prop_definition:
                     self.l('else: {variable}["{}"] = {}', self.e(key), repr(prop_definition['default']))
@@ -500,7 +504,8 @@ class CodeGeneratorDraft04(CodeGenerator):
                             definition,
                             '{}_val'.format(self._variable),
                             '{}.{{{}_key}}'.format(self._variable_name, self._variable),
-                            clear_variables=True,
+                            '{}_key'.format(self._variable),
+                            clear_variables=True
                         )
 
     def generate_additional_properties(self):
@@ -534,6 +539,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             add_prop_definition,
                             '{}_value'.format(self._variable),
                             '{}.{{{}_key}}'.format(self._variable_name, self._variable),
+                            '{}_key'.format(self._variable)
                         )
             else:
                 with self.l('if {variable}_keys:'):

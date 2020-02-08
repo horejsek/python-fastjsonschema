@@ -4,6 +4,7 @@ import re
 from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
 from .indent import indent
 from .ref_resolver import RefResolver
+from .scope_path import ScopePath
 
 
 def enforce_list(variable):
@@ -84,6 +85,7 @@ class CodeGenerator:
             REGEX_PATTERNS=self._compile_regexps,
             re=re,
             JsonSchemaException=JsonSchemaException,
+            ScopePath=ScopePath,
         )
 
     @property
@@ -94,23 +96,22 @@ class CodeGenerator:
         """
         self._generate_func_code()
 
-        if not self._compile_regexps:
-            return '\n'.join(self._extra_imports_lines + [
-                'from fastjsonschema import JsonSchemaException',
+        lines = [
+            'from fastjsonschema import JsonSchemaException, ScopePath',
+            '',
+            '',
+        ]
+
+        if self._compile_regexps:
+            regexs = ['"{}": re.compile(r"{}")'.format(key, value.pattern) for key, value in self._compile_regexps.items()]
+            lines = ['import re'] + lines + [
+                'REGEX_PATTERNS = {',
+                '    ' + ',\n    '.join(regexs),
+                '}',
                 '',
-                '',
-            ])
-        regexs = ['"{}": re.compile(r"{}")'.format(key, value.pattern) for key, value in self._compile_regexps.items()]
-        return '\n'.join(self._extra_imports_lines + [
-            'import re',
-            'from fastjsonschema import JsonSchemaException',
-            '',
-            '',
-            'REGEX_PATTERNS = {',
-            '    ' + ',\n    '.join(regexs),
-            '}',
-            '',
-        ])
+            ]
+            
+        return '\n'.join(self._extra_imports_lines + lines)
 
 
     def _generate_func_code(self):
@@ -131,6 +132,9 @@ class CodeGenerator:
             uri, name = self._needed_validation_functions.popitem()
             self.generate_validation_function(uri, name)
 
+    def scope_path(self, scope_name):
+        return self.l('with ScopePath(path,' + scope_name + '):')
+
     def generate_validation_function(self, uri, name):
         """
         Generate validation function for given uri with given name
@@ -138,11 +142,11 @@ class CodeGenerator:
         self._validation_functions_done.add(uri)
         self.l('')
         with self._resolver.resolving(uri) as definition:
-            with self.l('def {}(data):', name):
-                self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
+            with self.l('def {}(data, name=None, path=[]):', name):
+                self.generate_func_code_block(definition, 'data', 'data', 'name', clear_variables=True)
                 self.l('return data')
 
-    def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
+    def generate_func_code_block(self, definition, variable, variable_name, scope_name=None, clear_variables=False):
         """
         Creates validation rules for current definition.
         """
@@ -152,7 +156,11 @@ class CodeGenerator:
             backup_variables = self._variables
             self._variables = set()
 
-        self._generate_func_code_block(definition)
+        if scope_name:
+            with self.scope_path(scope_name):
+                self._generate_func_code_block(definition)
+        else:
+            self._generate_func_code_block(definition)
 
         self._definition, self._variable, self._variable_name = backup
         if clear_variables:
@@ -192,7 +200,7 @@ class CodeGenerator:
             if uri not in self._validation_functions_done:
                 self._needed_validation_functions[uri] = name
             # call validation function
-            self.l('{}({variable})', name)
+            self.l('{}({variable}, path=path)', name)
 
 
     # pylint: disable=invalid-name
@@ -245,7 +253,7 @@ class CodeGenerator:
     def exc(self, msg, *args, rule=None):
         """
         """
-        msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
+        msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule}, path=path)'
         self.l(msg, *args, definition=repr(self._definition), rule=repr(rule))
 
     def create_variable_with_length(self):

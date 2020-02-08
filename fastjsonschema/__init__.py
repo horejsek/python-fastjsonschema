@@ -80,9 +80,9 @@ from .draft07 import CodeGeneratorDraft07
 from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
 from .ref_resolver import RefResolver
 from .version import VERSION
+from .scope_path import ScopePath
 
-__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
-
+__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'ScopePath', 'validate', 'compile', 'compile_to_code')
 
 def validate(definition, data, handlers={}, formats={}):
     """
