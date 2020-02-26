@@ -281,7 +281,7 @@ class CodeGenerator:
         if variable_name in self._variables:
             return
         self._variables.add(variable_name)
-        self.l('{variable}_is_list = isinstance({variable}, list)')
+        self.l('{variable}_is_list = isinstance({variable}, (list, tuple))')
 
     def create_variable_is_dict(self):
         """
