@@ -134,3 +134,19 @@ def test_different_items_without_additional_items(asserter, value, expected):
         ],
         'additionalItems': False,
     }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ((), ()),
+    (('a',), ('a',)),
+    (('a', 'b'), ('a', 'b'))
+
+])
+def test_tuples_as_arrays(asserter, value, expected):
+    asserter({
+        'type': 'array',
+        'items': [
+            {'type': 'string'},
+        ],
+        'additionalItems': False,
+    }, value, expected)
