@@ -41,18 +41,20 @@ You can do the performance on your computer or server with an included script:
 .. code-block:: bash
 
     $ make performance
-    fast_compiled        valid      ==> 0.030474655970465392
-    fast_compiled        invalid    ==> 0.0017561429995112121
-    fast_file            valid      ==> 0.028758891974575818
-    fast_file            invalid    ==> 0.0017655809642747045
-    fast_not_compiled    valid      ==> 4.597834145999514
-    fast_not_compiled    invalid    ==> 1.139162228035275
-    jsonschema           valid      ==> 5.014410221017897
-    jsonschema           invalid    ==> 1.1362981660058722
-    jsonspec             valid      ==> 8.1144932230236
-    jsonspec             invalid    ==> 2.0143173419637606
-    validictory          valid      ==> 0.4084212710149586
-    validictory          invalid    ==> 0.026061681972350925
+    fast_compiled        valid      ==>  0.0464646
+    fast_compiled        invalid    ==>  0.0030227
+    fast_file            valid      ==>  0.0461219
+    fast_file            invalid    ==>  0.0030608
+    fast_not_compiled    valid      ==> 11.4627202
+    fast_not_compiled    invalid    ==>  2.5726230
+    jsonschema           valid      ==>  7.5844927
+    jsonschema           invalid    ==>  1.9204665
+    jsonschema_compiled  valid      ==>  0.6938364
+    jsonschema_compiled  invalid    ==>  0.0359244
+    jsonspec             valid      ==>  9.0715843
+    jsonspec             invalid    ==>  2.1650488
+    validictory          valid      ==>  0.4874793
+    validictory          invalid    ==>  0.0232244
 
 This library follows and implements `JSON schema draft-04, draft-06, and draft-07
 <http://json-schema.org>`_. Sometimes it's not perfectly clear so I recommend also
