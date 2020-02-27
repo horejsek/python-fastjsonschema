@@ -11,7 +11,7 @@ JSON_TYPE_TO_PYTHON_TYPE = {
     'number': 'int, float',
     'integer': 'int',
     'string': 'str',
-    'array': 'list',
+    'array': 'list, tuple',
     'object': 'dict',
 }
 

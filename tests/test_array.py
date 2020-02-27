@@ -134,3 +134,35 @@ def test_different_items_without_additional_items(asserter, value, expected):
         ],
         'additionalItems': False,
     }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ((), ()),
+    (('a',), ('a',)),
+    (('a', 'b'), ('a', 'b')),
+    (('a', 'b', 3), JsonSchemaException('data[2] must be string', value=3, name='data[2]',
+                                        definition={'type': 'string'}, rule='type')),
+])
+def test_tuples_as_arrays(asserter, value, expected):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-06/schema',
+        'type': 'array',
+        'items':
+            {'type': 'string'},
+
+    }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ({'a': [], 'b': ()}, {'a': [], 'b': ()}),
+    ({'a': (1, 2), 'b': (3, 4)}, {'a': (1, 2), 'b': (3, 4)}),
+])
+def test_mixed_arrays(asserter, value, expected):
+    asserter({
+        'type': 'object',
+        'properties': {
+            'a': {'type': 'array'},
+            'b': {'type': 'array'},
+        },
+    }, value, expected)
+
