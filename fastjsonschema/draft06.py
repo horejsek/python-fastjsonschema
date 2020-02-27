@@ -61,9 +61,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                 # print(t)
                 vals = JSON_TYPE_TO_PYTHON_TYPE[t]
                 # print(vals)
-                for v in vals:
-                    # print(v)
-                    _ptypes.append(v)
+                _ptypes.extend(vals)
             python_types = ', '.join(_ptypes)
         except KeyError as exc:
             raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
