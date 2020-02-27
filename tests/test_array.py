@@ -141,7 +141,7 @@ def test_different_items_without_additional_items(asserter, value, expected):
     (('a',), ('a',)),
     (('a', 'b'), ('a', 'b')),
     (('a', 'b', 3), JsonSchemaException('data[2] must be string', value=3, name='data[2]',
-                                        definition={'type': 'string'}, rule='type'))
+                                        definition={'type': 'string'}, rule='type')),
 ])
 def test_tuples_as_arrays(asserter, value, expected):
     asserter({
