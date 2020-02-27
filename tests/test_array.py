@@ -139,16 +139,17 @@ def test_different_items_without_additional_items(asserter, value, expected):
 @pytest.mark.parametrize('value, expected', [
     ((), ()),
     (('a',), ('a',)),
-    (('a', 'b'), ('a', 'b'))
-
+    (('a', 'b'), ('a', 'b')),
+    (('a', 'b', 3), JsonSchemaException('data[2] must be string', value=3, name='data[2]',
+                                        definition={'type': 'string'}, rule='type'))
 ])
 def test_tuples_as_arrays(asserter, value, expected):
     asserter({
+        '$schema': 'http://json-schema.org/draft-06/schema',
         'type': 'array',
-        'items': [
+        'items':
             {'type': 'string'},
-        ],
-        'additionalItems': False,
+
     }, value, expected)
 
 
