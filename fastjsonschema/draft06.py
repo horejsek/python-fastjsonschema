@@ -56,12 +56,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         types = enforce_list(self._definition['type'])
         try:
             _ptypes = []
-            # [_ptypes.extend(JSON_TYPE_TO_PYTHON_TYPE[t]) for t in types]
-            for t in types:
-                # print(t)
-                vals = JSON_TYPE_TO_PYTHON_TYPE[t]
-                # print(vals)
-                _ptypes.extend(vals)
+            [_ptypes.extend(JSON_TYPE_TO_PYTHON_TYPE[t]) for t in types]
             python_types = ', '.join(_ptypes)
         except KeyError as exc:
             raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
