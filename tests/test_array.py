@@ -150,3 +150,18 @@ def test_tuples_as_arrays(asserter, value, expected):
         ],
         'additionalItems': False,
     }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ({'a': [], 'b': ()}, {'a': [], 'b': ()}),
+    ({'a': (1, 2), 'b': (3, 4)}, {'a': (1, 2), 'b': (3, 4)}),
+])
+def test_mixed_arrays(asserter, value, expected):
+    asserter({
+        'type': 'object',
+        'properties': {
+            'a': {'type': 'array'},
+            'b': {'type': 'array'},
+        },
+    }, value, expected)
+
