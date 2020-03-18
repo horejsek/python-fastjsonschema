@@ -138,7 +138,7 @@ class CodeGenerator:
         self._validation_functions_done.add(uri)
         self.l('')
         with self._resolver.resolving(uri) as definition:
-            with self.l('def {}(data):', name):
+            with self.l('def {}(data, *, name_prefix=None):', name):
                 self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
                 self.l('return data')
 
@@ -191,8 +191,9 @@ class CodeGenerator:
             uri = self._resolver.get_uri()
             if uri not in self._validation_functions_done:
                 self._needed_validation_functions[uri] = name
-            # call validation function
-            self.l('{}({variable})', name)
+            # call validation function, with current full name as a name_prefix
+            assert self._variable_name.startswith('data')
+            self.l('{}({variable}, name_prefix=(name_prefix or "data") + "{path}")', name, path=self._variable_name[4:])
 
 
     # pylint: disable=invalid-name
@@ -218,8 +219,13 @@ class CodeGenerator:
         spaces = ' ' * self.INDENT * self._indent
 
         name = self._variable_name
-        if name and '{' in name:
-            name = '"+"{}".format(**locals())+"'.format(self._variable_name)
+        if name:
+            # Add name_prefix to the name when it is being outputted.
+            assert name.startswith('data')
+            name = '" + (name_prefix or "data") + "' + name[4:]
+            if '{' in name:
+                name = name + '".format(**locals()) + "'
+
 
         context = dict(
             self._definition or {},
