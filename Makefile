@@ -64,7 +64,7 @@ doc:
 	cd docs; make
 
 upload: venv
-	${PYTHON} setup.py register sdist upload
+	${PYTHON} setup.py register sdist bdist_wheel upload
 
 deb: venv
 	${PYTHON} setup.py --command-packages=stdeb.command bdist_deb

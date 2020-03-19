@@ -1,4 +1,4 @@
-=== 2.14.4 (unreleased)
+=== 2.14.4 (2020-03-19)
 
 * Fix $id property
 * Add extra properties to error message when additionalProperties are set to False
