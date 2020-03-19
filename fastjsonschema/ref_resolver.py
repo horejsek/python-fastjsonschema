@@ -13,7 +13,7 @@ from urllib import parse as urlparse
 from urllib.parse import unquote
 from urllib.request import urlopen
 
-from .exceptions import JsonSchemaException
+from .exceptions import JsonSchemaDefinitionException
 
 
 def get_id(schema):
@@ -38,7 +38,7 @@ def resolve_path(schema, fragment):
         elif part in schema:
             schema = schema[part]
         else:
-            raise JsonSchemaException('Unresolvable ref: {}'.format(part))
+            raise JsonSchemaDefinitionException('Unresolvable ref: {}'.format(part))
     return schema
 
 
@@ -61,7 +61,10 @@ def resolve_remote(uri, handlers):
     else:
         req = urlopen(uri)
         encoding = req.info().get_content_charset() or 'utf-8'
-        result = json.loads(req.read().decode(encoding),)
+        try:
+            result = json.loads(req.read().decode(encoding),)
+        except ValueError as exc:
+            raise JsonSchemaDefinitionException('{} failed to decode: {}'.format(uri, exc))
     return result
 
 

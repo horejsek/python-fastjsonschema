@@ -2,6 +2,7 @@
 
 * Fix $id property
 * Add extra properties to error message when additionalProperties are set to False
+* Better exception message when referencing schema is not valid JSON
 
 
 === 2.14.3 (2020-02-27)
