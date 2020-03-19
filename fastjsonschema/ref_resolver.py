@@ -13,8 +13,14 @@ from urllib import parse as urlparse
 from urllib.parse import unquote
 from urllib.request import urlopen
 
-
 from .exceptions import JsonSchemaException
+
+
+def get_id(schema):
+    """
+    Originally ID was `id` and since v7 it's `$id`.
+    """
+    return schema.get('$id', schema.get('id', ''))
 
 
 def resolve_path(schema, fragment):
@@ -83,7 +89,7 @@ class RefResolver:
         Construct a resolver from a JSON schema object.
         """
         return cls(
-            schema.get('$id', schema.get('id', '')) if isinstance(schema, dict) else '',
+            get_id(schema) if isinstance(schema, dict) else '',
             schema,
             handlers=handlers,
             **kwargs
@@ -148,8 +154,8 @@ class RefResolver:
         elif '$ref' in node and isinstance(node['$ref'], str):
             ref = node['$ref']
             node['$ref'] = urlparse.urljoin(self.resolution_scope, ref)
-        elif 'id' in node and isinstance(node['id'], str):
-            with self.in_scope(node['id']):
+        elif ('$id' in node or 'id' in node) and isinstance(get_id(node), str):
+            with self.in_scope(get_id(node)):
                 self.store[normalize(self.resolution_scope)] = node
                 for _, item in node.items():
                     if isinstance(item, dict):
