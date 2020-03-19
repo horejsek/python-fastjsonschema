@@ -537,7 +537,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                         )
             else:
                 with self.l('if {variable}_keys:'):
-                    self.exc('{name} must contain only specified properties', rule='additionalProperties')
+                    self.exc('{name} must not contain "+str({variable}_keys)+" properties', rule='additionalProperties')
 
     def generate_dependencies(self):
         """

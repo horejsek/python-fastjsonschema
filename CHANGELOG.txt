@@ -1,6 +1,7 @@
 === 2.14.4 (unreleased)
 
 * Fix $id property
+* Add extra properties to error message when additionalProperties are set to False
 
 
 === 2.14.3 (2020-02-27)
