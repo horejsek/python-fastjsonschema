@@ -182,4 +182,4 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         if isinstance(const, str):
             const = '"{}"'.format(const)
         with self.l('if {variable} != {}:', const):
-            self.exc('{name} must be same as const definition', rule='const')
+            self.exc('{name} must be same as const definition: {definition}', rule='const')
