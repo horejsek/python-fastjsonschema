@@ -272,6 +272,33 @@ class CodeGenerator:
         self._variables.add(variable_name)
         self.l('{variable}_keys = set({variable}.keys())')
 
+
+    def create_valid_keys(self):
+        """
+        Append code for creating a variable containing keys that are
+        valid keys for the property as specified by the provided schema definition.
+
+        Each one of the ``{variable}_keys`` must be present in the ``valid_keys_{variable}`` for the provided data to be valid.
+
+        Example: 
+
+        if the schema definition is: 
+        {"type":"object", "properties":{"email":{"type":"string","minLength":3}}},
+        then:
+
+        data1 = {"email":"threeChars@email.com"} is valid 
+        but
+        data2 = {"emale":"threeChars@email.com"} is invalid
+
+        because the schema definition does not permit a (property) key named "emale".
+        """
+        variable_name = 'valid_keys_{}'.format(self._variable)
+
+        if variable_name in self._variables:
+            return
+        self._variables.add(variable_name)
+        self.l('valid_keys_{} = {}'.format(self._variable,list(self._definition['properties'].keys())))
+
     def create_variable_is_list(self):
         """
         Append code for creating variable with bool if it's instance of list
