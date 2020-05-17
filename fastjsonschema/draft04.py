@@ -462,10 +462,8 @@ class CodeGeneratorDraft04(CodeGenerator):
             # any key in the data that's not defined by schema is an invalid key.
             # if any invalid key is found, raise JsonSchemaException.
             with self.l('for data_key in {variable}_keys:'):
-                with self.l('if data_key in valid_keys_{variable}:'):
-                    self.l('continue')
-                with self.l('else:'):
-                    self.exc("{variable} contains invalid key." , self.e(self._variable_name), rule='properties')
+                with self.l('if data_key not in valid_keys_{variable}:'):
+                    self.exc("{variable} contains invalid key in: " + "{0}{1}{2}{3}{4}{5}".format('{','0','}','\"',".format(data_key)","+\"")  , self.e(self._variable_name), rule='properties')
 
             for key, prop_definition in self._definition['properties'].items():
                 key_name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '', key)
