@@ -182,3 +182,25 @@ def test_object_with_ref_property(asserter, value, expected):
             "$ref": {"type": "string"}
         }
     }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ({}, {}),
+    ({'foo': 'foo'}, JsonSchemaException('data missing dependency bar for foo', value={'foo': 'foo'}, name='data', definition='{definition}', rule='dependencies')),
+    ({'foo': 'foo', 'bar': 'bar'}, {'foo': 'foo', 'bar': 'bar'}),
+])
+def test_dependencies(asserter, value, expected):
+    asserter({
+        'type': 'object',
+        "properties": {
+            "foo": {
+                "type": "string"
+            },
+            "bar": {
+                "type": "string"
+            }
+        },
+        "dependencies": {
+            "foo": ["bar"],
+        },
+    }, value, expected)

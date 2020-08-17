@@ -58,10 +58,11 @@ class CodeGeneratorDraft04(CodeGenerator):
             ('minProperties', self.generate_min_properties),
             ('maxProperties', self.generate_max_properties),
             ('required', self.generate_required),
+            # Check dependencies before properties generates default values.
+            ('dependencies', self.generate_dependencies),
             ('properties', self.generate_properties),
             ('patternProperties', self.generate_pattern_properties),
             ('additionalProperties', self.generate_additional_properties),
-            ('dependencies', self.generate_dependencies),
         ))
 
     @property
@@ -559,16 +560,19 @@ class CodeGeneratorDraft04(CodeGenerator):
         """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
-            self.create_variable_keys()
+            isEmpty = True
             for key, values in self._definition["dependencies"].items():
                 if values == [] or values is True:
                     continue
-                with self.l('if "{}" in {variable}_keys:', self.e(key)):
+                isEmpty = False
+                with self.l('if "{}" in {variable}:', self.e(key)):
                     if values is False:
                         self.exc('{} in {name} must not be there', key, rule='dependencies')
                     elif isinstance(values, list):
                         for value in values:
-                            with self.l('if "{}" not in {variable}_keys:', self.e(value)):
+                            with self.l('if "{}" not in {variable}:', self.e(value)):
                                 self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule='dependencies')
                     else:
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
+            if isEmpty:
+                self.l('pass')
