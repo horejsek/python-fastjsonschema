@@ -51,6 +51,20 @@ def test_min_items(asserter, value, expected):
     ([1], [1]),
     ([1, 1], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
     ([1, 2, 3], [1, 2, 3]),
+    ([True, False], [True, False]),
+    ([True, True], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
+    (['abc', 'bce', 'hhh'], ['abc', 'bce', 'hhh']),
+    (['abc', 'abc'], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
+    ([{'a': 'a'}, {'b': 'b'}], [{'a': 'a'}, {'b': 'b'}]),
+    ([{'a': 'a'}, {'a': 'a'}], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
+    ([{'a': 'a', 'b': 'b'}, {'b': 'b', 'c': 'c'}], [{'a': 'a', 'b': 'b'}, {'b': 'b', 'c': 'c'}]),
+    ([{'a': 'a', 'b': 'b'}, {'b': 'b', 'a': 'a'}], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
+    ([1, '1'], [1, '1']),
+    ([{'a': 'b'}, "{'a': 'b'}"], [{'a': 'b'}, "{'a': 'b'}"]),
+    ([[1, 2], [2, 1]], [[1, 2], [2, 1]]),
+    ([[1, 2], [1, 2]], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
+    ([{'a': {'b': {'c': [1, 2]}}}, {'a': {'b': {'c': [1, 2]}}}], JsonSchemaException('data must contain unique items', value='{data}', name='data', definition='{definition}', rule='uniqueItems')),
+    ([{'a': {'b': {'c': [2, 1]}}}, {'a': {'b': {'c': [1, 2]}}}], [{'a': {'b': {'c': [2, 1]}}}, {'a': {'b': {'c': [1, 2]}}}]),
 ])
 def test_unique_items(asserter, value, expected):
     asserter({

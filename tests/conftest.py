@@ -13,6 +13,11 @@ from fastjsonschema import JsonSchemaException, compile
 from fastjsonschema.draft07 import CodeGeneratorDraft07
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "none")
+    config.addinivalue_line("markers", "benchmark")
+
+
 @pytest.fixture
 def asserter():
     def f(definition, value, expected, formats={}):
