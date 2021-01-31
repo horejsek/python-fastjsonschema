@@ -73,24 +73,25 @@ class RefResolver:
     Resolve JSON References.
     """
 
-    # pylint: disable=dangerous-default-value,too-many-arguments
-    def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
+    # pylint: disable=too-many-arguments
+    def __init__(self, base_uri, schema, store=None, cache=True, handlers=None):
         """
         `base_uri` is URI of the referring document from the `schema`.
         """
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
-        self.store = store
+        self.store = store or {}
         self.cache = cache
-        self.handlers = handlers
+        self.handlers = handlers or {}
         self.walk(schema)
 
     @classmethod
-    def from_schema(cls, schema, handlers={}, **kwargs):
+    def from_schema(cls, schema, handlers=None, **kwargs):
         """
         Construct a resolver from a JSON schema object.
         """
+        handlers = handlers or {}
         return cls(
             get_id(schema) if isinstance(schema, dict) else '',
             schema,

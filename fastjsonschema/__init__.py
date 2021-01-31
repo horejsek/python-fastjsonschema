@@ -86,7 +86,7 @@ from .version import VERSION
 __all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
 
 
-def validate(definition, data, handlers={}, formats={}):
+def validate(definition, data, handlers=None, formats=None):
     """
     Validation function for lazy programmers or for use cases, when you need
     to call validation only once, so you do not have to compile it first.
@@ -102,11 +102,13 @@ def validate(definition, data, handlers={}, formats={}):
 
     Preferred is to use :any:`compile` function.
     """
+    handlers = handlers or {}
+    formats = formats or {}
     return compile(definition, handlers, formats)(data)
 
 
-# pylint: disable=redefined-builtin,dangerous-default-value,exec-used
-def compile(definition, handlers={}, formats={}):
+# pylint: disable=redefined-builtin,exec-used
+def compile(definition, handlers=None, formats=None):
     """
     Generates validation function for validating JSON schema passed in ``definition``.
     Example:
@@ -163,6 +165,8 @@ def compile(definition, handlers={}, formats={}):
     Exception :any:`JsonSchemaException` is raised from generated funtion when
     validation fails (data do not follow the definition).
     """
+    handlers = handlers or {}
+    formats = formats or {}
     resolver, code_generator = _factory(definition, handlers, formats)
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
@@ -170,8 +174,7 @@ def compile(definition, handlers={}, formats={}):
     return global_state[resolver.get_scope_name()]
 
 
-# pylint: disable=dangerous-default-value
-def compile_to_code(definition, handlers={}, formats={}):
+def compile_to_code(definition, handlers=None, formats=None):
     """
     Generates validation code for validating JSON schema passed in ``definition``.
     Example:
@@ -194,6 +197,8 @@ def compile_to_code(definition, handlers={}, formats={}):
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
     """
+    handlers = handlers or {}
+    formats = formats or {}
     _, code_generator = _factory(definition, handlers, formats)
     return (
         'VERSION = "' + VERSION + '"\n' +
@@ -202,7 +207,8 @@ def compile_to_code(definition, handlers={}, formats={}):
     )
 
 
-def _factory(definition, handlers, formats={}):
+def _factory(definition, handlers, formats=None):
+    formats = formats or {}
     resolver = RefResolver.from_schema(definition, handlers=handlers)
     code_generator = _get_code_generator_class(definition)(definition, resolver=resolver, formats=formats)
     return resolver, code_generator

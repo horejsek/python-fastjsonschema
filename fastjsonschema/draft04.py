@@ -34,7 +34,8 @@ class CodeGeneratorDraft04(CodeGenerator):
         'uri': r'^\w+:(\/?\/?)[^\s]+\Z',
     }
 
-    def __init__(self, definition, resolver=None, formats={}):
+    def __init__(self, definition, resolver=None, formats=None):
+        formats = formats or {}
         super().__init__(definition, resolver)
         self._custom_formats = formats
         self._json_keywords_to_function.update((
@@ -268,7 +269,6 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.exc('{name} must be a valid regex', rule='format')
             else:
                 raise JsonSchemaDefinitionException('Unknown format: {}'.format(format_))
-
 
     def _generate_format(self, format_name, regexp_name, regexp):
         if self._definition['format'] == format_name:
@@ -560,11 +560,11 @@ class CodeGeneratorDraft04(CodeGenerator):
         """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
-            isEmpty = True
+            is_empty = True
             for key, values in self._definition["dependencies"].items():
                 if values == [] or values is True:
                     continue
-                isEmpty = False
+                is_empty = False
                 with self.l('if "{}" in {variable}:', self.e(key)):
                     if values is False:
                         self.exc('{} in {name} must not be there', key, rule='dependencies')
@@ -574,5 +574,5 @@ class CodeGeneratorDraft04(CodeGenerator):
                                 self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule='dependencies')
                     else:
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
-            if isEmpty:
+            if is_empty:
                 self.l('pass')
