@@ -159,6 +159,28 @@ def test_additional_properties(asserter, value, expected):
 
 
 @pytest.mark.parametrize('value, expected', [
+    ({}, {}),
+    ({'a': 1}, {'a': 1}),
+    ({'b': True}, {'b': True}),
+    ({'c': ''}, {'c': ''}),
+    ({'d': 1}, {'d': 1}),
+    ({'e': {'test': 'x'}}, {'e': {'test': 'x'}}),
+    ({'g': [1, 2, 3]}, {'g': [1, 2, 3]}),
+    ({'h': False}, {'h': False}),
+])
+def test_any_additional_properties(asserter, value, expected):
+    for obj in (True, {}):
+        asserter({
+            'type': 'object',
+            "properties": {
+                "a": {"type": "number"},
+                "b": {"type": "boolean"},
+            },
+            "additionalProperties": obj
+        }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
     ({'id': 1}, {'id': 1}),
     ({'id': 'a'}, JsonSchemaException('data.id must be integer', value='a', name='data.id', definition={'type': 'integer'}, rule='type')),
 ])
