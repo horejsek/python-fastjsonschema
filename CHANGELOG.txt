@@ -1,4 +1,4 @@
-=== 2.15.0 (2021)
+=== 2.15.0 (2021-02-01)
 
 * Fix additional property equal to empty object is the same as True
 * Fix const with "
