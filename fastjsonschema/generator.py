@@ -246,7 +246,8 @@ class CodeGenerator:
         """
         """
         msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
-        self.l(msg, *args, definition=repr(self._definition), rule=repr(rule))
+        definition_rule = str(self._definition.get(rule) if isinstance(self._definition, dict) else None).replace('"', '\\"')
+        self.l(msg, *args, definition=repr(self._definition), rule=repr(rule), definition_rule=definition_rule)
 
     def create_variable_with_length(self):
         """

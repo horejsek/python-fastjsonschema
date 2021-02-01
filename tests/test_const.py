@@ -1,14 +1,24 @@
 import pytest
 
+from fastjsonschema import JsonSchemaException
 
-@pytest.mark.parametrize('value', (
-    'foo',
-    42,
-    False,
-    [1, 2, 3]
+
+@pytest.mark.parametrize('value, testError', (
+    ('foo', False),
+    (42, False),
+    (False, False),
+    ([1, 2, 3], False),
+    ('\'"', False),
+    ('foo', True),
+    ('\'"', False),
 ))
-def test_const(asserter, value):
+def test_const(asserter, value, testError):
+    const = expected = value
+    if testError:
+        const = 'x'
+        expected = JsonSchemaException('data must be same as const definition: x', value='{data}', name='data', definition='{definition}', rule='const')
+    
     asserter({
         '$schema': 'http://json-schema.org/draft-06/schema',
-        'const': value,
-    }, value, value)
+        'const': const,
+    }, value, expected)
