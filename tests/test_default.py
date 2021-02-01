@@ -1,10 +1,10 @@
 import pytest
 
-from fastjsonschema import JsonSchemaException
+from fastjsonschema import JsonSchemaValueException
 
 
 @pytest.mark.parametrize('value, expected', [
-    (None, JsonSchemaException('data must be object', value='{data}', name='data', definition='{definition}', rule='type')),
+    (None, JsonSchemaValueException('data must be object', value='{data}', name='data', definition='{definition}', rule='type')),
     ({}, {'a': '', 'b': 42, 'c': {}, 'd': []}),
     ({'a': 'abc'}, {'a': 'abc', 'b': 42, 'c': {}, 'd': []}),
     ({'b': 123}, {'a': '', 'b': 123, 'c': {}, 'd': []}),
@@ -23,7 +23,7 @@ def test_default_in_object(asserter, value, expected):
 
 
 @pytest.mark.parametrize('value, expected', [
-    (None, JsonSchemaException('data must be array', value='{data}', name='data', definition='{definition}', rule='type')),
+    (None, JsonSchemaValueException('data must be array', value='{data}', name='data', definition='{definition}', rule='type')),
     ([], ['', 42]),
     (['abc'], ['abc', 42]),
     (['abc', 123], ['abc', 123]),

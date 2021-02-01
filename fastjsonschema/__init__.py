@@ -79,11 +79,11 @@ API
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
 from .draft07 import CodeGeneratorDraft07
-from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
+from .exceptions import JsonSchemaException, JsonSchemaValueException, JsonSchemaDefinitionException
 from .ref_resolver import RefResolver
 from .version import VERSION
 
-__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
+__all__ = ('VERSION', 'JsonSchemaException', 'JsonSchemaValueException', 'JsonSchemaDefinitionException', 'validate', 'compile', 'compile_to_code')
 
 
 def validate(definition, data, handlers={}, formats={}):
@@ -160,7 +160,7 @@ def compile(definition, handlers={}, formats={}):
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
 
-    Exception :any:`JsonSchemaException` is raised from generated funtion when
+    Exception :any:`JsonSchemaValueException` is raised from generated function when
     validation fails (data do not follow the definition).
     """
     resolver, code_generator = _factory(definition, handlers, formats)

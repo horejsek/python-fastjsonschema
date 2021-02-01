@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import re
 
-from .exceptions import JsonSchemaException, JsonSchemaDefinitionException
+from .exceptions import JsonSchemaValueException, JsonSchemaDefinitionException
 from .indent import indent
 from .ref_resolver import RefResolver
 
@@ -83,7 +83,7 @@ class CodeGenerator:
             **self._extra_imports_objects,
             REGEX_PATTERNS=self._compile_regexps,
             re=re,
-            JsonSchemaException=JsonSchemaException,
+            JsonSchemaValueException=JsonSchemaValueException,
         )
 
     @property
@@ -96,14 +96,14 @@ class CodeGenerator:
 
         if not self._compile_regexps:
             return '\n'.join(self._extra_imports_lines + [
-                'from fastjsonschema import JsonSchemaException',
+                'from fastjsonschema import JsonSchemaValueException',
                 '',
                 '',
             ])
         regexs = ['"{}": re.compile(r"{}")'.format(key, value.pattern) for key, value in self._compile_regexps.items()]
         return '\n'.join(self._extra_imports_lines + [
             'import re',
-            'from fastjsonschema import JsonSchemaException',
+            'from fastjsonschema import JsonSchemaValueException',
             '',
             '',
             'REGEX_PATTERNS = {',
@@ -206,14 +206,14 @@ class CodeGenerator:
 
         .. code-block:: python
 
-            self.l('if {variable} not in {enum}: raise JsonSchemaException("Wrong!")')
+            self.l('if {variable} not in {enum}: raise JsonSchemaValueException("Wrong!")')
 
         When you want to indent block, use it as context manager. For example:
 
         .. code-block:: python
 
             with self.l('if {variable} not in {enum}:'):
-                self.l('raise JsonSchemaException("Wrong!")')
+                self.l('raise JsonSchemaValueException("Wrong!")')
         """
         spaces = ' ' * self.INDENT * self._indent
 
@@ -238,15 +238,15 @@ class CodeGenerator:
 
         .. code-block:: python
 
-            self.l('raise JsonSchemaException("Variable: {}")', self.e(variable))
+            self.l('raise JsonSchemaValueException("Variable: {}")', self.e(variable))
         """
         return str(string).replace('"', '\\"')
 
     def exc(self, msg, *args, rule=None):
         """
         """
-        msg = 'raise JsonSchemaException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
-        definition_rule = str(self._definition.get(rule) if isinstance(self._definition, dict) else None).replace('"', '\\"')
+        msg = 'raise JsonSchemaValueException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
+        definition_rule = self.e(self._definition.get(rule) if isinstance(self._definition, dict) else None)
         self.l(msg, *args, definition=repr(self._definition), rule=repr(rule), definition_rule=definition_rule)
 
     def create_variable_with_length(self):

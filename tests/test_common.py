@@ -1,9 +1,9 @@
 import pytest
 
-from fastjsonschema import JsonSchemaException
+from fastjsonschema import JsonSchemaValueException
 
 
-exc = JsonSchemaException('data must be one of [1, 2, \'a\', "b\'c"]', value='{data}', name='data', definition='{definition}', rule='enum')
+exc = JsonSchemaValueException('data must be one of [1, 2, \'a\', "b\'c"]', value='{data}', name='data', definition='{definition}', rule='enum')
 @pytest.mark.parametrize('value, expected', [
     (1, 1),
     (2, 2),
@@ -15,7 +15,7 @@ def test_enum(asserter, value, expected):
     asserter({'enum': [1, 2, 'a', "b'c"]}, value, expected)
 
 
-exc = JsonSchemaException('data must be string or number', value='{data}', name='data', definition='{definition}', rule='type')
+exc = JsonSchemaValueException('data must be string or number', value='{data}', name='data', definition='{definition}', rule='type')
 @pytest.mark.parametrize('value, expected', [
     (0, 0),
     (None, exc),
@@ -30,7 +30,7 @@ def test_types(asserter, value, expected):
 
 @pytest.mark.parametrize('value, expected', [
     ('qwert', 'qwert'),
-    ('qwertz', JsonSchemaException('data must be shorter than or equal to 5 characters', value='{data}', name='data', definition={'maxLength': 5}, rule='maxLength')),
+    ('qwertz', JsonSchemaValueException('data must be shorter than or equal to 5 characters', value='{data}', name='data', definition={'maxLength': 5}, rule='maxLength')),
 ])
 def test_all_of(asserter, value, expected):
     asserter({'allOf': [
@@ -39,7 +39,7 @@ def test_all_of(asserter, value, expected):
     ]}, value, expected)
 
 
-exc = JsonSchemaException('data must be valid by one of anyOf definition', value='{data}', name='data', definition='{definition}', rule='anyOf')
+exc = JsonSchemaValueException('data must be valid by one of anyOf definition', value='{data}', name='data', definition='{definition}', rule='anyOf')
 @pytest.mark.parametrize('value, expected', [
     (0, 0),
     (None, exc),
@@ -55,7 +55,7 @@ def test_any_of(asserter, value, expected):
     ]}, value, expected)
 
 
-exc = JsonSchemaException('data must be valid exactly by one of oneOf definition', value='{data}', name='data', definition='{definition}', rule='oneOf')
+exc = JsonSchemaValueException('data must be valid exactly by one of oneOf definition', value='{data}', name='data', definition='{definition}', rule='oneOf')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (2, exc),
@@ -70,7 +70,7 @@ def test_one_of(asserter, value, expected):
     ]}, value, expected)
 
 
-exc = JsonSchemaException('data must be valid exactly by one of oneOf definition', value='{data}', name='data', definition='{definition}', rule='oneOf')
+exc = JsonSchemaValueException('data must be valid exactly by one of oneOf definition', value='{data}', name='data', definition='{definition}', rule='oneOf')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (2, exc),
@@ -89,7 +89,7 @@ def test_one_of_factorized(asserter, value, expected):
 
 
 @pytest.mark.parametrize('value, expected', [
-    (0, JsonSchemaException('data must not be valid by not definition', value='{data}', name='data', definition='{definition}', rule='not')),
+    (0, JsonSchemaValueException('data must not be valid by not definition', value='{data}', name='data', definition='{definition}', rule='not')),
     (True, True),
     ('abc', 'abc'),
     ([], []),

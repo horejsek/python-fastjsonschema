@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaException
+from fastjsonschema import JsonSchemaValueException
 
 
 @pytest.fixture(params=['number', 'integer'])
@@ -8,7 +8,7 @@ def number_type(request):
     return request.param
 
 
-exc = JsonSchemaException('data must be {number_type}')
+exc = JsonSchemaValueException('data must be {number_type}')
 @pytest.mark.parametrize('value, expected', [
     (-5, -5),
     (0, 0),
@@ -20,12 +20,12 @@ exc = JsonSchemaException('data must be {number_type}')
     ({}, exc),
 ])
 def test_number(asserter, number_type, value, expected):
-    if isinstance(expected, JsonSchemaException):
-        expected = JsonSchemaException(expected.message.format(number_type=number_type), value='{data}', name='data', definition='{definition}', rule='type')
+    if isinstance(expected, JsonSchemaValueException):
+        expected = JsonSchemaValueException(expected.message.format(number_type=number_type), value='{data}', name='data', definition='{definition}', rule='type')
     asserter({'type': number_type}, value, expected)
 
 
-exc = JsonSchemaException('data must be smaller than or equal to 10', value='{data}', name='data', definition='{definition}', rule='maximum')
+exc = JsonSchemaValueException('data must be smaller than or equal to 10', value='{data}', name='data', definition='{definition}', rule='maximum')
 @pytest.mark.parametrize('value, expected', [
     (-5, -5),
     (5, 5),
@@ -41,7 +41,7 @@ def test_maximum(asserter, number_type, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be smaller than 10', value='{data}', name='data', definition='{definition}', rule='maximum')
+exc = JsonSchemaValueException('data must be smaller than 10', value='{data}', name='data', definition='{definition}', rule='maximum')
 @pytest.mark.parametrize('value, expected', [
     (-5, -5),
     (5, 5),
@@ -58,7 +58,7 @@ def test_exclusive_maximum(asserter, number_type, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be bigger than or equal to 10', value='{data}', name='data', definition='{definition}', rule='minimum')
+exc = JsonSchemaValueException('data must be bigger than or equal to 10', value='{data}', name='data', definition='{definition}', rule='minimum')
 @pytest.mark.parametrize('value, expected', [
     (-5, exc),
     (9, exc),
@@ -73,7 +73,7 @@ def test_minimum(asserter, number_type, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be bigger than 10', value='{data}', name='data', definition='{definition}', rule='minimum')
+exc = JsonSchemaValueException('data must be bigger than 10', value='{data}', name='data', definition='{definition}', rule='minimum')
 @pytest.mark.parametrize('value, expected', [
     (-5, exc),
     (9, exc),
@@ -89,7 +89,7 @@ def test_exclusive_minimum(asserter, number_type, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be multiple of 3', value='{data}', name='data', definition='{definition}', rule='multipleOf')
+exc = JsonSchemaValueException('data must be multiple of 3', value='{data}', name='data', definition='{definition}', rule='multipleOf')
 @pytest.mark.parametrize('value, expected', [
     (-4, exc),
     (-3, -3),
@@ -111,7 +111,7 @@ def test_multiple_of(asserter, number_type, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be multiple of 0.0001', value='{data}', name='data', definition='{definition}', rule='multipleOf')
+exc = JsonSchemaValueException('data must be multiple of 0.0001', value='{data}', name='data', definition='{definition}', rule='multipleOf')
 @pytest.mark.parametrize('value, expected', [
     (0.00751, exc),
     (0.0075, 0.0075),
@@ -123,7 +123,7 @@ def test_multiple_of_float(asserter, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must be multiple of 0.01', value='{data}', name='data', definition='{definition}', rule='multipleOf')
+exc = JsonSchemaValueException('data must be multiple of 0.01', value='{data}', name='data', definition='{definition}', rule='multipleOf')
 @pytest.mark.parametrize('value, expected', [
     (0, 0),
     (0.01, 0.01),
@@ -148,7 +148,7 @@ def test_multiple_of_float_1_5(asserter, value, expected):
 def test_integer_is_not_number(asserter, value):
     asserter({
         'type': 'integer',
-    }, value, JsonSchemaException('data must be integer', value='{data}', name='data', definition='{definition}', rule='type'))
+    }, value, JsonSchemaValueException('data must be integer', value='{data}', name='data', definition='{definition}', rule='type'))
 
 
 @pytest.mark.parametrize('value', (

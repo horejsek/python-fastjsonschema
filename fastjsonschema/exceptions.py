@@ -6,6 +6,12 @@ SPLIT_RE = re.compile(r'[\.\[\]]+')
 
 class JsonSchemaException(ValueError):
     """
+    Base exception of ``fastjsonschema`` library.
+    """
+
+
+class JsonSchemaValueException(JsonSchemaException):
+    """
     Exception raised by validation function. Available properties:
 
      * ``message`` containing human-readable information what is wrong (e.g. ``data.property[index] must be smaller than or equal to 42``),

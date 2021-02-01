@@ -151,7 +151,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 with self.l('try:', optimize=False):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_any_of_count += 1')
-                self.l('except JsonSchemaException: pass')
+                self.l('except JsonSchemaValueException: pass')
 
         with self.l('if not {variable}_any_of_count:', optimize=False):
             self.exc('{name} must be valid by one of anyOf definition', rule='anyOf')
@@ -179,7 +179,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 with self.l('try:', optimize=False):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_one_of_count += 1')
-                self.l('except JsonSchemaException: pass')
+                self.l('except JsonSchemaValueException: pass')
 
         with self.l('if {variable}_one_of_count != 1:'):
             self.exc('{name} must be valid exactly by one of oneOf definition', rule='oneOf')
@@ -208,7 +208,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         else:
             with self.l('try:', optimize=False):
                 self.generate_func_code_block(not_definition, self._variable, self._variable_name)
-            self.l('except JsonSchemaException: pass')
+            self.l('except JsonSchemaValueException: pass')
             with self.l('else:'):
                 self.exc('{name} must not be valid by not definition', rule='not')
 

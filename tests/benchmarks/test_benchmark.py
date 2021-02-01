@@ -76,7 +76,7 @@ def test_benchmark_bad_values(benchmark, value):
     def f():
         try:
             fastjsonschema_validate(value)
-        except fastjsonschema.JsonSchemaException:
+        except fastjsonschema.JsonSchemaValueException:
             pass
         else:
             pytest.fail('Exception is not raised')

@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaException
+from fastjsonschema import JsonSchemaValueException
 
 
 @pytest.mark.parametrize('value, expected', [
@@ -13,7 +13,7 @@ from fastjsonschema import JsonSchemaException
     ('data[1][2].foo.bar', ['data', '1', '2', 'foo', 'bar']),
 ])
 def test_exception_variable_path(value, expected):
-    exc = JsonSchemaException('msg', name=value)
+    exc = JsonSchemaValueException('msg', name=value)
     assert exc.path == expected
 
 
@@ -26,5 +26,5 @@ def test_exception_variable_path(value, expected):
     (None, 'type', None),
 ])
 def test_exception_rule_definition(definition, rule, expected_rule_definition):
-    exc = JsonSchemaException('msg', definition=definition, rule=rule)
+    exc = JsonSchemaValueException('msg', definition=definition, rule=rule)
     assert exc.rule_definition == expected_rule_definition

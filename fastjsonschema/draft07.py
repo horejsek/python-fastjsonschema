@@ -53,7 +53,7 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
                 self._variable_name,
                 clear_variables=True
             )
-        with self.l('except JsonSchemaException:'):
+        with self.l('except JsonSchemaValueException:'):
             if 'else' in self._definition:
                 self.generate_func_code_block(
                     self._definition['else'],

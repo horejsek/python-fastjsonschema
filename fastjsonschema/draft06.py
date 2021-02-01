@@ -121,7 +121,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                                 self._variable_name,
                                 clear_variables=True,
                             )
-                        with self.l('except JsonSchemaException:'):
+                        with self.l('except JsonSchemaValueException:'):
                             self.l('{variable}_property_names = False')
                     with self.l('if not {variable}_property_names:'):
                         self.exc('{name} must be named by propertyName definition', rule='propertyNames')
@@ -161,7 +161,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                         )
                         self.l('{variable}_contains = True')
                         self.l('break')
-                    self.l('except JsonSchemaException: pass')
+                    self.l('except JsonSchemaValueException: pass')
 
                 with self.l('if not {variable}_contains:'):
                     self.exc('{name} must contain one of contains definition', rule='contains')
@@ -180,6 +180,6 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         """
         const = self._definition['const']
         if isinstance(const, str):
-            const = '"{}"'.format(const.replace('"', '\\"'))
+            const = '"{}"'.format(self.e(const))
         with self.l('if {variable} != {}:', const):
             self.exc('{name} must be same as const definition: {definition_rule}', rule='const')

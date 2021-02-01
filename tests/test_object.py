@@ -1,10 +1,10 @@
 import pytest
 
 import fastjsonschema
-from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaException
+from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaValueException
 
 
-exc = JsonSchemaException('data must be object', value='{data}', name='data', definition='{definition}', rule='type')
+exc = JsonSchemaValueException('data must be object', value='{data}', name='data', definition='{definition}', rule='type')
 @pytest.mark.parametrize('value, expected', [
     (0, exc),
     (None, exc),
@@ -22,7 +22,7 @@ def test_object(asserter, value, expected):
 @pytest.mark.parametrize('value, expected', [
     ({}, {}),
     ({'a': 1}, {'a': 1}),
-    ({'a': 1, 'b': 2}, JsonSchemaException('data must contain less than or equal to 1 properties', value='{data}', name='data', definition='{definition}', rule='maxProperties')),
+    ({'a': 1, 'b': 2}, JsonSchemaValueException('data must contain less than or equal to 1 properties', value='{data}', name='data', definition='{definition}', rule='maxProperties')),
 ])
 def test_max_properties(asserter, value, expected):
     asserter({
@@ -32,7 +32,7 @@ def test_max_properties(asserter, value, expected):
 
 
 @pytest.mark.parametrize('value, expected', [
-    ({}, JsonSchemaException('data must contain at least 1 properties', value='{data}', name='data', definition='{definition}', rule='minProperties')),
+    ({}, JsonSchemaValueException('data must contain at least 1 properties', value='{data}', name='data', definition='{definition}', rule='minProperties')),
     ({'a': 1}, {'a': 1}),
     ({'a': 1, 'b': 2}, {'a': 1, 'b': 2}),
 ])
@@ -43,7 +43,7 @@ def test_min_properties(asserter, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaException('data must contain [\'a\', \'b\'] properties', value='{data}', name='data', definition='{definition}', rule='required')
+exc = JsonSchemaValueException('data must contain [\'a\', \'b\'] properties', value='{data}', name='data', definition='{definition}', rule='required')
 @pytest.mark.parametrize('value, expected', [
     ({}, exc),
     ({'a': 1}, exc),
@@ -60,7 +60,7 @@ def test_required(asserter, value, expected):
     ({}, {}),
     ({'a': 1}, {'a': 1}),
     ({'a': 1, 'b': ''}, {'a': 1, 'b': ''}),
-    ({'a': 1, 'b': 2}, JsonSchemaException('data.b must be string', value=2, name='data.b', definition={'type': 'string'}, rule='type')),
+    ({'a': 1, 'b': 2}, JsonSchemaValueException('data.b must be string', value=2, name='data.b', definition={'type': 'string'}, rule='type')),
     ({'a': 1, 'b': '', 'any': True}, {'a': 1, 'b': '', 'any': True}),
 ])
 def test_properties(asserter, value, expected):
@@ -86,9 +86,9 @@ def test_invalid_properties(asserter):
     ({}, {}),
     ({'a': 1}, {'a': 1}),
     ({'a': 1, 'b': ''}, {'a': 1, 'b': ''}),
-    ({'a': 1, 'b': 2}, JsonSchemaException('data.b must be string', value=2, name='data.b', definition={'type': 'string'}, rule='type')),
+    ({'a': 1, 'b': 2}, JsonSchemaValueException('data.b must be string', value=2, name='data.b', definition={'type': 'string'}, rule='type')),
     ({'a': 1, 'b': '', 'additional': ''}, {'a': 1, 'b': '', 'additional': ''}),
-    ({'a': 1, 'b': '', 'any': True}, JsonSchemaException('data.any must be string', value=True, name='data.any', definition={'type': 'string'}, rule='type')),
+    ({'a': 1, 'b': '', 'any': True}, JsonSchemaValueException('data.any must be string', value=True, name='data.any', definition={'type': 'string'}, rule='type')),
 ])
 def test_properties_with_additional_properties(asserter, value, expected):
     asserter({
@@ -105,9 +105,9 @@ def test_properties_with_additional_properties(asserter, value, expected):
     ({}, {}),
     ({'a': 1}, {'a': 1}),
     ({'a': 1, 'b': ''}, {'a': 1, 'b': ''}),
-    ({'a': 1, 'b': 2}, JsonSchemaException('data.b must be string', value=2, name='data.b', definition={'type': 'string'}, rule='type')),
-    ({'a': 1, 'b': '', 'any': True}, JsonSchemaException('data must not contain {\'any\'} properties', value='{data}', name='data', definition='{definition}', rule='additionalProperties')),
-    ({'cd': True}, JsonSchemaException('data must not contain {\'cd\'} properties', value='{data}', name='data', definition='{definition}', rule='additionalProperties')),
+    ({'a': 1, 'b': 2}, JsonSchemaValueException('data.b must be string', value=2, name='data.b', definition={'type': 'string'}, rule='type')),
+    ({'a': 1, 'b': '', 'any': True}, JsonSchemaValueException('data must not contain {\'any\'} properties', value='{data}', name='data', definition='{definition}', rule='additionalProperties')),
+    ({'cd': True}, JsonSchemaValueException('data must not contain {\'cd\'} properties', value='{data}', name='data', definition='{definition}', rule='additionalProperties')),
     ({'c_d': True}, {'c_d': True}),
 ])
 def test_properties_without_additional_properties(asserter, value, expected):
@@ -126,7 +126,7 @@ def test_properties_without_additional_properties(asserter, value, expected):
     ({}, {}),
     ({'a': 1}, {'a': 1}),
     ({'xa': 1}, {'xa': 1}),
-    ({'xa': ''}, JsonSchemaException('data.xa must be number', value='', name='data.xa', definition={'type': 'number'}, rule='type')),
+    ({'xa': ''}, JsonSchemaValueException('data.xa must be number', value='', name='data.xa', definition={'type': 'number'}, rule='type')),
     ({'xbx': ''}, {'xbx': ''}),
 ])
 def test_pattern_properties(asserter, value, expected):
@@ -145,7 +145,7 @@ def test_pattern_properties(asserter, value, expected):
     ({'a': 1}, {'a': 1}),
     ({'b': True}, {'b': True}),
     ({'c': ''}, {'c': ''}),
-    ({'d': 1}, JsonSchemaException('data.d must be string', value=1, name='data.d', definition={'type': 'string'}, rule='type')),
+    ({'d': 1}, JsonSchemaValueException('data.d must be string', value=1, name='data.d', definition={'type': 'string'}, rule='type')),
 ])
 def test_additional_properties(asserter, value, expected):
     asserter({
@@ -182,7 +182,7 @@ def test_any_additional_properties(asserter, value, expected):
 
 @pytest.mark.parametrize('value, expected', [
     ({'id': 1}, {'id': 1}),
-    ({'id': 'a'}, JsonSchemaException('data.id must be integer', value='a', name='data.id', definition={'type': 'integer'}, rule='type')),
+    ({'id': 'a'}, JsonSchemaValueException('data.id must be integer', value='a', name='data.id', definition={'type': 'integer'}, rule='type')),
 ])
 def test_object_with_id_property(asserter, value, expected):
     asserter({
@@ -195,7 +195,7 @@ def test_object_with_id_property(asserter, value, expected):
 
 @pytest.mark.parametrize('value, expected', [
     ({'$ref': 'ref://to.somewhere'}, {'$ref': 'ref://to.somewhere'}),
-    ({'$ref': 1}, JsonSchemaException('data.$ref must be string', value=1, name='data.$ref', definition={'type': 'string'}, rule='type')),
+    ({'$ref': 1}, JsonSchemaValueException('data.$ref must be string', value=1, name='data.$ref', definition={'type': 'string'}, rule='type')),
 ])
 def test_object_with_ref_property(asserter, value, expected):
     asserter({
@@ -208,7 +208,7 @@ def test_object_with_ref_property(asserter, value, expected):
 
 @pytest.mark.parametrize('value, expected', [
     ({}, {}),
-    ({'foo': 'foo'}, JsonSchemaException('data missing dependency bar for foo', value={'foo': 'foo'}, name='data', definition='{definition}', rule='dependencies')),
+    ({'foo': 'foo'}, JsonSchemaValueException('data missing dependency bar for foo', value={'foo': 'foo'}, name='data', definition='{definition}', rule='dependencies')),
     ({'foo': 'foo', 'bar': 'bar'}, {'foo': 'foo', 'bar': 'bar'}),
 ])
 def test_dependencies(asserter, value, expected):
