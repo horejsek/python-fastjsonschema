@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaValueException
+from fastjsonschema import JsonSchemaValueException, validate
 
 
 @pytest.mark.parametrize('value, expected', [
@@ -36,3 +36,13 @@ def test_default_in_array(asserter, value, expected):
             {'type': 'number', 'default': 42},
         ],
     }, value, expected)
+
+
+def test_default_turned_off():
+    output = validate({
+        'type': 'object',
+        'properties': {
+            'a': {'type': 'string', 'default': ''},
+        },
+    }, {}, use_default=False)
+    assert output == {}

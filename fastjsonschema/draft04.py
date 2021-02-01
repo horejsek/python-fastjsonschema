@@ -34,9 +34,10 @@ class CodeGeneratorDraft04(CodeGenerator):
         'uri': r'^\w+:(\/?\/?)[^\s]+\Z',
     }
 
-    def __init__(self, definition, resolver=None, formats={}):
+    def __init__(self, definition, resolver=None, formats={}, use_default=True):
         super().__init__(definition, resolver)
         self._custom_formats = formats
+        self._use_default = use_default
         self._json_keywords_to_function.update((
             ('type', self.generate_type),
             ('enum', self.generate_enum),
@@ -390,7 +391,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             '{}__{}'.format(self._variable, idx),
                             '{}[{}]'.format(self._variable_name, idx),
                         )
-                    if isinstance(item_definition, dict) and 'default' in item_definition:
+                    if self._use_default and isinstance(item_definition, dict) and 'default' in item_definition:
                         self.l('else: {variable}.append({})', repr(item_definition['default']))
 
                 if 'additionalItems' in self._definition:
@@ -470,7 +471,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                         '{}.{}'.format(self._variable_name, self.e(key)),
                         clear_variables=True,
                     )
-                if isinstance(prop_definition, dict) and 'default' in prop_definition:
+                if self._use_default and isinstance(prop_definition, dict) and 'default' in prop_definition:
                     self.l('else: {variable}["{}"] = {}', self.e(key), repr(prop_definition['default']))
 
     def generate_pattern_properties(self):
@@ -526,7 +527,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             add_prop_definition = self._definition["additionalProperties"]
             if add_prop_definition is True or add_prop_definition == {}:
                 return
-            elif add_prop_definition:
+            if add_prop_definition:
                 properties_keys = list(self._definition.get("properties", {}).keys())
                 with self.l('for {variable}_key in {variable}_keys:'):
                     with self.l('if {variable}_key not in {}:', properties_keys):
@@ -560,11 +561,11 @@ class CodeGeneratorDraft04(CodeGenerator):
         """
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
-            isEmpty = True
+            is_empty = True
             for key, values in self._definition["dependencies"].items():
                 if values == [] or values is True:
                     continue
-                isEmpty = False
+                is_empty = False
                 with self.l('if "{}" in {variable}:', self.e(key)):
                     if values is False:
                         self.exc('{} in {name} must not be there', key, rule='dependencies')
@@ -574,5 +575,5 @@ class CodeGeneratorDraft04(CodeGenerator):
                                 self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule='dependencies')
                     else:
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
-            if isEmpty:
+            if is_empty:
                 self.l('pass')

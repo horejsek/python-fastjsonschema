@@ -244,6 +244,7 @@ class CodeGenerator:
 
     def exc(self, msg, *args, rule=None):
         """
+        Short-cut for creating raising exception in the code.
         """
         msg = 'raise JsonSchemaValueException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
         definition_rule = self.e(self._definition.get(rule) if isinstance(self._definition, dict) else None)

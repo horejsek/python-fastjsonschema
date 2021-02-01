@@ -15,8 +15,8 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         ),
     })
 
-    def __init__(self, definition, resolver=None, formats={}):
-        super().__init__(definition, resolver, formats)
+    def __init__(self, definition, resolver=None, formats={}, use_default=True):
+        super().__init__(definition, resolver, formats, use_default)
         self._json_keywords_to_function.update((
             ('exclusiveMinimum', self.generate_exclusive_minimum),
             ('exclusiveMaximum', self.generate_exclusive_maximum),
