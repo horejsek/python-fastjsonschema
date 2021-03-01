@@ -14,6 +14,7 @@ exc = JsonSchemaValueException('data must be date-time', value='{data}', name='d
     ('2018-02-05T14:17:10.00Z\n', exc),
     ('2018-02-05T14:17:10.00Z', '2018-02-05T14:17:10.00Z'),
     ('2018-02-05T14:17:10Z', '2018-02-05T14:17:10Z'),
+    ('2020-09-09T01:01:01+0100', '2020-09-09T01:01:01+0100'),
 ])
 def test_datetime(asserter, value, expected):
     asserter({'type': 'string', 'format': 'date-time'}, value, expected)
