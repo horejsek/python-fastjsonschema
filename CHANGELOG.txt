@@ -1,3 +1,9 @@
+=== 2.15.1 (2021-05-05)
+
+* Fix parsing date-time with +hhmm format
+* Fix generating code with custom regular expressions
+
+
 === 2.15.0 (2021-02-01)
 
 * Fix additional property equal to empty object is the same as True
