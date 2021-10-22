@@ -101,7 +101,7 @@ class CodeGenerator:
                 '',
             ])
         regex_patterns = (
-            repr(k) + ": " + _repr_regex(v)
+            repr(k) + ": " + repr_regex(v)
             for k, v in self._compile_regexps.items()
         )
         return '\n'.join(self._extra_imports_lines + [
@@ -298,5 +298,9 @@ class CodeGenerator:
         self.l('{variable}_is_dict = isinstance({variable}, dict)')
 
 
-def _repr_regex(regex):
-    return "re.compile({!r}, {!r})".format(regex.pattern, regex.flags)
+def repr_regex(regex):
+    # Unfortunately using `pprint.pformat` is causing errors
+    all_flags = ("A", "I", "DEBUG", "L", "M", "S", "X")
+    flags = " | ".join(f"re.{f}" for f in all_flags if regex.flags & getattr(re, f))
+    flags = ", " + flags if flags else ""
+    return "re.compile({!r}{})".format(regex.pattern, flags)
