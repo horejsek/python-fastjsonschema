@@ -1,6 +1,5 @@
 from collections import OrderedDict
 import re
-import pickle
 
 from .exceptions import JsonSchemaValueException, JsonSchemaDefinitionException
 from .indent import indent
@@ -101,12 +100,16 @@ class CodeGenerator:
                 '',
                 '',
             ])
+        regex_patterns = (
+            repr(k) + ": " + _repr_regex(v)
+            for k, v in self._compile_regexps.items()
+        )
         return '\n'.join(self._extra_imports_lines + [
-            'import re, pickle',
+            'import re',
             'from fastjsonschema import JsonSchemaValueException',
             '',
             '',
-            'REGEX_PATTERNS = pickle.loads(' + str(pickle.dumps(self._compile_regexps)) + ')',
+            'REGEX_PATTERNS = {\n    ' + ",\n    ".join(regex_patterns) + "\n}",
             '',
         ])
 
@@ -293,3 +296,7 @@ class CodeGenerator:
             return
         self._variables.add(variable_name)
         self.l('{variable}_is_dict = isinstance({variable}, dict)')
+
+
+def _repr_regex(regex):
+    return "re.compile({!r}, {!r})".format(regex.pattern, regex.flags)
