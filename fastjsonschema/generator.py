@@ -32,6 +32,7 @@ class CodeGenerator:
     def __init__(self, definition, resolver=None):
         self._code = []
         self._compile_regexps = {}
+        self._custom_formats = {}
 
         # Any extra library should be here to be imported only once.
         # Lines are imports to be printed in the file and objects
@@ -136,7 +137,8 @@ class CodeGenerator:
         self._validation_functions_done.add(uri)
         self.l('')
         with self._resolver.resolving(uri) as definition:
-            with self.l('def {}(data):', name):
+            args = "data, custom_formats={}" if self._custom_formats else "data"
+            with self.l('def {}({}):', name, args):
                 self.generate_func_code_block(definition, 'data', 'data', clear_variables=True)
                 self.l('return data')
 

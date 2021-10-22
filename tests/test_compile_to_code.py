@@ -2,6 +2,7 @@ import os
 import pytest
 import shutil
 
+from fastjsonschema import JsonSchemaValueException
 from fastjsonschema import compile_to_code, compile as compile_spec
 
 @pytest.yield_fixture(autouse=True)
@@ -84,3 +85,14 @@ def test_compile_complex_one_of_all_of():
             }
         ]
     })
+
+
+def test_compile_to_code_custom_format():
+    formats = {'identifier': str.isidentifier}
+    code = compile_to_code({'type': 'string', 'format': 'identifier'}, formats=formats)
+    with open('temp/schema_3.py', 'w') as f:
+        f.write(code)
+    from temp.schema_3 import validate
+    assert validate("identifier", formats) == "identifier"
+    with pytest.raises(JsonSchemaValueException):
+        validate("not-identifier", formats)

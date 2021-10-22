@@ -75,6 +75,7 @@ Note that there are some differences compared to JSON schema standard:
 API
 ***
 """
+from functools import partial, update_wrapper
 
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
@@ -177,7 +178,10 @@ def compile(definition, handlers={}, formats={}, use_default=True):
     global_state = code_generator.global_state
     # Do not pass local state so it can recursively call itself.
     exec(code_generator.func_code, global_state)
-    return global_state[resolver.get_scope_name()]
+    func = global_state[resolver.get_scope_name()]
+    if formats:
+        return update_wrapper(partial(func, custom_formats=formats), func)
+    return func
 
 
 # pylint: disable=dangerous-default-value
