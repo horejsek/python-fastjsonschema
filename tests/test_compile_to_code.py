@@ -88,11 +88,37 @@ def test_compile_complex_one_of_all_of():
 
 
 def test_compile_to_code_custom_format():
-    formats = {'identifier': str.isidentifier}
-    code = compile_to_code({'type': 'string', 'format': 'identifier'}, formats=formats)
+    formats = {'my-format': str.isidentifier}
+    code = compile_to_code({'type': 'string', 'format': 'my-format'}, formats=formats)
     with open('temp/schema_3.py', 'w') as f:
         f.write(code)
     from temp.schema_3 import validate
-    assert validate("identifier", formats) == "identifier"
-    with pytest.raises(JsonSchemaValueException):
-        validate("not-identifier", formats)
+    assert validate("valid", formats) == "valid"
+    with pytest.raises(JsonSchemaValueException) as exc:
+        validate("not-valid", formats)
+    assert exc.value.message == "data must be my-format"
+
+
+def test_compile_to_code_custom_format_with_refs():
+    schema = {
+        'type': 'object',
+        'properties': {
+            'a': {'$ref': '#/definitions/a'}
+        },
+        'definitions': {
+            'a': {
+                '$id': '#/definitions/a',
+                'type': 'array',
+                'items': {'type': 'string', 'format': 'my-format'}
+            }
+        }
+    }
+    formats = {'my-format': str.isidentifier}
+    code = compile_to_code(schema, formats=formats)
+    with open('temp/schema_4.py', 'w') as f:
+        f.write(code)
+    from temp.schema_4 import validate
+    assert validate({"a": ["identifier"]}, formats) is not None
+    with pytest.raises(JsonSchemaValueException) as exc:
+        validate({"a": ["identifier", "not-valid"]}, formats)
+    assert exc.value.message == "data[1] must be my-format"
