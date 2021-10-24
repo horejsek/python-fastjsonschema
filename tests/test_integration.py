@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaValueException
+from fastjsonschema import JsonSchemaValueException, compile
 
 
 definition = {
@@ -127,3 +127,18 @@ def test_any_of_with_patterns(asserter):
     }, {
         'hash': 'AAAXXX',
     })
+
+
+def test_swap_handlers():
+    # Make sure that by swapping resolvers, the schemas do not get cached
+    repo1 = {
+        "sch://schema": {"type": "array"}
+    }
+    validator1 = compile({"$ref": "sch://schema"}, handlers={"sch": repo1.__getitem__})
+    assert validator1([1, 2, 3]) is not None
+
+    repo2 = {
+        "sch://schema": {"type": "string"}
+    }
+    validator2 = compile({"$ref": "sch://schema"}, handlers={"sch": repo2.__getitem__})
+    assert validator2("hello world") is not None
