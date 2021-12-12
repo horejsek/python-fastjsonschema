@@ -355,8 +355,16 @@ class CodeGeneratorDraft04(CodeGenerator):
         """
         self.create_variable_is_list()
         with self.l('if {variable}_is_list:'):
+            self.l(
+                'def fn(var): '
+                'return frozenset(dict((k, fn(v)) '
+                'for k, v in var.items()).items()) '
+                'if hasattr(var, "items") else tuple(fn(v) '
+                'for v in var) '
+                'if isinstance(var, (dict, list)) else str(var) '
+                'if isinstance(var, bool) else var')
             self.create_variable_with_length()
-            with self.l('if {variable}_len > len(set(str({variable}_x) for {variable}_x in {variable})):'):
+            with self.l('if {variable}_len > len(set(fn({variable}_x) for {variable}_x in {variable})):'):
                 self.exc('{name} must contain unique items', rule='uniqueItems')
 
     def generate_items(self):
