@@ -65,6 +65,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             ('patternProperties', self.generate_pattern_properties),
             ('additionalProperties', self.generate_additional_properties),
         ))
+        self._any_or_one_of_count = 0
 
     @property
     def global_state(self):
@@ -145,16 +146,18 @@ class CodeGeneratorDraft04(CodeGenerator):
 
         Valid values for this definition are 3, 4, 5, 10, 11, ... but not 8 for example.
         """
-        self.l('{variable}_any_of_count = 0')
+        self._any_or_one_of_count += 1
+        count = self._any_or_one_of_count
+        self.l('{variable}_any_of_count{count} = 0', count=count)
         for definition_item in self._definition['anyOf']:
             # When we know it's passing (at least once), we do not need to do another expensive try-except.
-            with self.l('if not {variable}_any_of_count:', optimize=False):
+            with self.l('if not {variable}_any_of_count{count}:', count=count, optimize=False):
                 with self.l('try:', optimize=False):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
-                    self.l('{variable}_any_of_count += 1')
+                    self.l('{variable}_any_of_count{count} += 1', count=count)
                 self.l('except JsonSchemaValueException: pass')
 
-        with self.l('if not {variable}_any_of_count:', optimize=False):
+        with self.l('if not {variable}_any_of_count{count}:', count=count, optimize=False):
             self.exc('{name} must be valid by one of anyOf definition', rule='anyOf')
 
     def generate_one_of(self):
@@ -173,16 +176,18 @@ class CodeGeneratorDraft04(CodeGenerator):
 
         Valid values for this definition are 3, 5, 6, ... but not 15 for example.
         """
-        self.l('{variable}_one_of_count = 0')
+        self._any_or_one_of_count += 1
+        count = self._any_or_one_of_count
+        self.l('{variable}_one_of_count{count} = 0', count=count)
         for definition_item in self._definition['oneOf']:
             # When we know it's failing (one of means exactly once), we do not need to do another expensive try-except.
-            with self.l('if {variable}_one_of_count < 2:', optimize=False):
+            with self.l('if {variable}_one_of_count{count} < 2:', count=count, optimize=False):
                 with self.l('try:', optimize=False):
                     self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
-                    self.l('{variable}_one_of_count += 1')
+                    self.l('{variable}_one_of_count{count} += 1', count=count)
                 self.l('except JsonSchemaValueException: pass')
 
-        with self.l('if {variable}_one_of_count != 1:'):
+        with self.l('if {variable}_one_of_count{count} != 1:', count=count):
             self.exc('{name} must be valid exactly by one of oneOf definition', rule='oneOf')
 
     def generate_not(self):

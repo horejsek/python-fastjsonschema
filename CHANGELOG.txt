@@ -1,3 +1,8 @@
+=== UNRELEASED
+
+* Fix nested oneOf and anyOf
+
+
 === 2.15.1 (2021-05-05)
 
 * Fix parsing date-time with +hhmm format
