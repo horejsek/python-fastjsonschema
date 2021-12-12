@@ -1,6 +1,8 @@
 === UNRELEASED
 
 * Fix nested oneOf and anyOf
+* Fix if-else block in anyOf block
+* Add option to pass custom formats in generated code
 
 
 === 2.15.1 (2021-05-05)

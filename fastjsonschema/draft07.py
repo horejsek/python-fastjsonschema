@@ -46,7 +46,7 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
 
         Valid values are any between -10 and 0 or any multiplication of two.
         """
-        with self.l('try:'):
+        with self.l('try:', optimize=False):
             self.generate_func_code_block(
                 self._definition['if'],
                 self._variable,
