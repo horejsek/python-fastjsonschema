@@ -1,7 +1,8 @@
-=== UNRELEASED
+=== 2.15.2 (2021-12-12)
 
 * Fix nested oneOf and anyOf
 * Fix if-else block in anyOf block
+* Fix uniqueItems including lists or dicts
 * Add option to pass custom formats in generated code
 
 
