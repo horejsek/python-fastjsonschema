@@ -54,7 +54,7 @@ class CodeGenerator:
         self._validation_functions_done = set()
 
         if resolver is None:
-            resolver = RefResolver.from_schema(definition)
+            resolver = RefResolver.from_schema(definition, store={})
         self._resolver = resolver
 
         # add main function to `self._needed_validation_functions`

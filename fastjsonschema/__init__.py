@@ -213,7 +213,7 @@ def compile_to_code(definition, handlers={}, formats={}, use_default=True):
 
 
 def _factory(definition, handlers, formats={}, use_default=True):
-    resolver = RefResolver.from_schema(definition, handlers=handlers)
+    resolver = RefResolver.from_schema(definition, handlers=handlers, store={})
     code_generator = _get_code_generator_class(definition)(
         definition,
         resolver=resolver,
