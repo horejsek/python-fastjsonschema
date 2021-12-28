@@ -1,6 +1,5 @@
 from collections import OrderedDict
 import re
-import pickle
 
 from .exceptions import JsonSchemaValueException, JsonSchemaDefinitionException
 from .indent import indent
@@ -103,11 +102,11 @@ class CodeGenerator:
                 '',
             ])
         return '\n'.join(self._extra_imports_lines + [
-            'import re, pickle',
+            'import re',
             'from fastjsonschema import JsonSchemaValueException',
             '',
             '',
-            'REGEX_PATTERNS = pickle.loads(' + str(pickle.dumps(self._compile_regexps)) + ')',
+            'REGEX_PATTERNS = ' + serialize_regexes(self._compile_regexps),
             '',
         ])
 
@@ -294,3 +293,20 @@ class CodeGenerator:
             return
         self._variables.add(variable_name)
         self.l('{variable}_is_dict = isinstance({variable}, dict)')
+
+
+def serialize_regexes(patterns_dict):
+    # Unfortunately using `pprint.pformat` is causing errors
+    # specially with big regexes
+    regex_patterns = (
+        repr(k) + ": " + repr_regex(v)
+        for k, v in patterns_dict.items()
+    )
+    return '{\n    ' + ",\n    ".join(regex_patterns) + "\n}"
+
+
+def repr_regex(regex):
+    all_flags = ("A", "I", "DEBUG", "L", "M", "S", "X")
+    flags = " | ".join(f"re.{f}" for f in all_flags if regex.flags & getattr(re, f))
+    flags = ", " + flags if flags else ""
+    return "re.compile({!r}{})".format(regex.pattern, flags)
