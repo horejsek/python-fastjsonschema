@@ -77,12 +77,19 @@ class RefResolver:
     def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
         """
         `base_uri` is URI of the referring document from the `schema`.
+        `store` is an dictionary that will be used to cache the fetched schemas
+        (if `cache=True`).
+
+        Please notice that you can have caching problems when compiling schemas
+        with colliding `$ref`. To force overwriting use `cache=False` or
+        explicitly pass the `store` argument (with a brand new dictionary)
         """
         self.base_uri = base_uri
         self.resolution_scope = base_uri
         self.schema = schema
         self.store = store
         self.cache = cache
+        # ^-- Create a brand new cache if the 
         self.handlers = handlers
         self.walk(schema)
 
