@@ -89,7 +89,6 @@ class RefResolver:
         self.schema = schema
         self.store = store
         self.cache = cache
-        # ^-- Create a brand new cache if the 
         self.handlers = handlers
         self.walk(schema)
 
