@@ -226,3 +226,23 @@ def test_dependencies(asserter, value, expected):
             "foo": ["bar"],
         },
     }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ({"prop1": {"str": 1}}, JsonSchemaValueException('data.prop1.str must be string', value=1, name='data.prop1.str', definition={'type': 'string'}, rule='type')),
+])
+def test_full_name_after_ref(asserter, value, expected):
+    asserter({
+        "definitions": {
+            "SomeType": {
+                "type": "object",
+                "properties": {
+                    "str": {"type": "string"},
+                },
+            },
+        },
+        "type": "object",
+        "properties": {
+            "prop1": {"$ref": "#/definitions/SomeType"},
+        }
+    }, value, expected)
