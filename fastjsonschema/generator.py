@@ -190,6 +190,7 @@ class CodeGenerator:
             if uri not in self._validation_functions_done:
                 self._needed_validation_functions[uri] = name
             # call validation function
+            assert self._variable_name.startswith("data")
             path = self._variable_name[4:]
             name_arg = '(name_prefix or "data") + "{}"'.format(path)
             self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
