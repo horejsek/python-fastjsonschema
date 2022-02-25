@@ -116,7 +116,7 @@ def test_compile_to_code_custom_format_with_refs(tmp_path, monkeypatch):
     formats = {'my-format': str.isidentifier}
     code = compile_to_code(schema, formats=formats)
 
-    (tmp_path / "schema_4.py").write_text(code)
+    (tmp_path / "schema_4.py").write_text(code, encoding="utf-8")
     with monkeypatch.context() as m:
         m.syspath_prepend(tmp_path)
         from schema_4 import validate
