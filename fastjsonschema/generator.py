@@ -252,8 +252,19 @@ class CodeGenerator:
         Short-cut for creating raising exception in the code.
         """
         msg = 'raise JsonSchemaValueException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
-        definition_rule = self.e(self._definition.get(rule) if isinstance(self._definition, dict) else None)
-        self.l(msg, *args, definition=repr(self._definition), rule=repr(rule), definition_rule=definition_rule)
+        definition = self._expand_refs(self._definition)
+        definition_rule = self.e(definition.get(rule) if isinstance(definition, dict) else None)
+        self.l(msg, *args, definition=repr(definition), rule=repr(rule), definition_rule=definition_rule)
+
+    def _expand_refs(self, definition):
+        if isinstance(definition, list):
+            return [self._expand_refs(v) for v in definition]
+        if not isinstance(definition, dict):
+            return definition
+        if "$ref" in definition and isinstance(definition["$ref"], str):
+            with self._resolver.resolving(definition["$ref"]) as schema:
+                return schema
+        return {k: self._expand_refs(v) for k, v in definition.items()}
 
     def create_variable_with_length(self):
         """

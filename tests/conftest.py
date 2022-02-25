@@ -33,7 +33,8 @@ def asserter():
         if isinstance(expected, JsonSchemaValueException):
             with pytest.raises(JsonSchemaValueException) as exc:
                 validator(value)
-            assert exc.value.message == expected.message
+            if expected.message is not any:
+                assert exc.value.message == expected.message
             assert exc.value.value == (value if expected.value == '{data}' else expected.value)
             assert exc.value.name == expected.name
             assert exc.value.definition == (definition if expected.definition == '{definition}' else expected.definition)
