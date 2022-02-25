@@ -18,16 +18,14 @@ def _composition_example(composition="oneOf"):
 
 
 @pytest.mark.parametrize(
-    "composition, value",
-    [("oneOf", 10), ("allOf", 15), ("anyOf", 9)]
+    "composition, value", [("oneOf", 10), ("allOf", 15), ("anyOf", 9)]
 )
 def test_composition(asserter, composition, value):
     asserter(_composition_example(composition), value, value)
 
 
 @pytest.mark.parametrize(
-    "composition, value",
-    [("oneOf", 2), ("anyOf", 2), ("allOf", 3)]
+    "composition, value", [("oneOf", 2), ("anyOf", 2), ("allOf", 3)]
 )
 def test_ref_is_expanded_on_composition_error(composition, value):
     with pytest.raises(JsonSchemaValueException) as exc:
@@ -47,8 +45,7 @@ def test_ref_is_expanded_on_composition_error(composition, value):
 
 
 @pytest.mark.parametrize(
-    "composition, value",
-    [("oneOf", 2), ("anyOf", 2), ("allOf", 3)]
+    "composition, value", [("oneOf", 2), ("anyOf", 2), ("allOf", 3)]
 )
 def test_ref_is_expanded_with_resolver(composition, value):
     repo = {
@@ -76,3 +73,42 @@ def test_ref_is_expanded_with_resolver(composition, value):
         assert composition == "allOf"
         assert "$ref" not in exc.value.definition
         assert exc.value.definition["type"] == "number"
+
+
+def test_ref_in_conditional():
+    repo = {
+        "sch://USA": {"properties": {"country": {"const": "United States of America"}}},
+        "sch://USA-post-code": {
+            "properties": {"postal_code": {"pattern": "[0-9]{5}(-[0-9]{4})?"}}
+        },
+        "sch://general-post-code": {
+            "properties": {
+                "postal_code": {"pattern": "[A-Z][0-9][A-Z] [0-9][A-Z][0-9]"}
+            }
+        },
+    }
+    schema = {
+        "type": "object",
+        "properties": {
+            "street_address": {"type": "string"},
+            "country": {
+                "default": "United States of America",
+                "enum": ["United States of America", "Canada"],
+            },
+        },
+        "if": {"allOf": [{"$ref": "sch://USA"}]},
+        "then": {"oneOf": [{"$ref": "sch://USA-post-code"}]},
+        "else": {"anyOf": [{"$ref": "sch://general-post-code"}]},
+    }
+    invalid = {
+        "street_address": "1600 Pennsylvania Avenue NW",
+        "country": "United States of America",
+        "postal_code": "BS12 3FG",
+    }
+
+    with pytest.raises(JsonSchemaValueException) as exc:
+        fastjsonschema.validate(schema, invalid, handlers={"sch": repo.__getitem__})
+
+    assert exc.value.definition["oneOf"] == [
+        {"properties": {"postal_code": {"pattern": "[0-9]{5}(-[0-9]{4})?"}}}
+    ]
