@@ -121,4 +121,4 @@ def test_compile_to_code_custom_format_with_refs():
     assert validate({"a": ["identifier"]}, formats) is not None
     with pytest.raises(JsonSchemaValueException) as exc:
         validate({"a": ["identifier", "not-valid"]}, formats)
-    assert exc.value.message == "data[1] must be my-format"
+    assert exc.value.message == "data.a[1] must be my-format"
