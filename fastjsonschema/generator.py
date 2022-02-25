@@ -254,17 +254,9 @@ class CodeGenerator:
             return [self._expand_refs(v) for v in definition]
         if not isinstance(definition, dict):
             return definition
-        if "$ref" in definition:
+        if "$ref" in definition and isinstance(definition["$ref"], str):
             with self._resolver.resolving(definition["$ref"]) as schema:
                 return schema
-        if "properties" in definition:
-            return {
-                **definition,
-                "properties": {
-                    k: self._expand_refs(v)
-                    for k, v in definition["properties"].items()
-                }
-            }
         return {k: self._expand_refs(v) for k, v in definition.items()}
 
     def create_variable_with_length(self):
