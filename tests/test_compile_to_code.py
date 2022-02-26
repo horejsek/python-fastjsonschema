@@ -99,7 +99,7 @@ def test_compile_to_code_custom_format():
     assert exc.value.message == "data must be my-format"
 
 
-def test_compile_to_code_custom_format_with_refs():
+def test_compile_to_code_custom_format_with_refs(tmp_path, monkeypatch):
     schema = {
         'type': 'object',
         'properties': {
@@ -115,9 +115,12 @@ def test_compile_to_code_custom_format_with_refs():
     }
     formats = {'my-format': str.isidentifier}
     code = compile_to_code(schema, formats=formats)
-    with open('temp/schema_4.py', 'w') as f:
-        f.write(code)
-    from temp.schema_4 import validate
+
+    (tmp_path / "schema_4.py").write_text(code, encoding="utf-8")
+    with monkeypatch.context() as m:
+        m.syspath_prepend(tmp_path)
+        from schema_4 import validate
+
     assert validate({"a": ["identifier"]}, formats) is not None
     with pytest.raises(JsonSchemaValueException) as exc:
         validate({"a": ["identifier", "not-valid"]}, formats)

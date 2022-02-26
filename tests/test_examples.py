@@ -30,9 +30,9 @@ EXAMPLE_GROUPS = [x.name for x in EXAMPLES.glob("*/")]
 def test_validate(example_group):
     example_dir = EXAMPLES / example_group
     schema = next(example_dir.glob("*.schema.json"))
-    validator = compile(json.loads(schema.read_text()))
+    validator = compile(json.loads(schema.read_text(encoding="utf-8")))
     examples = (
-        (e, e.with_suffix(".error"), json.loads(e.read_text()))
+        (e, e.with_suffix(".error"), json.loads(e.read_text(encoding="utf-8")))
         for e in example_dir.glob("*.json")
         if not str(e).endswith(".schema.json")
     )
@@ -40,6 +40,6 @@ def test_validate(example_group):
         if err_file.exists():
             with pytest.raises(JsonSchemaException) as exc_info:
                 validator(example)
-            assert err_file.read_text().strip() in str(exc_info.value).strip()
+            assert err_file.read_text(encoding="utf-8").strip() in str(exc_info.value).strip()
         else:
             validator(example)  # valid
