@@ -143,6 +143,8 @@ class CodeGenerator:
     def generate_func_code_block(self, definition, variable, variable_name, clear_variables=False):
         """
         Creates validation rules for current definition.
+
+        Returns the number of validation rules generated as code.
         """
         backup = self._definition, self._variable, self._variable_name
         self._definition, self._variable, self._variable_name = definition, variable, variable_name
@@ -150,25 +152,31 @@ class CodeGenerator:
             backup_variables = self._variables
             self._variables = set()
 
-        self._generate_func_code_block(definition)
+        count = self._generate_func_code_block(definition)
 
         self._definition, self._variable, self._variable_name = backup
         if clear_variables:
             self._variables = backup_variables
+
+        return count
 
     def _generate_func_code_block(self, definition):
         if not isinstance(definition, dict):
             raise JsonSchemaDefinitionException("definition must be an object")
         if '$ref' in definition:
             # needed because ref overrides any sibling keywords
-            self.generate_ref()
+            return self.generate_ref()
         else:
-            self.run_generate_functions(definition)
+            return self.run_generate_functions(definition)
 
     def run_generate_functions(self, definition):
+        """Returns the number of generate functions that were executed."""
+        count = 0
         for key, func in self._json_keywords_to_function.items():
             if key in definition:
                 func()
+                count += 1
+        return count
 
     def generate_ref(self):
         """

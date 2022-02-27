@@ -180,3 +180,22 @@ def test_mixed_arrays(asserter, value, expected):
         },
     }, value, expected)
 
+
+def test_issue_114(asserter):
+    """Prevent the faulty scheme to generate an empty for-loop."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "a": {
+                "type": "array",
+                "items": {
+                    "b": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+    value = {"a": []}
+    expected = value
+    asserter(schema, value, expected)
