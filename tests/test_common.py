@@ -91,7 +91,7 @@ def test_one_of_factorized(asserter, value, expected):
 
 
 @pytest.mark.parametrize('value, expected', [
-    (0, JsonSchemaValueException('data must not be valid by not definition', value='{data}', name='data', definition='{definition}', rule='not')),
+    (0, JsonSchemaValueException('data must NOT match a disallowed definition', value='{data}', name='data', definition='{definition}', rule='not')),
     (True, True),
     ('abc', 'abc'),
     ([], []),

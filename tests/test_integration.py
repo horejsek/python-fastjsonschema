@@ -94,7 +94,7 @@ definition = {
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'b': 'b', 'x': 'x'}, None, 5],
-        JsonSchemaValueException('data[4] must not be valid by not definition', value=None, name='data[4]', definition=definition['items'][4], rule='not'),
+        JsonSchemaValueException('data[4] must NOT match a disallowed definition', value=None, name='data[4]', definition=definition['items'][4], rule='not'),
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'b': 'b', 'x': 'x'}, 42, 15],
