@@ -413,19 +413,23 @@ class CodeGeneratorDraft04(CodeGenerator):
                             self.exc('{name} must contain only specified items', rule='items')
                     else:
                         with self.l('for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):', len(items_definition)):
-                            self.generate_func_code_block(
+                            count = self.generate_func_code_block(
                                 self._definition['additionalItems'],
                                 '{}_item'.format(self._variable),
                                 '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                             )
+                            if count == 0:
+                                self.l('pass')
             else:
                 if items_definition:
                     with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
-                        self.generate_func_code_block(
+                        count = self.generate_func_code_block(
                             items_definition,
                             '{}_item'.format(self._variable),
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                         )
+                        if count == 0:
+                            self.l('pass')
 
     def generate_min_properties(self):
         self.create_variable_is_dict()
