@@ -255,11 +255,14 @@ class CodeGenerator:
         """
         return str(string).replace('"', '\\"')
 
-    def exc(self, msg, *args, rule=None):
+    def exc(self, msg, *args, append_to_msg=None, rule=None):
         """
         Short-cut for creating raising exception in the code.
         """
-        msg = 'raise JsonSchemaValueException("'+msg+'", value={variable}, name="{name}", definition={definition}, rule={rule})'
+        arg = '"'+msg+'"'
+        if append_to_msg:
+            arg += ' + (' + append_to_msg + ')'
+        msg = 'raise JsonSchemaValueException('+arg+', value={variable}, name="{name}", definition={definition}, rule={rule})'
         definition = self._expand_refs(self._definition)
         definition_rule = self.e(definition.get(rule) if isinstance(definition, dict) else None)
         self.l(msg, *args, definition=repr(definition), rule=repr(rule), definition_rule=definition_rule)

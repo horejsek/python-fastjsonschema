@@ -158,7 +158,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self.l('except JsonSchemaValueException: pass')
 
         with self.l('if not {variable}_any_of_count{count}:', count=count, optimize=False):
-            self.exc('{name} must be valid by one of anyOf definition', rule='anyOf')
+            self.exc('{name} cannot be validated by any definition', rule='anyOf')
 
     def generate_one_of(self):
         """
@@ -188,7 +188,8 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self.l('except JsonSchemaValueException: pass')
 
         with self.l('if {variable}_one_of_count{count} != 1:', count=count):
-            self.exc('{name} must be valid exactly by one of oneOf definition', rule='oneOf')
+            dynamic = '" (" + str({variable}_one_of_count{}) + " matches found)"'
+            self.exc('{name} must be valid exactly by one definition', count, append_to_msg=dynamic, rule='oneOf')
 
     def generate_not(self):
         """
@@ -210,13 +211,13 @@ class CodeGeneratorDraft04(CodeGenerator):
             return
         elif not not_definition:
             with self.l('if {}:', self._variable):
-                self.exc('{name} must not be valid by not definition', rule='not')
+                self.exc('{name} must NOT match a disallowed definition', rule='not')
         else:
             with self.l('try:', optimize=False):
                 self.generate_func_code_block(not_definition, self._variable, self._variable_name)
             self.l('except JsonSchemaValueException: pass')
             with self.l('else:'):
-                self.exc('{name} must not be valid by not definition', rule='not')
+                self.exc('{name} must NOT match a disallowed definition', rule='not')
 
     def generate_min_length(self):
         with self.l('if isinstance({variable}, str):'):

@@ -94,11 +94,11 @@ definition = {
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'b': 'b', 'x': 'x'}, None, 5],
-        JsonSchemaValueException('data[4] must not be valid by not definition', value=None, name='data[4]', definition=definition['items'][4], rule='not'),
+        JsonSchemaValueException('data[4] must NOT match a disallowed definition', value=None, name='data[4]', definition=definition['items'][4], rule='not'),
     ),
     (
         [9, 'hello', [1], {'a': 'a', 'b': 'b', 'x': 'x'}, 42, 15],
-        JsonSchemaValueException('data[5] must be valid exactly by one of oneOf definition', value=15, name='data[5]', definition=definition['items'][5], rule='oneOf'),
+        JsonSchemaValueException('data[5] must be valid exactly by one definition (2 matches found)', value=15, name='data[5]', definition=definition['items'][5], rule='oneOf'),
     ),
 ])
 def test_integration(asserter, value, expected):

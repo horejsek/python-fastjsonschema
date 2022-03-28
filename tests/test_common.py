@@ -39,7 +39,7 @@ def test_all_of(asserter, value, expected):
     ]}, value, expected)
 
 
-exc = JsonSchemaValueException('data must be valid by one of anyOf definition', value='{data}', name='data', definition='{definition}', rule='anyOf')
+exc = JsonSchemaValueException('data cannot be validated by any definition', value='{data}', name='data', definition='{definition}', rule='anyOf')
 @pytest.mark.parametrize('value, expected', [
     (0, 0),
     (None, exc),
@@ -55,13 +55,16 @@ def test_any_of(asserter, value, expected):
     ]}, value, expected)
 
 
-exc = JsonSchemaValueException('data must be valid exactly by one of oneOf definition', value='{data}', name='data', definition='{definition}', rule='oneOf')
+def exc(n):
+    suffix = " ({} matches found)".format(n)
+    return JsonSchemaValueException('data must be valid exactly by one definition' + suffix, value='{data}', name='data', definition='{definition}', rule='oneOf')
+
 @pytest.mark.parametrize('value, expected', [
-    (0, exc),
-    (2, exc),
+    (0, exc(2)),
+    (2, exc(0)),
     (9, 9),
     (10, 10),
-    (15, exc),
+    (15, exc(2)),
 ])
 def test_one_of(asserter, value, expected):
     asserter({'oneOf': [
@@ -70,13 +73,12 @@ def test_one_of(asserter, value, expected):
     ]}, value, expected)
 
 
-exc = JsonSchemaValueException('data must be valid exactly by one of oneOf definition', value='{data}', name='data', definition='{definition}', rule='oneOf')
 @pytest.mark.parametrize('value, expected', [
-    (0, exc),
-    (2, exc),
+    (0, exc(2)),
+    (2, exc(0)),
     (9, 9),
     (10, 10),
-    (15, exc),
+    (15, exc(2)),
 ])
 def test_one_of_factorized(asserter, value, expected):
     asserter({
@@ -89,7 +91,7 @@ def test_one_of_factorized(asserter, value, expected):
 
 
 @pytest.mark.parametrize('value, expected', [
-    (0, JsonSchemaValueException('data must not be valid by not definition', value='{data}', name='data', definition='{definition}', rule='not')),
+    (0, JsonSchemaValueException('data must NOT match a disallowed definition', value='{data}', name='data', definition='{definition}', rule='not')),
     (True, True),
     ('abc', 'abc'),
     ([], []),
