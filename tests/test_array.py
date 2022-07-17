@@ -73,6 +73,14 @@ def test_unique_items(asserter, value, expected):
     }, value, expected)
 
 
+def test_not_unique_items(asserter):
+    value = [{'id': 1}, {'id': 1}]
+    asserter({
+        'type': 'array',
+        'uniqueItems': False,
+    }, value, value)
+
+
 def test_min_and_unique_items(asserter):
     value = None
     asserter({

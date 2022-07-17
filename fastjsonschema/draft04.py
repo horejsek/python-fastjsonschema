@@ -354,6 +354,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             >>> timeit.timeit("np.unique(x).size == len(x)", "x=range(100)+range(100); import numpy as np", number=100000)
             2.1439831256866455
         """
+        unique_definition = self._definition['uniqueItems']
+        if not unique_definition:
+            return
+
         self.create_variable_is_list()
         with self.l('if {variable}_is_list:'):
             self.l(
