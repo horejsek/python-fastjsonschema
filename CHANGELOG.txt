@@ -1,3 +1,10 @@
+=== 2.16.0 (2022-07-17)
+
+* Fix generating invalid code for some schemas using items
+* Preserving full path in combination with $ref
+* Improved error messages for oneOf and anyOf
+
+
 === 2.15.3 (2022-01-09)
 
 * Fix swapping handlers

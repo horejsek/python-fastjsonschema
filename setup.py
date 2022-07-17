@@ -33,9 +33,9 @@ setup(
         ],
     },
 
-    url='https://github.com/seznam/python-fastjsonschema',
+    url='https://github.com/horejsek/python-fastjsonschema',
     author='Michal Horejsek',
-    author_email='horejsekmichal@gmail.com',
+    author_email='fastjsonschema@horejsek.com',
     description='Fastest Python implementation of JSON schema',
     long_description=LONG_DESCRIPTION,
     license='BSD',
