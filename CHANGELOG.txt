@@ -1,3 +1,8 @@
+=== 2.16.2 (2022-08-10)
+
+* Fix compile to code tests to run them on any platform
+
+
 === 2.16.1 (2022-07-17)
 
 * Fix uniqueItems when explicitly set to False
