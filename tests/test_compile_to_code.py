@@ -5,19 +5,8 @@ import shutil
 from fastjsonschema import JsonSchemaValueException
 from fastjsonschema import compile_to_code, compile as compile_spec
 
-@pytest.yield_fixture(autouse=True)
-def run_around_tests():
-    temp_dir = 'temp'
-    # Code that will run before your test, for example:
-    if not os.path.isdir(temp_dir):
-        os.makedirs(temp_dir)
-    # A test function will be run at this point
-    yield
-    # Code that will run after your test, for example:
-    shutil.rmtree(temp_dir)
 
-
-def test_compile_to_code():
+def test_compile_to_code(tmp_path, monkeypatch):
     code = compile_to_code({
         'properties': {
             'a': {'type': 'string'},
@@ -25,9 +14,11 @@ def test_compile_to_code():
             'c': {'format': 'hostname'},  # Test generation of regex patterns to the file.
         }
     })
-    with open('temp/schema_1.py', 'w') as f:
+    with open(tmp_path / 'schema_1.py', 'w') as f:
         f.write(code)
-    from temp.schema_1 import validate
+    with monkeypatch.context() as m:
+        m.syspath_prepend(tmp_path)
+        from schema_1 import validate
     assert validate({
         'a': 'a',
         'b': 1, 
@@ -38,15 +29,17 @@ def test_compile_to_code():
         'c': 'example.com',
     }
 
-def test_compile_to_code_ipv6_regex():
+def test_compile_to_code_ipv6_regex(tmp_path, monkeypatch):
     code = compile_to_code({
         'properties': {
             'ip': {'format': 'ipv6'},
         }
     })
-    with open('temp/schema_2.py', 'w') as f:
+    with open(tmp_path / 'schema_2.py', 'w') as f:
         f.write(code)
-    from temp.schema_2 import validate
+    with monkeypatch.context() as m:
+        m.syspath_prepend(tmp_path)
+        from schema_2 import validate
     assert validate({
         'ip': '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
     }) == {
@@ -87,12 +80,14 @@ def test_compile_complex_one_of_all_of():
     })
 
 
-def test_compile_to_code_custom_format():
+def test_compile_to_code_custom_format(tmp_path, monkeypatch):
     formats = {'my-format': str.isidentifier}
     code = compile_to_code({'type': 'string', 'format': 'my-format'}, formats=formats)
-    with open('temp/schema_3.py', 'w') as f:
+    with open(tmp_path / 'schema_3.py', 'w') as f:
         f.write(code)
-    from temp.schema_3 import validate
+    with monkeypatch.context() as m:
+        m.syspath_prepend(tmp_path)
+        from schema_3 import validate
     assert validate("valid", formats) == "valid"
     with pytest.raises(JsonSchemaValueException) as exc:
         validate("not-valid", formats)
