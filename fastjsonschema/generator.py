@@ -293,7 +293,7 @@ class CodeGenerator:
     def create_variable_with_items(self):
         """
         Append code for creating variable with number of items (length) of that variable
-        (for example length of list or dictionary) with name ``{variable}_len``.
+        (for example length of list or dictionary) with name ``{variable}_items``.
         It can be called several times and always it's done only when that variable
         still does not exists.
         """
