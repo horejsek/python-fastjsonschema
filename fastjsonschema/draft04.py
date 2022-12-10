@@ -326,8 +326,8 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_list:'):
             if not isinstance(self._definition['minItems'], int):
                 raise JsonSchemaDefinitionException('minItems must be a number')
-            self.create_variable_with_length()
-            with self.l('if {variable}_len < {minItems}:'):
+            self.create_variable_with_items()
+            with self.l('if {variable}_items < {minItems}:'):
                 self.exc('{name} must contain at least {minItems} items', rule='minItems')
 
     def generate_max_items(self):
@@ -335,8 +335,8 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_list:'):
             if not isinstance(self._definition['maxItems'], int):
                 raise JsonSchemaDefinitionException('maxItems must be a number')
-            self.create_variable_with_length()
-            with self.l('if {variable}_len > {maxItems}:'):
+            self.create_variable_with_items()
+            with self.l('if {variable}_items > {maxItems}:'):
                 self.exc('{name} must contain less than or equal to {maxItems} items', rule='maxItems')
 
     def generate_unique_items(self):

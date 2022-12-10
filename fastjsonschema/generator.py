@@ -290,6 +290,19 @@ class CodeGenerator:
         self._variables.add(variable_name)
         self.l('{variable}_len = len({variable})')
 
+    def create_variable_with_items(self):
+        """
+        Append code for creating variable with number of items (length) of that variable
+        (for example length of list or dictionary) with name ``{variable}_len``.
+        It can be called several times and always it's done only when that variable
+        still does not exists.
+        """
+        variable_name = '{}_items'.format(self._variable)
+        if variable_name in self._variables:
+            return
+        self._variables.add(variable_name)
+        self.l('{variable}_items = len({variable})')
+
     def create_variable_keys(self):
         """
         Append code for creating variable with keys of that variable (dictionary)
