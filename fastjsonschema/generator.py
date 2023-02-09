@@ -201,6 +201,8 @@ class CodeGenerator:
             assert self._variable_name.startswith("data")
             path = self._variable_name[4:]
             name_arg = '(name_prefix or "data") + "{}"'.format(path)
+            if '{' in name_arg:
+                name_arg = name_arg + '.format(**locals())'
             self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
 
 
