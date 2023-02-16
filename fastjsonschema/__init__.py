@@ -18,25 +18,26 @@ About
 *****
 
 ``fastjsonschema`` implements validation of JSON documents by JSON schema.
-The library implements JSON schema drafts 04, 06 and 07. The main purpose is
+The library implements JSON schema drafts 04, 06, and 07. The main purpose is
 to have a really fast implementation. See some numbers:
 
- * Probably most popular ``jsonschema`` can take up to 5 seconds for valid inputs
-   and 1.2 seconds for invalid inputs.
- * Second most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.
+ * Probably the most popular, ``jsonschema``, can take up to 5 seconds for valid
+   inputs and 1.2 seconds for invalid inputs.
+ * Second most popular, ``json-spec``, is even worse with up to 7.2 and 1.7 seconds.
  * Last ``validictory``, now deprecated, is much better with 370 or 23 milliseconds,
-   but it does not follow all standards and it can be still slow for some purposes.
+   but it does not follow all standards, and it can be still slow for some purposes.
 
 With this library you can gain big improvements as ``fastjsonschema`` takes
 only about 25 milliseconds for valid inputs and 2 milliseconds for invalid ones.
 Pretty amazing, right? :-)
 
-Technically it works by generating the most stupid code on the fly which is fast but
-is hard to write by hand. The best efficiency is achieved when compiled once and used
-many times, of course. It works similarly like regular expressions. But you can also
-generate the code to the file which is even slightly faster.
+Technically it works by generating the most stupid code on the fly, which is fast but
+is hard to write by hand. The best efficiency is achieved when a validator is compiled
+once and used many times, of course. It works similarly like regular expressions. But
+you can also generate the code to a file, which is even slightly faster.
 
-You can do the performance on your computer or server with an included script:
+You can run the performance benchmarks on your computer or server with the included
+script:
 
 .. code-block:: bash
 
@@ -57,14 +58,14 @@ You can do the performance on your computer or server with an included script:
     validictory          invalid    ==>  0.0232244
 
 This library follows and implements `JSON schema draft-04, draft-06, and draft-07
-<http://json-schema.org>`_. Sometimes it's not perfectly clear so I recommend also
+<http://json-schema.org>`_. Sometimes it's not perfectly clear, so I recommend also
 check out this `understanding JSON schema <https://spacetelescope.github.io/understanding-json-schema>`_.
 
 Note that there are some differences compared to JSON schema standard:
 
  * Regular expressions are full Python ones, not only what JSON schema allows. It's easier
-   to allow everything and also it's faster to compile without limits. So keep in mind that when
-   you will use a more advanced regular expression, it may not work with other library or in
+   to allow everything, and also it's faster to compile without limits. So keep in mind that when
+   you will use a more advanced regular expression, it may not work with other libraries or in
    other languages.
  * Because Python matches new line for a dollar in regular expressions (``a$`` matches ``a`` and ``a\\n``),
    instead of ``$`` is used ``\Z`` and all dollars in your regular expression are changed to ``\\Z``
@@ -97,9 +98,9 @@ __all__ = (
 
 def validate(definition, data, handlers={}, formats={}, use_default=True):
     """
-    Validation function for lazy programmers or for use cases, when you need
+    Validation function for lazy programmers or for use cases when you need
     to call validation only once, so you do not have to compile it first.
-    Use it only when you do not care about performance (even thought it will
+    Use it only when you do not care about performance (even though it will
     be still faster than alternative implementations).
 
     .. code-block:: python
@@ -158,7 +159,7 @@ def compile(definition, handlers={}, formats={}, use_default=True):
     remote schemes used in your ``definition`` in parameter ``handlers``.
 
     Also, you can pass mapping for custom formats. Key is the name of your
-    formatter and value can be regular expression which will be compiled or
+    formatter and value can be regular expression, which will be compiled or
     callback returning `bool` (or you can raise your own exception).
 
     .. code-block:: python
