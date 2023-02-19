@@ -72,6 +72,33 @@ Note that there are some differences compared to JSON schema standard:
  * JSON schema says you can use keyword ``default`` for providing default values. This implementation
    uses that and always returns transformed input data.
 
+Usage
+*****
+
+.. code-block:: python
+
+    import fastjsonschema
+
+    point_schema = {
+        "type": "object",
+        "properties": {
+            "x": {
+                "type": "number",
+            },
+            "y": {
+                "type": "number",
+            },
+        },
+        "required": ["x", "y"],
+        "additionalProperties": False,
+    }
+
+    point_validator = fastjsonschema.compile(point_schema)
+    try:
+        point_validator({"x": 1.0, "y": 2.0})
+    except fastjsonschema.JsonSchemaException as e:
+        print(f"Data failed validation: {e}")
+
 API
 ***
 """
