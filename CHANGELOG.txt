@@ -1,3 +1,7 @@
+=== 2.16.3 (2023-02-25)
+
+* Fix variable name resolving with references
+
 === 2.16.2 (2022-08-10)
 
 * Fix compile to code tests to run them on any platform
