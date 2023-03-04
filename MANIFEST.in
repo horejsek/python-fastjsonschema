@@ -1,1 +1,3 @@
 include LICENSE
+graft tests
+global-exclude *.pyc
