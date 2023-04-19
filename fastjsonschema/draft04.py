@@ -8,7 +8,7 @@ from .generator import CodeGenerator, enforce_list
 JSON_TYPE_TO_PYTHON_TYPE = {
     'null': 'NoneType',
     'boolean': 'bool',
-    'number': 'int, float',
+    'number': 'int, float, Decimal',
     'integer': 'int',
     'string': 'str',
     'array': 'list, tuple',
@@ -285,8 +285,8 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self.exc('{name} must be {}', format_name, rule='format')
 
     def generate_minimum(self):
-        with self.l('if isinstance({variable}, (int, float)):'):
-            if not isinstance(self._definition['minimum'], (int, float)):
+        with self.l('if isinstance({variable}, (int, float, Decimal)):'):
+            if not isinstance(self._definition['minimum'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('minimum must be a number')
             if self._definition.get('exclusiveMinimum', False):
                 with self.l('if {variable} <= {minimum}:'):
@@ -296,8 +296,8 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.exc('{name} must be bigger than or equal to {minimum}', rule='minimum')
 
     def generate_maximum(self):
-        with self.l('if isinstance({variable}, (int, float)):'):
-            if not isinstance(self._definition['maximum'], (int, float)):
+        with self.l('if isinstance({variable}, (int, float, Decimal)):'):
+            if not isinstance(self._definition['maximum'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('maximum must be a number')
             if self._definition.get('exclusiveMaximum', False):
                 with self.l('if {variable} >= {maximum}:'):
@@ -307,14 +307,12 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.exc('{name} must be smaller than or equal to {maximum}', rule='maximum')
 
     def generate_multiple_of(self):
-        with self.l('if isinstance({variable}, (int, float)):'):
-            if not isinstance(self._definition['multipleOf'], (int, float)):
+        with self.l('if isinstance({variable}, (int, float, Decimal)):'):
+            if not isinstance(self._definition['multipleOf'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('multipleOf must be a number')
             # For proper multiplication check of floats we need to use decimals,
             # because for example 19.01 / 0.01 = 1901.0000000000002.
             if isinstance(self._definition['multipleOf'], float):
-                self._extra_imports_lines.append('from decimal import Decimal')
-                self._extra_imports_objects['Decimal'] = decimal.Decimal
                 self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
             else:
                 self.l('quotient = {variable} / {multipleOf}')

@@ -1,3 +1,5 @@
+import decimal
+
 import pytest
 
 from fastjsonschema import JsonSchemaValueException
@@ -158,6 +160,19 @@ def test_integer_is_not_number(asserter, value):
     0.001,
 ))
 def test_number_allows_float(asserter, value):
+    asserter({
+        'type': 'number',
+    }, value, value)
+
+
+
+@pytest.mark.parametrize('value', (
+    decimal.Decimal('1.0'),
+    decimal.Decimal('0.1'),
+    decimal.Decimal('0.01'),
+    decimal.Decimal('0.001'),
+))
+def test_number_allows_decimal(asserter, value):
     asserter({
         'type': 'number',
     }, value, value)

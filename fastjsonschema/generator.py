@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from decimal import Decimal
 import re
 
 from .exceptions import JsonSchemaValueException, JsonSchemaDefinitionException
@@ -36,8 +37,12 @@ class CodeGenerator:
         # Any extra library should be here to be imported only once.
         # Lines are imports to be printed in the file and objects
         # key-value pair to pass to compile function directly.
-        self._extra_imports_lines = []
-        self._extra_imports_objects = {}
+        self._extra_imports_lines = [
+            "from decimal import Decimal",
+        ]
+        self._extra_imports_objects = {
+            "Decimal": Decimal,
+        }
 
         self._variables = set()
         self._indent = 0
