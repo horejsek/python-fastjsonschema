@@ -7,11 +7,8 @@ Code adapted from https://github.com/Julian/jsonschema
 """
 
 import contextlib
-import json
 import re
 from urllib import parse as urlparse
-from urllib.parse import unquote
-from urllib.request import urlopen
 
 from .exceptions import JsonSchemaDefinitionException
 
@@ -29,6 +26,8 @@ def resolve_path(schema, fragment):
 
     Path is unescaped according https://tools.ietf.org/html/rfc6901
     """
+    from urllib.parse import unquote
+
     fragment = fragment.lstrip('/')
     parts = unquote(fragment).split('/') if fragment else []
     for part in parts:
@@ -55,6 +54,9 @@ def resolve_remote(uri, handlers):
         urllib library is used to fetch requests from the remote ``uri``
         if handlers does notdefine otherwise.
     """
+    import json
+    from urllib.request import urlopen
+
     scheme = urlparse.urlsplit(uri).scheme
     if scheme in handlers:
         result = handlers[scheme](uri)
@@ -149,6 +151,8 @@ class RefResolver:
         """
         Get current scope and return it as a valid function name.
         """
+        from urllib.parse import unquote
+
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_').replace('"', '')
         name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '_', name)
         name = name.lower().rstrip('_')
