@@ -43,10 +43,11 @@ def test_min_properties(asserter, value, expected):
     }, value, expected)
 
 
-exc = JsonSchemaValueException('data must contain [\'a\', \'b\'] properties', value='{data}', name='data', definition='{definition}', rule='required')
+def make_exc(missing):
+    return JsonSchemaValueException('data must contain {} properties'.format(missing), value='{data}', name='data', definition='{definition}', rule='required')
 @pytest.mark.parametrize('value, expected', [
-    ({}, exc),
-    ({'a': 1}, exc),
+    ({}, make_exc(['a', 'b'])),
+    ({'a': 1}, make_exc(['b'])),
     ({'a': 1, 'b': 2}, {'a': 1, 'b': 2}),
 ])
 def test_required(asserter, value, expected):
