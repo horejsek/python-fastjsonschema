@@ -1,3 +1,8 @@
+=== 2.18.0 (2023-07-22)
+
+* Improved error message for required props - only missing are reported
+* Fixed support of boolean schema in if-then-else application
+
 === 2.17.1 (2023-05-22)
 
 * Fixed tests in sdist
