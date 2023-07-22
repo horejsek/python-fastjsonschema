@@ -40,6 +40,8 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         Means that schema can be specified by boolean.
         True means everything is valid, False everything is invalid.
         """
+        if self._definition is True:
+            self.l('pass')
         if self._definition is False:
             self.exc('{name} must not be there')
 

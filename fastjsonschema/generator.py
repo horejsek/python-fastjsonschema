@@ -242,7 +242,7 @@ class CodeGenerator:
                 name = name + '".format(**locals()) + "'
 
         context = dict(
-            self._definition or {},
+            self._definition if self._definition and self._definition is not True else {},
             variable=self._variable,
             name=name,
             **kwds
