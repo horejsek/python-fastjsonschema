@@ -11,7 +11,6 @@ import json
 import re
 from urllib import parse as urlparse
 from urllib.parse import unquote
-from urllib.request import urlopen
 
 from .exceptions import JsonSchemaDefinitionException
 
@@ -59,6 +58,8 @@ def resolve_remote(uri, handlers):
     if scheme in handlers:
         result = handlers[scheme](uri)
     else:
+        from urllib.request import urlopen
+
         req = urlopen(uri)
         encoding = req.info().get_content_charset() or 'utf-8'
         try:
