@@ -3,7 +3,7 @@ from .draft06 import CodeGeneratorDraft06
 
 class CodeGeneratorDraft07(CodeGeneratorDraft06):
     FORMAT_REGEXS = dict(CodeGeneratorDraft06.FORMAT_REGEXS, **{
-        'date': r'^(?P<year>\d{4})-(?P<month>\d{1,2})-(?P<day>\d{1,2})\Z',
+        'date': r'^(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})\Z',
         'iri': r'^\w+:(\/?\/?)[^\s]+\Z',
         'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
         'idn-email': r'^[^@]+@[^@]+\.[^@]+\Z',

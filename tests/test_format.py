@@ -37,6 +37,20 @@ def test_hostname(asserter, value, expected):
     asserter({'type': 'string', 'format': 'hostname'}, value, expected)
 
 
+exc = JsonSchemaValueException('data must be date', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('bla', exc),
+    ('2018-2-5', exc),
+    ('2018-02-05', '2018-02-05'),
+])
+def test_date(asserter, value, expected):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-07/schema',
+        'format': 'date',
+    }, value, expected)
+
+
 exc = JsonSchemaValueException('data must be custom-format', value='{data}', name='data', definition='{definition}', rule='format')
 @pytest.mark.parametrize('value,expected,custom_format', [
     ('', exc, r'^[ab]$'),
