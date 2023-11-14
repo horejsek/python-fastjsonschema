@@ -52,51 +52,54 @@
 <span class="sd">*****</span>
 
 <span class="sd">``fastjsonschema`` implements validation of JSON documents by JSON schema.</span>
-<span class="sd">The library implements JSON schema drafts 04, 06 and 07. The main purpose is</span>
+<span class="sd">The library implements JSON schema drafts 04, 06, and 07. The main purpose is</span>
 <span class="sd">to have a really fast implementation. See some numbers:</span>
 
-<span class="sd"> * Probably most popular ``jsonschema`` can take up to 5 seconds for valid inputs</span>
-<span class="sd">   and 1.2 seconds for invalid inputs.</span>
-<span class="sd"> * Second most popular ``json-spec`` is even worse with up to 7.2 and 1.7 seconds.</span>
+<span class="sd"> * Probably the most popular, ``jsonschema``, can take up to 5 seconds for valid</span>
+<span class="sd">   inputs and 1.2 seconds for invalid inputs.</span>
+<span class="sd"> * Second most popular, ``json-spec``, is even worse with up to 7.2 and 1.7 seconds.</span>
 <span class="sd"> * Last ``validictory``, now deprecated, is much better with 370 or 23 milliseconds,</span>
-<span class="sd">   but it does not follow all standards and it can be still slow for some purposes.</span>
+<span class="sd">   but it does not follow all standards, and it can be still slow for some purposes.</span>
 
 <span class="sd">With this library you can gain big improvements as ``fastjsonschema`` takes</span>
 <span class="sd">only about 25 milliseconds for valid inputs and 2 milliseconds for invalid ones.</span>
 <span class="sd">Pretty amazing, right? :-)</span>
 
-<span class="sd">Technically it works by generating the most stupid code on the fly which is fast but</span>
-<span class="sd">is hard to write by hand. The best efficiency is achieved when compiled once and used</span>
-<span class="sd">many times, of course. It works similarly like regular expressions. But you can also</span>
-<span class="sd">generate the code to the file which is even slightly faster.</span>
+<span class="sd">Technically it works by generating the most stupid code on the fly, which is fast but</span>
+<span class="sd">is hard to write by hand. The best efficiency is achieved when a validator is compiled</span>
+<span class="sd">once and used many times, of course. It works similarly like regular expressions. But</span>
+<span class="sd">you can also generate the code to a file, which is even slightly faster.</span>
 
-<span class="sd">You can do the performance on your computer or server with an included script:</span>
+<span class="sd">You can run the performance benchmarks on your computer or server with the included</span>
+<span class="sd">script:</span>
 
 <span class="sd">.. code-block:: bash</span>
 
 <span class="sd">    $ make performance</span>
-<span class="sd">    fast_compiled        valid      ==&gt; 0.030474655970465392</span>
-<span class="sd">    fast_compiled        invalid    ==&gt; 0.0017561429995112121</span>
-<span class="sd">    fast_file            valid      ==&gt; 0.028758891974575818</span>
-<span class="sd">    fast_file            invalid    ==&gt; 0.0017655809642747045</span>
-<span class="sd">    fast_not_compiled    valid      ==&gt; 4.597834145999514</span>
-<span class="sd">    fast_not_compiled    invalid    ==&gt; 1.139162228035275</span>
-<span class="sd">    jsonschema           valid      ==&gt; 5.014410221017897</span>
-<span class="sd">    jsonschema           invalid    ==&gt; 1.1362981660058722</span>
-<span class="sd">    jsonspec             valid      ==&gt; 8.1144932230236</span>
-<span class="sd">    jsonspec             invalid    ==&gt; 2.0143173419637606</span>
-<span class="sd">    validictory          valid      ==&gt; 0.4084212710149586</span>
-<span class="sd">    validictory          invalid    ==&gt; 0.026061681972350925</span>
+<span class="sd">    fast_compiled        valid      ==&gt;  0.0464646</span>
+<span class="sd">    fast_compiled        invalid    ==&gt;  0.0030227</span>
+<span class="sd">    fast_file            valid      ==&gt;  0.0461219</span>
+<span class="sd">    fast_file            invalid    ==&gt;  0.0030608</span>
+<span class="sd">    fast_not_compiled    valid      ==&gt; 11.4627202</span>
+<span class="sd">    fast_not_compiled    invalid    ==&gt;  2.5726230</span>
+<span class="sd">    jsonschema           valid      ==&gt;  7.5844927</span>
+<span class="sd">    jsonschema           invalid    ==&gt;  1.9204665</span>
+<span class="sd">    jsonschema_compiled  valid      ==&gt;  0.6938364</span>
+<span class="sd">    jsonschema_compiled  invalid    ==&gt;  0.0359244</span>
+<span class="sd">    jsonspec             valid      ==&gt;  9.0715843</span>
+<span class="sd">    jsonspec             invalid    ==&gt;  2.1650488</span>
+<span class="sd">    validictory          valid      ==&gt;  0.4874793</span>
+<span class="sd">    validictory          invalid    ==&gt;  0.0232244</span>
 
 <span class="sd">This library follows and implements `JSON schema draft-04, draft-06, and draft-07</span>
-<span class="sd">&lt;http://json-schema.org&gt;`_. Sometimes it&#39;s not perfectly clear so I recommend also</span>
+<span class="sd">&lt;http://json-schema.org&gt;`_. Sometimes it&#39;s not perfectly clear, so I recommend also</span>
 <span class="sd">check out this `understanding JSON schema &lt;https://spacetelescope.github.io/understanding-json-schema&gt;`_.</span>
 
 <span class="sd">Note that there are some differences compared to JSON schema standard:</span>
 
 <span class="sd"> * Regular expressions are full Python ones, not only what JSON schema allows. It&#39;s easier</span>
-<span class="sd">   to allow everything and also it&#39;s faster to compile without limits. So keep in mind that when</span>
-<span class="sd">   you will use a more advanced regular expression, it may not work with other library or in</span>
+<span class="sd">   to allow everything, and also it&#39;s faster to compile without limits. So keep in mind that when</span>
+<span class="sd">   you will use a more advanced regular expression, it may not work with other libraries or in</span>
 <span class="sd">   other languages.</span>
 <span class="sd"> * Because Python matches new line for a dollar in regular expressions (``a$`` matches ``a`` and ``a\\n``),</span>
 <span class="sd">   instead of ``$`` is used ``\Z`` and all dollars in your regular expression are changed to ``\\Z``</span>
@@ -104,25 +107,61 @@
 <span class="sd"> * JSON schema says you can use keyword ``default`` for providing default values. This implementation</span>
 <span class="sd">   uses that and always returns transformed input data.</span>
 
+<span class="sd">Usage</span>
+<span class="sd">*****</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    import fastjsonschema</span>
+
+<span class="sd">    point_schema = {</span>
+<span class="sd">        &quot;type&quot;: &quot;object&quot;,</span>
+<span class="sd">        &quot;properties&quot;: {</span>
+<span class="sd">            &quot;x&quot;: {</span>
+<span class="sd">                &quot;type&quot;: &quot;number&quot;,</span>
+<span class="sd">            },</span>
+<span class="sd">            &quot;y&quot;: {</span>
+<span class="sd">                &quot;type&quot;: &quot;number&quot;,</span>
+<span class="sd">            },</span>
+<span class="sd">        },</span>
+<span class="sd">        &quot;required&quot;: [&quot;x&quot;, &quot;y&quot;],</span>
+<span class="sd">        &quot;additionalProperties&quot;: False,</span>
+<span class="sd">    }</span>
+
+<span class="sd">    point_validator = fastjsonschema.compile(point_schema)</span>
+<span class="sd">    try:</span>
+<span class="sd">        point_validator({&quot;x&quot;: 1.0, &quot;y&quot;: 2.0})</span>
+<span class="sd">    except fastjsonschema.JsonSchemaException as e:</span>
+<span class="sd">        print(f&quot;Data failed validation: {e}&quot;)</span>
+
 <span class="sd">API</span>
 <span class="sd">***</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
 
 <span class="kn">from</span> <span class="nn">.draft04</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft04</span>
 <span class="kn">from</span> <span class="nn">.draft06</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft06</span>
 <span class="kn">from</span> <span class="nn">.draft07</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft07</span>
-<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">JsonSchemaException</span><span class="p">,</span> <span class="n">JsonSchemaDefinitionException</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">JsonSchemaException</span><span class="p">,</span> <span class="n">JsonSchemaValueException</span><span class="p">,</span> <span class="n">JsonSchemaDefinitionException</span>
 <span class="kn">from</span> <span class="nn">.ref_resolver</span> <span class="k">import</span> <span class="n">RefResolver</span>
 <span class="kn">from</span> <span class="nn">.version</span> <span class="k">import</span> <span class="n">VERSION</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;VERSION&#39;</span><span class="p">,</span> <span class="s1">&#39;JsonSchemaException&#39;</span><span class="p">,</span> <span class="s1">&#39;JsonSchemaDefinitionException&#39;</span><span class="p">,</span> <span class="s1">&#39;validate&#39;</span><span class="p">,</span> <span class="s1">&#39;compile&#39;</span><span class="p">,</span> <span class="s1">&#39;compile_to_code&#39;</span><span class="p">)</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;VERSION&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JsonSchemaException&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JsonSchemaValueException&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;JsonSchemaDefinitionException&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;validate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;compile&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;compile_to_code&#39;</span><span class="p">,</span>
+<span class="p">)</span>
 
 
-<div class="viewcode-block" id="validate"><a class="viewcode-back" href="../index.html#fastjsonschema.validate">[docs]</a><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{}):</span>
+<div class="viewcode-block" id="validate"><a class="viewcode-back" href="../index.html#fastjsonschema.validate">[docs]</a><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Validation function for lazy programmers or for use cases, when you need</span>
+<span class="sd">    Validation function for lazy programmers or for use cases when you need</span>
 <span class="sd">    to call validation only once, so you do not have to compile it first.</span>
-<span class="sd">    Use it only when you do not care about performance (even thought it will</span>
+<span class="sd">    Use it only when you do not care about performance (even though it will</span>
 <span class="sd">    be still faster than alternative implementations).</span>
 
 <span class="sd">    .. code-block:: python</span>
@@ -134,11 +173,12 @@
 
 <span class="sd">    Preferred is to use :any:`compile` function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="nb">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span></div>
 
 
+<span class="c1">#TODO: Change use_default to False when upgrading to version 3.</span>
 <span class="c1"># pylint: disable=redefined-builtin,dangerous-default-value,exec-used</span>
-<div class="viewcode-block" id="compile"><a class="viewcode-back" href="../index.html#fastjsonschema.compile">[docs]</a><span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{}):</span>
+<div class="viewcode-block" id="compile"><a class="viewcode-back" href="../index.html#fastjsonschema.compile">[docs]</a><span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates validation function for validating JSON schema passed in ``definition``.</span>
 <span class="sd">    Example:</span>
@@ -150,7 +190,8 @@
 <span class="sd">        validate = fastjsonschema.compile({&#39;type&#39;: &#39;string&#39;})</span>
 <span class="sd">        validate(&#39;hello&#39;)</span>
 
-<span class="sd">    This implementation support keyword ``default``:</span>
+<span class="sd">    This implementation supports keyword ``default`` (can be turned off</span>
+<span class="sd">    by passing `use_default=False`):</span>
 
 <span class="sd">    .. code-block:: python</span>
 
@@ -179,7 +220,7 @@
 <span class="sd">    remote schemes used in your ``definition`` in parameter ``handlers``.</span>
 
 <span class="sd">    Also, you can pass mapping for custom formats. Key is the name of your</span>
-<span class="sd">    formatter and value can be regular expression which will be compiled or</span>
+<span class="sd">    formatter and value can be regular expression, which will be compiled or</span>
 <span class="sd">    callback returning `bool` (or you can raise your own exception).</span>
 
 <span class="sd">    .. code-block:: python</span>
@@ -189,21 +230,28 @@
 <span class="sd">            &#39;bar&#39;: lambda value: value in (&#39;foo&#39;, &#39;bar&#39;),</span>
 <span class="sd">        })</span>
 
+<span class="sd">    Note that formats are automatically used as assertions. It can be turned</span>
+<span class="sd">    off by passing `use_formats=False`. When disabled, custom formats are</span>
+<span class="sd">    disabled as well. (Added in 2.19.0.)</span>
+
 <span class="sd">    Exception :any:`JsonSchemaDefinitionException` is raised when generating the</span>
 <span class="sd">    code fails (bad definition).</span>
 
-<span class="sd">    Exception :any:`JsonSchemaException` is raised from generated funtion when</span>
+<span class="sd">    Exception :any:`JsonSchemaValueException` is raised from generated function when</span>
 <span class="sd">    validation fails (data do not follow the definition).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">)</span>
+    <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">)</span>
     <span class="n">global_state</span> <span class="o">=</span> <span class="n">code_generator</span><span class="o">.</span><span class="n">global_state</span>
     <span class="c1"># Do not pass local state so it can recursively call itself.</span>
     <span class="n">exec</span><span class="p">(</span><span class="n">code_generator</span><span class="o">.</span><span class="n">func_code</span><span class="p">,</span> <span class="n">global_state</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">global_state</span><span class="p">[</span><span class="n">resolver</span><span class="o">.</span><span class="n">get_scope_name</span><span class="p">()]</span></div>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">global_state</span><span class="p">[</span><span class="n">resolver</span><span class="o">.</span><span class="n">get_scope_name</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">formats</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">update_wrapper</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">custom_formats</span><span class="o">=</span><span class="n">formats</span><span class="p">),</span> <span class="n">func</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span></div>
 
 
 <span class="c1"># pylint: disable=dangerous-default-value</span>
-<div class="viewcode-block" id="compile_to_code"><a class="viewcode-back" href="../index.html#fastjsonschema.compile_to_code">[docs]</a><span class="k">def</span> <span class="nf">compile_to_code</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{}):</span>
+<div class="viewcode-block" id="compile_to_code"><a class="viewcode-back" href="../index.html#fastjsonschema.compile_to_code">[docs]</a><span class="k">def</span> <span class="nf">compile_to_code</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates validation code for validating JSON schema passed in ``definition``.</span>
 <span class="sd">    Example:</span>
@@ -226,7 +274,7 @@
 <span class="sd">    Exception :any:`JsonSchemaDefinitionException` is raised when generating the</span>
 <span class="sd">    code fails (bad definition).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="s1">&#39;VERSION = &quot;&#39;</span> <span class="o">+</span> <span class="n">VERSION</span> <span class="o">+</span> <span class="s1">&#39;&quot;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
         <span class="n">code_generator</span><span class="o">.</span><span class="n">global_state_code</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
@@ -234,9 +282,15 @@
     <span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="o">=</span><span class="p">{}):</span>
-    <span class="n">resolver</span> <span class="o">=</span> <span class="n">RefResolver</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="n">handlers</span><span class="p">)</span>
-    <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_get_code_generator_class</span><span class="p">(</span><span class="n">definition</span><span class="p">)(</span><span class="n">definition</span><span class="p">,</span> <span class="n">resolver</span><span class="o">=</span><span class="n">resolver</span><span class="p">,</span> <span class="n">formats</span><span class="o">=</span><span class="n">formats</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">resolver</span> <span class="o">=</span> <span class="n">RefResolver</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="n">handlers</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="p">{})</span>
+    <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_get_code_generator_class</span><span class="p">(</span><span class="n">definition</span><span class="p">)(</span>
+        <span class="n">definition</span><span class="p">,</span>
+        <span class="n">resolver</span><span class="o">=</span><span class="n">resolver</span><span class="p">,</span>
+        <span class="n">formats</span><span class="o">=</span><span class="n">formats</span><span class="p">,</span>
+        <span class="n">use_default</span><span class="o">=</span><span class="n">use_default</span><span class="p">,</span>
+        <span class="n">use_formats</span><span class="o">=</span><span class="n">use_formats</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span>
 
 
@@ -282,7 +336,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2016-2019, Michal Horejsek.
+      &copy;2016-2023, Michal Horejsek.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>

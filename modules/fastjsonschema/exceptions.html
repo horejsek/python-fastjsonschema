@@ -40,12 +40,18 @@
 
 <div class="viewcode-block" id="JsonSchemaException"><a class="viewcode-back" href="../../index.html#fastjsonschema.JsonSchemaException">[docs]</a><span class="k">class</span> <span class="nc">JsonSchemaException</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base exception of ``fastjsonschema`` library.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="JsonSchemaValueException"><a class="viewcode-back" href="../../index.html#fastjsonschema.JsonSchemaValueException">[docs]</a><span class="k">class</span> <span class="nc">JsonSchemaValueException</span><span class="p">(</span><span class="n">JsonSchemaException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Exception raised by validation function. Available properties:</span>
 
 <span class="sd">     * ``message`` containing human-readable information what is wrong (e.g. ``data.property[index] must be smaller than or equal to 42``),</span>
 <span class="sd">     * invalid ``value`` (e.g. ``60``),</span>
-<span class="sd">     * ``name`` of a path in the data structure (e.g. ``data.propery[index]``),</span>
-<span class="sd">     * ``path`` as an array in the data structure (e.g. ``[&#39;data&#39;, &#39;propery&#39;, &#39;index&#39;]``),</span>
+<span class="sd">     * ``name`` of a path in the data structure (e.g. ``data.property[index]``),</span>
+<span class="sd">     * ``path`` as an array in the data structure (e.g. ``[&#39;data&#39;, &#39;property&#39;, &#39;index&#39;]``),</span>
 <span class="sd">     * the whole ``definition`` which the ``value`` has to fulfil (e.g. ``{&#39;type&#39;: &#39;number&#39;, &#39;maximum&#39;: 42}``),</span>
 <span class="sd">     * ``rule`` which the ``value`` is breaking (e.g. ``maximum``)</span>
 <span class="sd">     * and ``rule_definition`` (e.g. ``42``).</span>
@@ -112,7 +118,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2016-2019, Michal Horejsek.
+      &copy;2016-2023, Michal Horejsek.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
