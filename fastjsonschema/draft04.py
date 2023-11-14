@@ -34,9 +34,10 @@ class CodeGeneratorDraft04(CodeGenerator):
         'uri': r'^\w+:(\/?\/?)[^\s]+\Z',
     }
 
-    def __init__(self, definition, resolver=None, formats={}, use_default=True):
+    def __init__(self, definition, resolver=None, formats={}, use_default=True, use_formats=True):
         super().__init__(definition, resolver)
         self._custom_formats = formats
+        self._use_formats = use_formats
         self._use_default = use_default
         self._json_keywords_to_function.update((
             ('type', self.generate_type),
@@ -254,6 +255,8 @@ class CodeGeneratorDraft04(CodeGenerator):
 
         Valid value for this definition is user@example.com but not @username
         """
+        if not self._use_formats:
+            return
         with self.l('if isinstance({variable}, str):'):
             format_ = self._definition['format']
             # Checking custom formats - user is allowed to override default formats.

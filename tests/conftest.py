@@ -20,16 +20,16 @@ def pytest_configure(config):
 
 @pytest.fixture
 def asserter():
-    def f(definition, value, expected, formats={}):
+    def f(definition, value, expected, formats={}, use_formats=True):
         # When test fails, it will show up code.
-        code_generator = CodeGeneratorDraft07(definition, formats=formats)
+        code_generator = CodeGeneratorDraft07(definition, formats=formats, use_formats=use_formats)
         print(code_generator.func_code)
         pprint(code_generator.global_state)
 
         # By default old tests are written for draft-04.
         definition.setdefault('$schema', 'http://json-schema.org/draft-04/schema')
 
-        validator = compile(definition, formats=formats)
+        validator = compile(definition, formats=formats, use_formats=use_formats)
         if isinstance(expected, JsonSchemaValueException):
             with pytest.raises(JsonSchemaValueException) as exc:
                 validator(value)

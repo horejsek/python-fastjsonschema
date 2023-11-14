@@ -56,3 +56,8 @@ def test_custom_format_override(asserter):
     asserter({'format': 'date-time'}, 'a', 'a', formats={
         'date-time': r'^[ab]$',
     })
+
+
+def test_disable_formats(asserter):
+    asserter({'format': 'date-time'}, 'bla', 'bla', use_formats=False)
+
