@@ -1,4 +1,4 @@
-.PHONY: all venv lint jsonschemasuitcases test test-lf benchmark benchmark-save performance printcode doc upload deb clean
+.PHONY: all venv lint jsonschemasuitcases test test-lf benchmark benchmark-save performance printcode doc build upload deb clean
 SHELL=/bin/bash
 
 VENV_NAME?=venv
@@ -17,8 +17,7 @@ all:
 venv: $(VENV_NAME)/bin/activate
 $(VENV_NAME)/bin/activate: setup.py
 	test -d $(VENV_NAME) || virtualenv -p python3 $(VENV_NAME)
-	# Some problem in latest version of setuptools during extracting translations.
-	${PYTHON} -m pip install -U pip setuptools==39.1.0
+	${PYTHON} -m pip install -U pip setuptools twine build
 	${PYTHON} -m pip install -e .[devel]
 	touch $(VENV_NAME)/bin/activate
 
@@ -63,8 +62,11 @@ printcode: venv
 doc:
 	cd docs; make
 
-upload: venv
-	${PYTHON} setup.py register sdist bdist_wheel upload
+build: venv
+	${PYTHON} -m build
+
+upload: venv build
+	${PYTHON} -m twine upload --repository pypi dist/*
 
 deb: venv
 	${PYTHON} setup.py --command-packages=stdeb.command bdist_deb
