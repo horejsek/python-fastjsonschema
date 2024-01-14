@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 
@@ -59,12 +61,11 @@ def test_pattern_with_escape_no_warnings(asserter):
         'bar': {}
     }
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         asserter({
             'type': 'object',
             'patternProperties': {
                 '\\w+': {'type': 'object'}
             }
         }, value, value)
-
-    assert len(record) == 0
