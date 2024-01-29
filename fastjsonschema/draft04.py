@@ -206,13 +206,10 @@ class CodeGeneratorDraft04(CodeGenerator):
         means everything is invalid.
         """
         not_definition = self._definition['not']
-        if not_definition is True:
+        if not_definition is True or not_definition == {}:
             self.exc('{name} must not be there', rule='not')
         elif not_definition is False:
             return
-        elif not not_definition:
-            with self.l('if {}:', self._variable):
-                self.exc('{name} must NOT match a disallowed definition', rule='not')
         else:
             with self.l('try:', optimize=False):
                 self.generate_func_code_block(not_definition, self._variable, self._variable_name)
