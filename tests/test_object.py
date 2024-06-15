@@ -74,13 +74,53 @@ def test_properties(asserter, value, expected):
     }, value, expected)
 
 
-def test_invalid_properties(asserter):
-    with pytest.raises(JsonSchemaDefinitionException):
-        fastjsonschema.compile({
-            'properties': {
-                'item': ['wrong'],
+@pytest.mark.parametrize('definition', (
+    {
+        'properties': {
+            'item': ['wrong'],
+        },
+    },
+    {
+        'properties': {
+            'x': {
+                'type': 'number',
             },
-        })
+        },
+        'required': ['x', 'y'],
+        'additionalProperties': False,
+    },
+    {
+        'properties': {
+            'x': {
+                'type': 'number',
+            },
+        },
+        'required': ['x', 'x'],
+    }
+))
+def test_invalid_properties(asserter, definition):
+    with pytest.raises(JsonSchemaDefinitionException):
+        fastjsonschema.compile(definition)
+
+
+@pytest.mark.parametrize('definition', (
+    {
+        'properties': {
+            'x': {
+                'type': 'number',
+            },
+        },
+        'patternProperties': {
+            '^y': {
+                'type': 'number',
+            },
+        },
+        'required': ['x', 'y'],
+        'additionalProperties': False,
+    },
+))
+def test_valid_properties(asserter, definition):
+    asserter(definition, {'x': 1, 'y': 2}, {'x': 1, 'y': 2})
 
 
 @pytest.mark.parametrize('value, expected', [

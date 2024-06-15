@@ -460,6 +460,18 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if {variable}_is_dict:'):
             if not isinstance(self._definition['required'], (list, tuple)):
                 raise JsonSchemaDefinitionException('required must be an array')
+            if len(self._definition['required']) != len(set(self._definition['required'])):
+                raise JsonSchemaDefinitionException('required must contain unique elements')
+            if not self._definition.get('additionalProperties', True):
+                not_possible = [
+                    prop
+                    for prop in self._definition['required']
+                    if
+                        prop not in self._definition.get('properties', {})
+                        and not any(re.search(regex, prop) for regex in self._definition.get('patternProperties', {}))
+                ]
+                if not_possible:
+                    raise JsonSchemaDefinitionException('{}: items {} are required but not allowed'.format(self._variable, not_possible))
             self.l('{variable}__missing_keys = set({required}) - {variable}.keys()')
             with self.l('if {variable}__missing_keys:'):
                 dynamic = 'str(sorted({variable}__missing_keys)) + " properties"'
