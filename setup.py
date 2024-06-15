@@ -9,12 +9,9 @@ except ImportError:
 with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
     LONG_DESCRIPTION = readme.read()
 
-# https://packaging.python.org/en/latest/single_source_version.html
-try:
-    execfile('fastjsonschema/version.py')
-except NameError:
-    exec(open('fastjsonschema/version.py').read())
-
+# https://packaging.python.org/en/latest/guides/single-sourcing-package-version/
+with open(os.path.join(os.path.dirname(__file__), "fastjsonschema", "version.py")) as versionFile:
+    VERSION = versionFile.read().split("'")[1]
 
 setup(
     name='fastjsonschema',
