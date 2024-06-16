@@ -20,7 +20,6 @@ def pytest_generate_tests(metafunc):
             'enum.json',
 
             # TODO: fix formats
-            'email.json',
             'date-time.json',
             'date.json',
             'ipv4.json',
