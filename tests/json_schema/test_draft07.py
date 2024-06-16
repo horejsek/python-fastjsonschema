@@ -24,10 +24,8 @@ def pytest_generate_tests(metafunc):
             'enum.json',
 
             # TODO: fix formats
-            #'ipv4.json',
             'ipv6.json',
             'time.json',
-            'format.json',
 
             # TODO: fix ref
             'ref.json',

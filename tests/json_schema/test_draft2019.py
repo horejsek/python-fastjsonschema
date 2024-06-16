@@ -26,7 +26,6 @@ def pytest_generate_tests(metafunc):
             # TODO: fix formats
             'ipv6.json',
             'time.json',
-            'format.json',
 
             # TODO: fix ref
             'ref.json',
