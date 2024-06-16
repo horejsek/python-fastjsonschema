@@ -1,3 +1,8 @@
+=== UNRELEASED
+
+* Updated test suite
+* Fixed detecting when infinity is reqched with multipleOf
+
 === 2.20.0 (2024-06-15)
 
 * Added validations at compile time:

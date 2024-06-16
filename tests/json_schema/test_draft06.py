@@ -11,6 +11,7 @@ def pytest_generate_tests(metafunc):
             'refRemote.json', # Requires local server.
             # Optional.
             'ecmascript-regex.json',
+            'float-overflow.json',
             'unknown.json',
             'unknownKeyword.json',
 
@@ -25,9 +26,6 @@ def pytest_generate_tests(metafunc):
             'minItems.json',
             'minLength.json',
             'minProperties.json',
-
-            # TODO: fix big number
-            'multipleOf.json',
 
             # TODO: fix empty schema == invalid
             'not.json',

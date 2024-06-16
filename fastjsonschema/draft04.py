@@ -321,6 +321,9 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self.l('quotient = {variable} / {multipleOf}')
             with self.l('if int(quotient) != quotient:'):
                 self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
+            # For example, 1e308 / 0.123456789
+            with self.l('if {variable} / {multipleOf} == float("inf"):'):
+                self.exc('inifinity reached', rule='multipleOf')
 
     def generate_min_items(self):
         self.create_variable_is_list()
