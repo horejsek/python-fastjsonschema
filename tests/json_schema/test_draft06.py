@@ -14,14 +14,13 @@ def pytest_generate_tests(metafunc):
             'float-overflow.json',
             'unknown.json',
             'unknownKeyword.json',
+            'date-time.json',
 
             # TODO: fix const with booleans to not match numbers
             'const.json',
             'enum.json',
 
             # TODO: fix formats
-            'date-time.json',
-            'date.json',
             'ipv4.json',
             'ipv6.json',
             'time.json',

@@ -5,6 +5,7 @@
 * Fixed that min/max items/lenght/properties can be float
 * Fixed that everything with empty `not` is invalid
 * Improved regexp for email format to comfort test suite
+* Improved regexp for date format to comfort test suite
 
 === 2.20.0 (2024-06-15)
 
