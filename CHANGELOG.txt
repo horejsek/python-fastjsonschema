@@ -1,7 +1,8 @@
 === UNRELEASED
 
 * Updated test suite
-* Fixed detecting when infinity is reqched with multipleOf
+* Fixed detecting when infinity is reached with multipleOf
+* Fixed that min/max items/lenght/properties can be float
 
 === 2.20.0 (2024-06-15)
 

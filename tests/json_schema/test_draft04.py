@@ -19,14 +19,6 @@ def pytest_generate_tests(metafunc):
             'const.json',
             'enum.json',
 
-            # TODO: fix decimal allowed as number
-            'maxItems.json',
-            'maxLength.json',
-            'maxProperties.json',
-            'minItems.json',
-            'minLength.json',
-            'minProperties.json',
-
             # TODO: fix empty schema == invalid
             'not.json',
 
