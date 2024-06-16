@@ -211,8 +211,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         elif not_definition is False:
             return
         elif not not_definition:
-            with self.l('if {}:', self._variable):
-                self.exc('{name} must NOT match a disallowed definition', rule='not')
+            self.exc('{name} must NOT match a disallowed definition', rule='not')
         else:
             with self.l('try:', optimize=False):
                 self.generate_func_code_block(not_definition, self._variable, self._variable_name)

@@ -21,9 +21,6 @@ def pytest_generate_tests(metafunc):
             'const.json',
             'enum.json',
 
-            # TODO: fix empty schema == invalid
-            'not.json',
-
             # TODO: fix formats
             'email.json',
             'date-time.json',

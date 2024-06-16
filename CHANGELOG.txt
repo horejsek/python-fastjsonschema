@@ -3,6 +3,7 @@
 * Updated test suite
 * Fixed detecting when infinity is reached with multipleOf
 * Fixed that min/max items/lenght/properties can be float
+* Fixed that everything with empty `not` is invalid
 
 === 2.20.0 (2024-06-15)
 
