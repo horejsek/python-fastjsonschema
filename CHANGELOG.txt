@@ -4,6 +4,7 @@
 * Fixed detecting when infinity is reached with multipleOf
 * Fixed that min/max items/lenght/properties can be float
 * Fixed that everything with empty `not` is invalid
+* Fixed missing re import when using regex pattern
 * Improved regexp for email format to comfort test suite
 * Improved regexp for date format to comfort test suite
 * Improved regexp for ipv4 format to comfort test suite
