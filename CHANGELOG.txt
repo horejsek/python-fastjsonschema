@@ -1,4 +1,4 @@
-=== UNRELEASED
+=== 2.21.0 (2024-11-27)
 
 * Updated test suite
 * Fixed detecting when infinity is reached with multipleOf
