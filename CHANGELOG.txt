@@ -1,3 +1,7 @@
+=== UNRELEASED
+
+* Fixed ResourceWarning where file was not properly closed
+
 === 2.21.0 (2024-11-27)
 
 * Updated test suite
