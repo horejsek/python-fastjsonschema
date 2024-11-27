@@ -8,6 +8,7 @@
 * Improved regexp for date format to comfort test suite
 * Improved regexp for ipv4 format to comfort test suite
 * Added partial support of idn-hostname format
+* Added `detailed_exceptions` flag (default to True to avoid breaking change) - when used, results are twice as fast
 
 === 2.20.0 (2024-06-15)
 

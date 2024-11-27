@@ -34,8 +34,8 @@ class CodeGeneratorDraft04(CodeGenerator):
         'uri': r'^\w+:(\/?\/?)[^\s]+\Z',
     }
 
-    def __init__(self, definition, resolver=None, formats={}, use_default=True, use_formats=True):
-        super().__init__(definition, resolver)
+    def __init__(self, definition, resolver=None, formats={}, use_default=True, use_formats=True, detailed_exceptions=True):
+        super().__init__(definition, resolver, detailed_exceptions)
         self._custom_formats = formats
         self._use_formats = use_formats
         self._use_default = use_default

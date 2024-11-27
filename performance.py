@@ -74,6 +74,7 @@ VALUES_BAD = (
 
 
 fastjsonschema_validate = fastjsonschema.compile(JSON_SCHEMA)
+fastjsonschema_validate_without_exc = fastjsonschema.compile(JSON_SCHEMA, detailed_exceptions=False)
 
 
 def fast_compiled(value, _):
@@ -82,6 +83,10 @@ def fast_compiled(value, _):
 
 def fast_not_compiled(value, json_schema):
     fastjsonschema.compile(json_schema)(value)
+
+
+def fast_compiled_without_exc(value, _):
+    fastjsonschema_validate_without_exc(value)
 
 
 validator_class = jsonschema.validators.validator_for(JSON_SCHEMA)
@@ -118,6 +123,7 @@ def t(func, valid_values=True):
         jsonschema,
         jsonspec,
         fast_compiled,
+        fast_compiled_without_exc,
         fast_file,
         fast_not_compiled,
         jsonschema_compiled,
@@ -139,13 +145,16 @@ def t(func, valid_values=True):
         """.format(func))
 
     res = timeit.timeit(code, setup, number=NUMBER)
-    print('{:<20} {:<10} ==> {:10.7f}'.format(module, 'valid' if valid_values else 'invalid', res))
+    print('{:<30} {:<10} ==> {:10.7f}'.format(module, 'valid' if valid_values else 'invalid', res))
 
 
 print('Number: {}'.format(NUMBER))
 
 t('fast_compiled')
 t('fast_compiled', valid_values=False)
+
+t('fast_compiled_without_exc')
+t('fast_compiled_without_exc', valid_values=False)
 
 t('fast_file')
 t('fast_file', valid_values=False)
