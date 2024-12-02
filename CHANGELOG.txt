@@ -1,6 +1,7 @@
-=== UNRELEASED
+=== 2.21.1 (2024-12-02)
 
 * Fixed ResourceWarning where file was not properly closed
+* Fixed regexp for date format
 
 === 2.21.0 (2024-11-27)
 
