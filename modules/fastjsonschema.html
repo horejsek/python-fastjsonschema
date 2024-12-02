@@ -1,18 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>fastjsonschema &#8212; fastjsonschema  documentation</title>
-    <link rel="stylesheet" href="../static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../static/documentation_options.js"></script>
-    <script type="text/javascript" src="../static/jquery.js"></script>
-    <script type="text/javascript" src="../static/underscore.js"></script>
-    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../static/documentation_options.js"></script>
+    <script src="../static/jquery.js"></script>
+    <script src="../static/underscore.js"></script>
+    <script src="../static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../static/doctools.js"></script>
+    <script src="../static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -76,20 +77,22 @@
 <span class="sd">.. code-block:: bash</span>
 
 <span class="sd">    $ make performance</span>
-<span class="sd">    fast_compiled        valid      ==&gt;  0.0464646</span>
-<span class="sd">    fast_compiled        invalid    ==&gt;  0.0030227</span>
-<span class="sd">    fast_file            valid      ==&gt;  0.0461219</span>
-<span class="sd">    fast_file            invalid    ==&gt;  0.0030608</span>
-<span class="sd">    fast_not_compiled    valid      ==&gt; 11.4627202</span>
-<span class="sd">    fast_not_compiled    invalid    ==&gt;  2.5726230</span>
-<span class="sd">    jsonschema           valid      ==&gt;  7.5844927</span>
-<span class="sd">    jsonschema           invalid    ==&gt;  1.9204665</span>
-<span class="sd">    jsonschema_compiled  valid      ==&gt;  0.6938364</span>
-<span class="sd">    jsonschema_compiled  invalid    ==&gt;  0.0359244</span>
-<span class="sd">    jsonspec             valid      ==&gt;  9.0715843</span>
-<span class="sd">    jsonspec             invalid    ==&gt;  2.1650488</span>
-<span class="sd">    validictory          valid      ==&gt;  0.4874793</span>
-<span class="sd">    validictory          invalid    ==&gt;  0.0232244</span>
+<span class="sd">    fast_compiled                  valid      ==&gt;  0.0993900</span>
+<span class="sd">    fast_compiled                  invalid    ==&gt;  0.0041089</span>
+<span class="sd">    fast_compiled_without_exc      valid      ==&gt;  0.0465258</span>
+<span class="sd">    fast_compiled_without_exc      invalid    ==&gt;  0.0023688</span>
+<span class="sd">    fast_file                      valid      ==&gt;  0.0989483</span>
+<span class="sd">    fast_file                      invalid    ==&gt;  0.0041104</span>
+<span class="sd">    fast_not_compiled              valid      ==&gt; 11.9572681</span>
+<span class="sd">    fast_not_compiled              invalid    ==&gt;  2.9512092</span>
+<span class="sd">    jsonschema                     valid      ==&gt;  5.2233240</span>
+<span class="sd">    jsonschema                     invalid    ==&gt;  1.3227916</span>
+<span class="sd">    jsonschema_compiled            valid      ==&gt;  0.4447982</span>
+<span class="sd">    jsonschema_compiled            invalid    ==&gt;  0.0231333</span>
+<span class="sd">    jsonspec                       valid      ==&gt;  4.1450569</span>
+<span class="sd">    jsonspec                       invalid    ==&gt;  1.0485777</span>
+<span class="sd">    validictory                    valid      ==&gt;  0.2730411</span>
+<span class="sd">    validictory                    invalid    ==&gt;  0.0183669</span>
 
 <span class="sd">This library follows and implements `JSON schema draft-04, draft-06, and draft-07</span>
 <span class="sd">&lt;http://json-schema.org&gt;`_. Sometimes it&#39;s not perfectly clear, so I recommend also</span>
@@ -137,14 +140,14 @@
 <span class="sd">API</span>
 <span class="sd">***</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">update_wrapper</span>
 
-<span class="kn">from</span> <span class="nn">.draft04</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft04</span>
-<span class="kn">from</span> <span class="nn">.draft06</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft06</span>
-<span class="kn">from</span> <span class="nn">.draft07</span> <span class="k">import</span> <span class="n">CodeGeneratorDraft07</span>
-<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">JsonSchemaException</span><span class="p">,</span> <span class="n">JsonSchemaValueException</span><span class="p">,</span> <span class="n">JsonSchemaDefinitionException</span>
-<span class="kn">from</span> <span class="nn">.ref_resolver</span> <span class="k">import</span> <span class="n">RefResolver</span>
-<span class="kn">from</span> <span class="nn">.version</span> <span class="k">import</span> <span class="n">VERSION</span>
+<span class="kn">from</span> <span class="nn">.draft04</span> <span class="kn">import</span> <span class="n">CodeGeneratorDraft04</span>
+<span class="kn">from</span> <span class="nn">.draft06</span> <span class="kn">import</span> <span class="n">CodeGeneratorDraft06</span>
+<span class="kn">from</span> <span class="nn">.draft07</span> <span class="kn">import</span> <span class="n">CodeGeneratorDraft07</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="n">JsonSchemaException</span><span class="p">,</span> <span class="n">JsonSchemaValueException</span><span class="p">,</span> <span class="n">JsonSchemaDefinitionException</span>
+<span class="kn">from</span> <span class="nn">.ref_resolver</span> <span class="kn">import</span> <span class="n">RefResolver</span>
+<span class="kn">from</span> <span class="nn">.version</span> <span class="kn">import</span> <span class="n">VERSION</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s1">&#39;VERSION&#39;</span><span class="p">,</span>
@@ -157,8 +160,8 @@
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="validate"><a class="viewcode-back" href="../index.html#fastjsonschema.validate">[docs]</a><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="validate"><a class="viewcode-back" href="../index.html#fastjsonschema.validate">[docs]</a><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Validation function for lazy programmers or for use cases when you need</span>
 <span class="sd">    to call validation only once, so you do not have to compile it first.</span>
 <span class="sd">    Use it only when you do not care about performance (even though it will</span>
@@ -173,13 +176,13 @@
 
 <span class="sd">    Preferred is to use :any:`compile` function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="nb">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span></div>
 
 
 <span class="c1">#TODO: Change use_default to False when upgrading to version 3.</span>
 <span class="c1"># pylint: disable=redefined-builtin,dangerous-default-value,exec-used</span>
-<div class="viewcode-block" id="compile"><a class="viewcode-back" href="../index.html#fastjsonschema.compile">[docs]</a><span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="compile"><a class="viewcode-back" href="../index.html#fastjsonschema.compile">[docs]</a><span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates validation function for validating JSON schema passed in ``definition``.</span>
 <span class="sd">    Example:</span>
 
@@ -234,13 +237,16 @@
 <span class="sd">    off by passing `use_formats=False`. When disabled, custom formats are</span>
 <span class="sd">    disabled as well. (Added in 2.19.0.)</span>
 
+<span class="sd">    If you don&#39;t need detailed exceptions, you can turn the details off and gain</span>
+<span class="sd">    additional performance by passing `detailed_exceptions=False`.</span>
+
 <span class="sd">    Exception :any:`JsonSchemaDefinitionException` is raised when generating the</span>
 <span class="sd">    code fails (bad definition).</span>
 
 <span class="sd">    Exception :any:`JsonSchemaValueException` is raised from generated function when</span>
 <span class="sd">    validation fails (data do not follow the definition).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">)</span>
+    <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="p">)</span>
     <span class="n">global_state</span> <span class="o">=</span> <span class="n">code_generator</span><span class="o">.</span><span class="n">global_state</span>
     <span class="c1"># Do not pass local state so it can recursively call itself.</span>
     <span class="n">exec</span><span class="p">(</span><span class="n">code_generator</span><span class="o">.</span><span class="n">func_code</span><span class="p">,</span> <span class="n">global_state</span><span class="p">)</span>
@@ -251,8 +257,8 @@
 
 
 <span class="c1"># pylint: disable=dangerous-default-value</span>
-<div class="viewcode-block" id="compile_to_code"><a class="viewcode-back" href="../index.html#fastjsonschema.compile_to_code">[docs]</a><span class="k">def</span> <span class="nf">compile_to_code</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="compile_to_code"><a class="viewcode-back" href="../index.html#fastjsonschema.compile_to_code">[docs]</a><span class="k">def</span> <span class="nf">compile_to_code</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="p">{},</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates validation code for validating JSON schema passed in ``definition``.</span>
 <span class="sd">    Example:</span>
 
@@ -274,7 +280,7 @@
 <span class="sd">    Exception :any:`JsonSchemaDefinitionException` is raised when generating the</span>
 <span class="sd">    code fails (bad definition).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">use_default</span><span class="p">,</span> <span class="n">use_formats</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="s1">&#39;VERSION = &quot;&#39;</span> <span class="o">+</span> <span class="n">VERSION</span> <span class="o">+</span> <span class="s1">&#39;&quot;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
         <span class="n">code_generator</span><span class="o">.</span><span class="n">global_state_code</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
@@ -282,7 +288,7 @@
     <span class="p">)</span></div>
 
 
-<span class="k">def</span> <span class="nf">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_factory</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="p">,</span> <span class="n">formats</span><span class="o">=</span><span class="p">{},</span> <span class="n">use_default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_formats</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">detailed_exceptions</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="n">resolver</span> <span class="o">=</span> <span class="n">RefResolver</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span><span class="n">definition</span><span class="p">,</span> <span class="n">handlers</span><span class="o">=</span><span class="n">handlers</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="p">{})</span>
     <span class="n">code_generator</span> <span class="o">=</span> <span class="n">_get_code_generator_class</span><span class="p">(</span><span class="n">definition</span><span class="p">)(</span>
         <span class="n">definition</span><span class="p">,</span>
@@ -290,6 +296,7 @@
         <span class="n">formats</span><span class="o">=</span><span class="n">formats</span><span class="p">,</span>
         <span class="n">use_default</span><span class="o">=</span><span class="n">use_default</span><span class="p">,</span>
         <span class="n">use_formats</span><span class="o">=</span><span class="n">use_formats</span><span class="p">,</span>
+        <span class="n">detailed_exceptions</span><span class="o">=</span><span class="n">detailed_exceptions</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">resolver</span><span class="p">,</span> <span class="n">code_generator</span>
 
@@ -320,27 +327,25 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2016-2023, Michal Horejsek.
+      &copy;2016-2024, Michal Horejsek.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 
