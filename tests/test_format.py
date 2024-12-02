@@ -43,6 +43,7 @@ exc = JsonSchemaValueException('data must be date', value='{data}', name='data',
     ('bla', exc),
     ('2018-2-5', exc),
     ('2018-02-05', '2018-02-05'),
+    ('2018-10-31', '2018-10-31'),
 ])
 def test_date(asserter, value, expected):
     asserter({
