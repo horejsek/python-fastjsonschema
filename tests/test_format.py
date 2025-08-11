@@ -52,6 +52,32 @@ def test_date(asserter, value, expected):
     }, value, expected)
 
 
+exc = JsonSchemaValueException('data must be ipv4', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('bla', exc),
+    ('03.04.05', exc),
+    ('2001:db8::1:1', exc),
+    ('::ffff:1.1.1.1', exc),
+    ('1.1.1.1', '1.1.1.1'),
+    ('192.168.0.1', '192.168.0.1'),
+])
+def test_ipv4(asserter, value, expected):
+    asserter({'type': 'string', 'format': 'ipv4'}, value, expected)
+
+
+exc = JsonSchemaValueException('data must be ipv6', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('bla', exc),
+    ('1.1.1.1', exc),
+    ('2001:db8::1:1', '2001:db8::1:1'),
+    ('::ffff:1.1.1.1', '::ffff:1.1.1.1'),
+])
+def test_ipv6(asserter, value, expected):
+    asserter({'type': 'string', 'format': 'ipv6'}, value, expected)
+
+
 exc = JsonSchemaValueException('data must be custom-format', value='{data}', name='data', definition='{definition}', rule='format')
 @pytest.mark.parametrize('value,expected,custom_format', [
     ('', exc, r'^[ab]$'),
