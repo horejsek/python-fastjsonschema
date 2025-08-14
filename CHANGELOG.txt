@@ -1,3 +1,7 @@
+=== 2.22.2 (2025-08-14)
+
+* Fixed regexp for IPv6 format
+
 === 2.21.1 (2024-12-02)
 
 * Fixed ResourceWarning where file was not properly closed
