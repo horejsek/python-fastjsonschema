@@ -427,7 +427,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                                 '{}_item'.format(self._variable),
                                 '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                             )
-                            if count == 0:
+                            if not count:
                                 self.l('pass')
             else:
                 if items_definition:
@@ -437,7 +437,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             '{}_item'.format(self._variable),
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                         )
-                        if count == 0:
+                        if not count:
                             self.l('pass')
 
     def generate_min_properties(self):
