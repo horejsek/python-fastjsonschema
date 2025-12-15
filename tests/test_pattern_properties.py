@@ -69,3 +69,10 @@ def test_pattern_with_escape_no_warnings(asserter):
                 '\\w+': {'type': 'object'}
             }
         }, value, value)
+
+def test_empty_pattern(asserter):
+    value = {}
+    asserter({
+        'type': 'object',
+        'patternProperties': {}
+    }, value, value)
