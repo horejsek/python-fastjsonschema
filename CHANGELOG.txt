@@ -1,3 +1,9 @@
+=== 2.22.0 (UNRELEASED)
+
+* Fixed empty items and patternProperties
+* Added option to get all the errors (set `fast_fail` to `False`)
+* Added basic type hints
+
 === 2.21.2 (2025-08-14)
 
 * Fixed regexp for IPv6 format
