@@ -1,3 +1,5 @@
+# pylint: disable=import-outside-toplevel
+
 """
 JSON Schema URI resolution scopes and dereferencing
 
@@ -60,14 +62,12 @@ def resolve_remote(uri, handlers):
     else:
         from urllib.request import urlopen
 
-        req = urlopen(uri)
-        encoding = req.info().get_content_charset() or 'utf-8'
-        try:
-            result = json.loads(req.read().decode(encoding),)
-        except ValueError as exc:
-            raise JsonSchemaDefinitionException('{} failed to decode: {}'.format(uri, exc))
-        finally:
-            req.close()
+        with urlopen(uri) as response:
+            encoding = response.info().get_content_charset() or 'utf-8'
+            try:
+                result = json.loads(response.read().decode(encoding),)
+            except ValueError as exc:
+                raise JsonSchemaDefinitionException('{} failed to decode'.format(uri)) from exc
     return result
 
 

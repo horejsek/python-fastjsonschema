@@ -87,7 +87,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         try:
             python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE[t] for t in types)
         except KeyError as exc:
-            raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
+            raise JsonSchemaDefinitionException('Unknown type') from exc
 
         extra = ''
         if ('number' in types or 'integer' in types) and 'boolean' not in types:
@@ -271,7 +271,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 self._generate_format(format_, format_ + '_re_pattern', format_regex)
             # Format regex is used only in meta schemas.
             elif format_ == 'regex':
-                self._extra_imports_lines = ['import re'] 
+                self._extra_imports_lines = ['import re']
                 with self.l('try:', optimize=False):
                     self.l('re.compile({variable})')
                 with self.l('except Exception:'):

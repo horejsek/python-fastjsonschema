@@ -178,8 +178,7 @@ class CodeGenerator:
         if '$ref' in definition:
             # needed because ref overrides any sibling keywords
             return self.generate_ref()
-        else:
-            return self.run_generate_functions(definition)
+        return self.run_generate_functions(definition)
 
     def run_generate_functions(self, definition):
         """Returns the number of generate functions that were executed."""
@@ -283,6 +282,7 @@ class CodeGenerator:
         arg = '"'+msg+'"'
         if append_to_msg:
             arg += ' + (' + append_to_msg + ')'
+        # pylint: disable=line-too-long
         msg = (
             'raise JsonSchemaValueException('+arg+', value={variable}, name="{name}", definition={definition}, rule={rule})'
             if self._fast_fail else

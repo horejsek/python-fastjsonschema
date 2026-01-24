@@ -16,7 +16,16 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         ),
     })
 
-    def __init__(self, definition, resolver=None, formats={}, use_default=True, use_formats=True, detailed_exceptions=True, fast_fail=True):
+    def __init__(
+        self,
+        definition,
+        resolver=None,
+        formats={},
+        use_default=True,
+        use_formats=True,
+        detailed_exceptions=True,
+        fast_fail=True,
+    ):
         super().__init__(definition, resolver, formats, use_default, use_formats, detailed_exceptions, fast_fail)
         self._json_keywords_to_function.update((
             ('exclusiveMinimum', self.generate_exclusive_minimum),
@@ -32,8 +41,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         elif '$ref' in definition:
             # needed because ref overrides any sibling keywords
             return self.generate_ref()
-        else:
-            return self.run_generate_functions(definition)
+        return self.run_generate_functions(definition)
 
     def generate_boolean_schema(self):
         """
@@ -60,7 +68,7 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         try:
             python_types = ', '.join(JSON_TYPE_TO_PYTHON_TYPE[t] for t in types)
         except KeyError as exc:
-            raise JsonSchemaDefinitionException('Unknown type: {}'.format(exc))
+            raise JsonSchemaDefinitionException('Unknown type') from exc
 
         extra = ''
 

@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+
 def indent(func):
     """
     Decorator for allowing to use method as normal method or with

@@ -14,7 +14,8 @@ class JsonSchemaValueException(JsonSchemaException):
     """
     Exception raised by validation function. Available properties:
 
-     * ``message`` containing human-readable information what is wrong (e.g. ``data.property[index] must be smaller than or equal to 42``),
+     * ``message`` containing human-readable information what is wrong
+       (e.g. ``data.property[index] must be smaller than or equal to 42``),
      * invalid ``value`` (e.g. ``60``),
      * ``name`` of a path in the data structure (e.g. ``data.property[index]``),
      * ``path`` as an array in the data structure (e.g. ``['data', 'property', 'index']``),

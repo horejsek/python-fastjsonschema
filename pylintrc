@@ -4,7 +4,7 @@ ignore=tests
 
 [MESSAGES CONTROL]
 # missing-docstring can be removed after this issue is deployed https://github.com/PyCQA/pylint/issues/1164
-disable=duplicate-code,missing-docstring
+disable=fixme,duplicate-code,missing-docstring,not-context-manager,too-many-arguments,too-many-positional-arguments,consider-using-f-string
 
 [REPORTS]
 output-format=colorized
