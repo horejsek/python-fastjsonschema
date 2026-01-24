@@ -530,7 +530,10 @@ class CodeGeneratorDraft04(CodeGenerator):
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             self.create_variable_keys()
-            for pattern, definition in self._definition['patternProperties'].items():
+            pattern_prop_definition = self._definition['patternProperties']
+            if pattern_prop_definition == {}:
+                return
+            for pattern, definition in pattern_prop_definition.items():
                 self._compile_regexps[pattern] = re.compile(pattern)
             with self.l('for {variable}_key, {variable}_val in {variable}.items():'):
                 for pattern, definition in self._definition['patternProperties'].items():
