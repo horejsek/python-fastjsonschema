@@ -35,7 +35,7 @@ setup(
     author_email='fastjsonschema@horejsek.com',
     description='Fastest Python implementation of JSON schema',
     long_description=LONG_DESCRIPTION,
-    license='BSD',
+    license='BSD-3-Clause',
 
     classifiers=[
         "Programming Language :: Python",
