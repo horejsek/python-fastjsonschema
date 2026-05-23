@@ -11,10 +11,13 @@ Code adapted from https://github.com/Julian/jsonschema
 import contextlib
 import json
 import re
+import sys
 from urllib import parse as urlparse
 from urllib.parse import unquote
 
 from .exceptions import JsonSchemaDefinitionException
+
+MAX_SCHEMA_WALK_DEPTH = min(500, sys.getrecursionlimit() // 2)
 
 
 def get_id(schema):
@@ -157,10 +160,15 @@ class RefResolver:
         name = name.lower().rstrip('_')
         return name
 
-    def walk(self, node: dict):
+    def walk(self, node: dict, depth=0):
         """
         Walk thru schema and dereferencing ``id`` and ``$ref`` instances
         """
+        if depth >= MAX_SCHEMA_WALK_DEPTH:
+            raise JsonSchemaDefinitionException(
+                'Schema is too deeply nested (maximum depth is {})'.format(MAX_SCHEMA_WALK_DEPTH)
+            )
+
         if isinstance(node, bool):
             pass
         elif '$ref' in node and isinstance(node['$ref'], str):
@@ -171,8 +179,8 @@ class RefResolver:
                 self.store[normalize(self.resolution_scope)] = node
                 for _, item in node.items():
                     if isinstance(item, dict):
-                        self.walk(item)
+                        self.walk(item, depth + 1)
         else:
             for _, item in node.items():
                 if isinstance(item, dict):
-                    self.walk(item)
+                    self.walk(item, depth + 1)

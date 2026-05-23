@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaDefinitionException, compile
+from fastjsonschema import JsonSchemaDefinitionException, RefResolver, compile, validate
 
 
 @pytest.mark.parametrize('schema', [
@@ -61,3 +61,24 @@ def test_generate_code_without_overriding_variables(asserter):
         },
         'additionalProperties': False,
     }, value, value)
+
+
+
+def test_deeply_nested_schema_raises_definition_exception():
+    schema = generate_deeply_nested_schema(600)
+
+    with pytest.raises(JsonSchemaDefinitionException, match='too deeply nested'):
+        RefResolver.from_schema(schema)
+
+    with pytest.raises(JsonSchemaDefinitionException, match='too deeply nested'):
+        compile(schema)
+
+    with pytest.raises(JsonSchemaDefinitionException, match='too deeply nested'):
+        validate(schema, {'a': {}})
+
+
+def generate_deeply_nested_schema(depth):
+    schema = {'type': 'string'}
+    for _ in range(depth):
+        schema = {'properties': {'a': schema}}
+    return schema
