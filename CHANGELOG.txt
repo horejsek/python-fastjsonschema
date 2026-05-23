@@ -2,7 +2,7 @@
 
 * Fixed empty items and patternProperties
 * Fixed protection from deeply nested schemas potentially causing denial of service
-* Fixed comparing values for enum validation
+* Fixed comparing values for enum and const validations
 * Added option to get all the errors (set `fast_fail` to `False`)
 * Added basic type hints
 * Added support of duration and uuid formats from draft-2019

@@ -16,9 +16,6 @@ def pytest_generate_tests(metafunc):
             'unknownKeyword.json',
             'date-time.json',
 
-            # TODO: fix const with booleans to not match numbers
-            'const.json',
-
             # TODO: fix formats
             'time.json',
 

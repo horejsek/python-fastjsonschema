@@ -190,7 +190,6 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         Only valid value is 42 in this example.
         """
         const = self._definition['const']
-        if isinstance(const, str):
-            const = '"{}"'.format(self.e(const))
-        with self.l('if {variable} != {}:', const):
+        match = self._enum_value_matches(self._variable, const)
+        with self.l('if not ({}):', match):
             self.exc('{name} must be same as const definition: {definition_rule}', rule='const')

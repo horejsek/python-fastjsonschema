@@ -266,6 +266,8 @@ class CodeGenerator:
 
             self.l('raise JsonSchemaValueException("Variable: {}")', self.e(variable))
         """
+        if isinstance(string, str):
+            return string.encode('unicode_escape').decode('ascii').replace('"', '\\"')
         return str(string).replace('"', '\\"')
 
     def exc(self, msg, *args, append_to_msg=None, rule=None):
