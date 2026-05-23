@@ -57,12 +57,15 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         Valid values are any between -10 and 0 or any multiplication of two.
         """
         with self.l('try:', optimize=False):
+            code_len = len(self._code)
             self.generate_func_code_block(
                 self._definition['if'],
                 self._variable,
                 self._variable_name,
                 clear_variables=True
             )
+            if len(self._code) == code_len:
+                self.l('pass')
         with self.l('except JsonSchemaValueException:'):
             if 'else' in self._definition:
                 self.generate_func_code_block(

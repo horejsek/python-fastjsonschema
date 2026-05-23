@@ -112,3 +112,31 @@ def test_ref_in_conditional():
     assert exc.value.definition["oneOf"] == [
         {"properties": {"postal_code": {"pattern": "[0-9]{5}(-[0-9]{4})?"}}}
     ]
+
+
+def test_one_of_with_if_then_empty_if():
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "oneOf": [
+            {"if": {}, "then": {"type": "object"}},
+            {"if": {}, "then": {"type": "string"}},
+        ],
+    }
+    validator = fastjsonschema.compile(schema)
+    assert validator({"version": "2.0", "terminal": "t1"}) == {
+        "version": "2.0",
+        "terminal": "t1",
+    }
+
+
+def test_if_then_empty_if():
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "if": {},
+        "then": {"type": "object"},
+    }
+    validator = fastjsonschema.compile(schema)
+    assert validator({"version": "2.0", "terminal": "t1"}) == {
+        "version": "2.0",
+        "terminal": "t1",
+    }
