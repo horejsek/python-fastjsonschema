@@ -14,9 +14,6 @@ def pytest_generate_tests(metafunc):
             'unknownKeyword.json',
             'date-time.json',
 
-            # TODO: fix formats
-            'time.json',
-
             # TODO: fix ref
             'ref.json',
             'id.json',
