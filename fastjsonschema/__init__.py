@@ -156,6 +156,10 @@ def validate(
         # same as: compile({'type': 'string'})('hello')
 
     Preferred is to use :any:`compile` function.
+
+    The ``handlers`` parameter controls resolution of remote ``$ref`` URIs; see
+    :any:`compile` for details and security considerations when schemas are not
+    fully trusted.
     """
     return compile(definition, handlers, formats, use_default, use_formats, detailed_exceptions, fast_fail)(data)
 
@@ -208,8 +212,34 @@ def compile(
             'type': 'number',
         })
 
-    You can pass mapping from URI to function that should be used to retrieve
-    remote schemes used in your ``definition`` in parameter ``handlers``.
+    You can pass mapping from URI scheme to function that should be used to
+    retrieve remote references used in your ``definition`` in parameter
+    ``handlers``. When no handler is registered for a scheme, the URI is
+    fetched automatically via :mod:`urllib` (for example ``http``, ``https``,
+    or ``file`` URLs).
+
+    .. warning::
+
+        Do not compile or validate untrusted schemas without custom
+        ``handlers``. A schema containing ``$ref`` can trigger outbound HTTP
+        requests to arbitrary URLs, including internal or loopback addresses
+        (server-side request forgery). Provide ``handlers`` to restrict which
+        URIs are resolved, or pre-resolve references before passing the schema
+        to this library.
+
+    .. code-block:: python
+
+        def http_handler(uri):
+            if not uri.startswith('https://schemas.example.com/'):
+                raise ValueError('ref not allowed')
+            import urllib.request
+            with urllib.request.urlopen(uri) as response:
+                return json.loads(response.read())
+
+        validate = fastjsonschema.compile(definition, handlers={
+            'http': http_handler,
+            'https': http_handler,
+        })
 
     Also, you can pass mapping for custom formats. Key is the name of your
     formatter and value can be regular expression, which will be compiled or
@@ -291,6 +321,9 @@ def compile_to_code(
 
     Exception :any:`JsonSchemaDefinitionException` is raised when generating the
     code fails (bad definition).
+
+    Remote ``$ref`` URIs are resolved the same way as in :any:`compile`; see its
+    documentation for ``handlers`` and security considerations.
     """
     _, code_generator = _factory(
         definition,
