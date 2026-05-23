@@ -18,7 +18,6 @@ def pytest_generate_tests(metafunc):
 
             # TODO: fix const with booleans to not match numbers
             'const.json',
-            'enum.json',
 
             # TODO: fix formats
             'time.json',

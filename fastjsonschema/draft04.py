@@ -109,8 +109,50 @@ class CodeGeneratorDraft04(CodeGenerator):
         enum = self._definition['enum']
         if not isinstance(enum, (list, tuple)):
             raise JsonSchemaDefinitionException('enum must be an array')
-        with self.l('if {variable} not in {enum}:'):
-            self.exc('{name} must be one of {}', self.e(enum), rule='enum')
+        matches = ' or '.join(self._enum_value_matches(self._variable, value) for value in enum)
+        if matches:
+            with self.l('if not ({}):', matches):
+                self.exc('{name} must be one of {}', self.e(enum), rule='enum')
+        else:
+            with self.l('if True:'):
+                self.exc('{name} must be one of {}', self.e(enum), rule='enum')
+
+    def _enum_value_matches(self, var, value):
+        if isinstance(value, bool):
+            return 'isinstance({var}, bool) and {var} is {val}'.format(var=var, val=repr(value))
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return (
+                'isinstance({var}, (int, float)) and not isinstance({var}, bool) and {var} == {val}'
+            ).format(var=var, val=repr(value))
+        if value is None:
+            return '{var} is None'.format(var=var)
+        if isinstance(value, str):
+            return 'isinstance({var}, str) and {var} == {val}'.format(var=var, val=repr(value))
+        if isinstance(value, dict):
+            if not value:
+                return 'isinstance({var}, dict) and not {var}'.format(var=var)
+            key_checks = ' and '.join(
+                '{key!r} in {var} and {match}'.format(
+                    key=key,
+                    var=var,
+                    match=self._enum_value_matches('{var}[{key!r}]'.format(var=var, key=key), item),
+                )
+                for key, item in value.items()
+            )
+            return 'isinstance({var}, dict) and len({var}) == {size} and {checks}'.format(
+                var=var, size=len(value), checks=key_checks,
+            )
+        if isinstance(value, (list, tuple)):
+            if not value:
+                return 'isinstance({var}, (list, tuple)) and not {var}'.format(var=var)
+            item_checks = ' and '.join(
+                self._enum_value_matches('{var}[{index}]'.format(var=var, index=index), item)
+                for index, item in enumerate(value)
+            )
+            return 'isinstance({var}, (list, tuple)) and len({var}) == {size} and {checks}'.format(
+                var=var, size=len(value), checks=item_checks,
+            )
+        return '{var} == {val}'.format(var=var, val=repr(value))
 
     def generate_all_of(self):
         """
