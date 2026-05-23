@@ -110,6 +110,7 @@ from functools import partial, update_wrapper
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
 from .draft07 import CodeGeneratorDraft07
+from .draft2019 import CodeGeneratorDraft2019
 from .exceptions import (
     JsonSchemaException,
     JsonSchemaValueException,
@@ -337,4 +338,8 @@ def _get_code_generator_class(schema: dict | bool):
             return CodeGeneratorDraft04
         if 'draft-06' in schema_version:
             return CodeGeneratorDraft06
-    return CodeGeneratorDraft07
+        if 'draft-07' in schema_version:
+            return CodeGeneratorDraft07
+        if 'draft/2019' in schema_version or 'draft-2019' in schema_version:
+            return CodeGeneratorDraft2019
+    return CodeGeneratorDraft2019
