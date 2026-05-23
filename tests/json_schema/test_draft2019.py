@@ -8,7 +8,6 @@ def pytest_generate_tests(metafunc):
         schema_version='http://json-schema.org/draft-2019-09/schema',
         suite_dir='JSON-Schema-Test-Suite/tests/draft2019-09',
         ignored_suite_files=[
-            'refRemote.json', # Requires local server.
             # Optional.
             'ecmascript-regex.json',
             'float-overflow.json',
