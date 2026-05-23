@@ -126,12 +126,14 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                     self.l('{variable}_property_names = True')
                     with self.l('for {variable}_key in {variable}:'):
                         with self.l('try:'):
-                            self.generate_func_code_block(
+                            count = self.generate_func_code_block(
                                 property_names_definition,
                                 '{}_key'.format(self._variable),
                                 self._variable_name,
                                 clear_variables=True,
                             )
+                            if not count:
+                                self.l('pass')
                         with self.l('except JsonSchemaValueException:'):
                             self.l('{variable}_property_names = False')
                     with self.l('if not {variable}_property_names:'):

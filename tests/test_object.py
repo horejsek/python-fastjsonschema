@@ -287,3 +287,16 @@ def test_full_name_after_ref(asserter, value, expected):
             "prop1": {"$ref": "#/definitions/SomeType"},
         }
     }, value, expected)
+
+
+def test_property_names_description_only():
+    schema = {
+        'type': 'object',
+        'propertyNames': {
+            'description': 'A valid task name.',
+        },
+    }
+    code = fastjsonschema.compile_to_code(schema)
+    compile(code, '<string>', 'exec')
+    validator = fastjsonschema.compile(schema)
+    assert validator({'build': {}, 'test': 1}) == {'build': {}, 'test': 1}

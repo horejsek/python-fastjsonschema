@@ -5,7 +5,7 @@
 * Fixed comparing values for enum and const validations
 * Fixed resolving plain-name ref fragments
 * Fixed not throwing when unknown format is used
-* Fixed compilation of if/then/else when if schema generates no validation code
+* Fixed compilation of if/then/else and propertyNames when if schema generates no validation code
 * Added option to get all the errors (set `fast_fail` to `False`)
 * Added basic type hints
 * Added support of duration and uuid formats from draft-2019
