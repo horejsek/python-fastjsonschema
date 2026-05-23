@@ -298,8 +298,10 @@ class CodeGeneratorDraft04(CodeGenerator):
         """
         if not self._use_formats:
             return
+        format_ = self._definition['format']
+        if format_ not in self._custom_formats and format_ not in self.FORMAT_REGEXS and format_ != 'regex':
+            return
         with self.l('if isinstance({variable}, str):'):
-            format_ = self._definition['format']
             # Checking custom formats - user is allowed to override default formats.
             if format_ in self._custom_formats:
                 custom_format = self._custom_formats[format_]
@@ -318,8 +320,6 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.l('re.compile({variable})')
                 with self.l('except Exception:'):
                     self.exc('{name} must be a valid regex', rule='format')
-            else:
-                raise JsonSchemaDefinitionException('Unknown format: {}'.format(format_))
 
 
     def _generate_format(self, format_name, regexp_name, regexp):

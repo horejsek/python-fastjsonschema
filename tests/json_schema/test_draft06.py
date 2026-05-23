@@ -11,7 +11,6 @@ def pytest_generate_tests(metafunc):
             # Optional.
             'ecmascript-regex.json',
             'float-overflow.json',
-            'unknown.json',
             'unknownKeyword.json',
             'date-time.json',
 

@@ -13,7 +13,6 @@ def pytest_generate_tests(metafunc):
             'float-overflow.json',
             'idn-hostname.json',
             'iri.json',
-            'unknown.json',
             'unknownKeyword.json',
             'date-time.json',
             'date.json',
