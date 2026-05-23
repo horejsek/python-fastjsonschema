@@ -21,15 +21,11 @@ def pytest_generate_tests(metafunc):
             'enum.json',
 
             # TODO: fix formats
-            'ipv6.json',
             'time.json',
 
             # TODO: fix ref
             'ref.json',
             'id.json',
-
-            # TODO: fix definitions
-            'definitions.json',
         ],
     )
     metafunc.parametrize(['schema_version', 'schema', 'data', 'is_valid'], param_values, ids=param_ids)

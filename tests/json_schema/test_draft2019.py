@@ -24,16 +24,12 @@ def pytest_generate_tests(metafunc):
             'enum.json',
 
             # TODO: fix formats
-            'ipv6.json',
             'time.json',
 
             # TODO: fix ref
             'ref.json',
             'id.json',
             'cross-draft.json',
-
-            # TODO: fix definitions
-            'definitions.json',
 
             # TODO: new stuff, not implemented yet
             'not.json',
