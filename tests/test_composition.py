@@ -140,3 +140,31 @@ def test_if_then_empty_if():
         "version": "2.0",
         "terminal": "t1",
     }
+
+
+def test_if_then_else_annotation_only_then():
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "if": {"type": "string"},
+        "then": {"title": "x"},
+        "else": {"type": "integer"},
+    }
+    validator = fastjsonschema.compile(schema)
+    assert validator("abc") == "abc"
+    assert validator(42) == 42
+    with pytest.raises(JsonSchemaValueException):
+        validator(4.5)
+
+
+def test_if_then_else_annotation_only_else():
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "if": {"type": "string"},
+        "then": {"minLength": 2},
+        "else": {"title": "x"},
+    }
+    validator = fastjsonschema.compile(schema)
+    assert validator("abc") == "abc"
+    assert validator(42) == 42
+    with pytest.raises(JsonSchemaValueException):
+        validator("a")

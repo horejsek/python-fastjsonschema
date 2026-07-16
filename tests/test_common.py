@@ -99,3 +99,35 @@ def test_one_of_factorized(asserter, value, expected):
 ])
 def test_not(asserter, value, expected):
     asserter({'not': {'type': 'number'}}, value, expected)
+
+
+exc = JsonSchemaValueException('data must NOT match a disallowed definition', value='{data}', name='data', definition='{definition}', rule='not')
+@pytest.mark.parametrize('subdefinition', [
+    {'title': 'x'},
+    {'description': 'd'},
+    {'$comment': 'c'},
+    {'examples': [1]},
+    {'default': 5},
+    {'readOnly': True},
+    {'not': False},
+    {'format': 'unknown-format'},
+    {'uniqueItems': False},
+])
+@pytest.mark.parametrize('value', [0, 'abc', {}])
+def test_not_subschema_without_validation_code(asserter, subdefinition, value):
+    """Subschema generating no validation code matches everything, so not must reject everything."""
+    asserter({'not': subdefinition}, value, exc)
+
+
+@pytest.mark.parametrize('schema_version', [
+    'http://json-schema.org/draft-04/schema',
+    'http://json-schema.org/draft-06/schema',
+    'http://json-schema.org/draft-07/schema',
+    'https://json-schema.org/draft/2019-09/schema',
+])
+def test_not_annotation_only_all_drafts(asserter, schema_version):
+    asserter({'$schema': schema_version, 'not': {'title': 'x'}}, 1, exc)
+
+
+def test_not_not_annotation_only(asserter):
+    asserter({'not': {'not': {'title': 'x'}}}, 1, 1)

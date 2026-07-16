@@ -256,7 +256,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             self.exc('{name} must NOT match a disallowed definition', rule='not')
         else:
             with self.l('try:', optimize=False):
+                code_len = len(self._code)
                 self.generate_func_code_block(not_definition, self._variable, self._variable_name)
+                if len(self._code) == code_len:
+                    self.l('pass')
             self.l('except JsonSchemaValueException: pass')
             with self.l('else:'):
                 self.exc('{name} must NOT match a disallowed definition', rule='not')
@@ -464,22 +467,24 @@ class CodeGeneratorDraft04(CodeGenerator):
                             self.exc('{name} must contain only specified items', rule='items')
                     else:
                         with self.l('for {variable}_x, {variable}_item in enumerate({variable}[{0}:], {0}):', len(items_definition)):
-                            count = self.generate_func_code_block(
+                            code_len = len(self._code)
+                            self.generate_func_code_block(
                                 self._definition['additionalItems'],
                                 '{}_item'.format(self._variable),
                                 '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                             )
-                            if not count:
+                            if len(self._code) == code_len:
                                 self.l('pass')
             else:
                 if items_definition:
                     with self.l('for {variable}_x, {variable}_item in enumerate({variable}):'):
-                        count = self.generate_func_code_block(
+                        code_len = len(self._code)
+                        self.generate_func_code_block(
                             items_definition,
                             '{}_item'.format(self._variable),
                             '{}[{{{}_x}}]'.format(self._variable_name, self._variable),
                         )
-                        if not count:
+                        if len(self._code) == code_len:
                             self.l('pass')
 
     def generate_min_properties(self):
@@ -658,6 +663,9 @@ class CodeGeneratorDraft04(CodeGenerator):
                             with self.l('if "{}" not in {variable}:', self.e(value)):
                                 self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule='dependencies')
                     else:
+                        code_len = len(self._code)
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
+                        if len(self._code) == code_len:
+                            self.l('pass')
             if is_empty:
                 self.l('pass')
