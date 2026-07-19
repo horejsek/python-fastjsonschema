@@ -59,6 +59,10 @@ exc = JsonSchemaValueException('data must be ipv4', value='{data}', name='data',
     ('03.04.05', exc),
     ('2001:db8::1:1', exc),
     ('::ffff:1.1.1.1', exc),
+    # Leading zeros must be rejected (octal interpretation, CVE-2021-28918).
+    ('01.2.3.4', exc),
+    ('1.2.3.04', exc),
+    ('00.1.2.3', exc),
     ('1.1.1.1', '1.1.1.1'),
     ('192.168.0.1', '192.168.0.1'),
 ])
