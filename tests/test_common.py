@@ -99,3 +99,19 @@ def test_one_of_factorized(asserter, value, expected):
 ])
 def test_not(asserter, value, expected):
     asserter({'not': {'type': 'number'}}, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ({'a': 1}, {'a': 1}),
+    ({'b': 2}, {'b': 2}),
+    ({'a': 1, 'b': 2}, JsonSchemaValueException('data must NOT match a disallowed definition', value='{data}', name='data', definition='{definition}', rule='not')),
+])
+def test_not_with_object_and_additional_properties(asserter, value, expected):
+    # Regression test: variables created inside the not block must not leak
+    # into the outer scope (issue #208).
+    asserter({
+        'type': 'object',
+        'properties': {'a': {}, 'b': {}},
+        'additionalProperties': False,
+        'not': {'properties': {'a': {}, 'b': {}}, 'required': ['a', 'b']},
+    }, value, expected)

@@ -256,7 +256,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             self.exc('{name} must NOT match a disallowed definition', rule='not')
         else:
             with self.l('try:', optimize=False):
-                self.generate_func_code_block(not_definition, self._variable, self._variable_name)
+                self.generate_func_code_block(not_definition, self._variable, self._variable_name, clear_variables=True)
             self.l('except JsonSchemaValueException: pass')
             with self.l('else:'):
                 self.exc('{name} must NOT match a disallowed definition', rule='not')
