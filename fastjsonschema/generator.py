@@ -292,7 +292,7 @@ class CodeGenerator:
         )
         definition = self._expand_refs(self._definition)
         definition_rule = self.e(definition.get(rule) if isinstance(definition, dict) else None)
-        self.l(msg, *args, definition=repr(definition), rule=repr(rule), definition_rule=definition_rule)
+        self.l(msg, *args, definition=repr_default(definition), rule=repr(rule), definition_rule=definition_rule)
 
     def _expand_refs(self, definition):
         if isinstance(definition, list):
@@ -359,6 +359,27 @@ def serialize_regexes(patterns_dict):
         for k, v in patterns_dict.items()
     )
     return '{\n    ' + ",\n    ".join(regex_patterns) + "\n}"
+
+
+def repr_default(value):
+    """
+    Like ``repr``, but renders non-finite floats as valid Python source.
+
+    ``repr(float('nan'))`` is ``'nan'``, which is not a name available in the
+    generated code, so a schema default of NaN or infinity has to be written
+    out as a ``float(...)`` call instead.
+    """
+    if isinstance(value, float) and (value != value or value in (float('inf'), float('-inf'))):
+        return "float({!r})".format(str(value))
+    if isinstance(value, list):
+        return '[' + ', '.join(repr_default(item) for item in value) + ']'
+    if isinstance(value, tuple):
+        return '(' + ''.join(repr_default(item) + ', ' for item in value) + ')'
+    if isinstance(value, dict):
+        return '{' + ', '.join(
+            '{}: {}'.format(repr_default(k), repr_default(v)) for k, v in value.items()
+        ) + '}'
+    return repr(value)
 
 
 def repr_regex(regex):

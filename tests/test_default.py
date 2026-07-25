@@ -1,3 +1,5 @@
+import math
+
 import pytest
 
 from fastjsonschema import JsonSchemaValueException, validate
@@ -46,3 +48,37 @@ def test_default_turned_off():
         },
     }, {}, use_default=False)
     assert output == {}
+
+
+def test_default_non_finite_float():
+    """Non-finite float defaults must be generated as valid Python source (#101)."""
+    output = validate({
+        'type': 'object',
+        'properties': {
+            'a': {'type': 'number', 'default': float('nan')},
+            'b': {'type': 'number', 'default': float('inf')},
+            'c': {'type': 'number', 'default': float('-inf')},
+        },
+    }, {})
+    assert math.isnan(output['a'])
+    assert output['b'] == float('inf')
+    assert output['c'] == float('-inf')
+
+
+def test_default_non_finite_float_in_array():
+    output = validate({
+        'type': 'array',
+        'items': [{'type': 'number', 'default': float('nan')}],
+    }, [])
+    assert len(output) == 1 and math.isnan(output[0])
+
+
+def test_default_nested_non_finite_float():
+    output = validate({
+        'type': 'object',
+        'properties': {
+            'a': {'default': {'x': float('inf'), 'y': [1, float('nan')]}},
+        },
+    }, {})
+    assert output['a']['x'] == float('inf')
+    assert math.isnan(output['a']['y'][1])
