@@ -68,22 +68,28 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
                 self.l('pass')
         with self.l('except JsonSchemaValueException:'):
             if 'else' in self._definition:
+                code_len = len(self._code)
                 self.generate_func_code_block(
                     self._definition['else'],
                     self._variable,
                     self._variable_name,
                     clear_variables=True
                 )
+                if len(self._code) == code_len:
+                    self.l('pass')
             else:
                 self.l('pass')
         if 'then' in self._definition:
             with self.l('else:'):
+                code_len = len(self._code)
                 self.generate_func_code_block(
                     self._definition['then'],
                     self._variable,
                     self._variable_name,
                     clear_variables=True
                 )
+                if len(self._code) == code_len:
+                    self.l('pass')
 
     def generate_content_encoding(self):
         """
