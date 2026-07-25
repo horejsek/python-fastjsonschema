@@ -257,7 +257,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         else:
             with self.l('try:', optimize=False):
                 code_len = len(self._code)
-                self.generate_func_code_block(not_definition, self._variable, self._variable_name)
+                self.generate_func_code_block(not_definition, self._variable, self._variable_name, clear_variables=True)
                 if len(self._code) == code_len:
                     self.l('pass')
             self.l('except JsonSchemaValueException: pass')
