@@ -1,5 +1,6 @@
-=== 2.22.0 (UNRELEASED)
+=== 2.22.0 (2026-07-25)
 
+* Fixed IPv4 validation (rejecting leading zeros)
 * Fixed empty items and patternProperties
 * Fixed protection from deeply nested schemas potentially causing denial of service
 * Fixed comparing values for enum and const validations
