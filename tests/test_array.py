@@ -207,3 +207,14 @@ def test_issue_114(asserter):
     value = {"a": []}
     expected = value
     asserter(schema, value, expected)
+
+
+def test_items_subschema_without_validation_code(asserter):
+    asserter({'items': {'not': False}}, [1, 2], [1, 2])
+
+
+def test_additional_items_subschema_without_validation_code(asserter):
+    asserter({
+        'items': [{'type': 'string'}],
+        'additionalItems': {'format': 'unknown-format'},
+    }, ['a', 1], ['a', 1])

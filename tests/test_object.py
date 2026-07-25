@@ -300,3 +300,19 @@ def test_property_names_description_only():
     compile(code, '<string>', 'exec')
     validator = fastjsonschema.compile(schema)
     assert validator({'build': {}, 'test': 1}) == {'build': {}, 'test': 1}
+
+
+def test_property_names_subschema_without_validation_code():
+    schema = {
+        'type': 'object',
+        'propertyNames': {'not': False},
+    }
+    validator = fastjsonschema.compile(schema)
+    assert validator({'build': {}, 'test': 1}) == {'build': {}, 'test': 1}
+
+
+def test_dependencies_annotation_only_schema():
+    schema = {'dependencies': {'foo': {'title': 'x'}}}
+    validator = fastjsonschema.compile(schema)
+    assert validator({'foo': 1}) == {'foo': 1}
+    assert validator({'bar': 1}) == {'bar': 1}
