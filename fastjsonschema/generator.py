@@ -1,10 +1,15 @@
 from collections import OrderedDict
+from contextlib import contextmanager
 from decimal import Decimal
 import re
 
 from .exceptions import JsonSchemaValueException, JsonSchemaValuesException, JsonSchemaDefinitionException
 from .indent import indent
 from .ref_resolver import RefResolver
+
+# Both mean "this subschema did not match": a subschema behind a $ref becomes its own
+# function, which reports through JsonSchemaValuesException while errors are collected.
+VALIDATION_EXCEPTIONS = '(JsonSchemaValueException, JsonSchemaValuesException)'
 
 
 def enforce_list(variable):
@@ -172,6 +177,19 @@ class CodeGenerator:
 
         return count
 
+    @contextmanager
+    def trial_validation(self):
+        """
+        Subschemas of anyOf, oneOf, not, if, contains and propertyNames are only tried out.
+        Their failure is control flow for the surrounding ``try``, not an error to report,
+        so they have to raise even when ``fast_fail`` is off.
+        """
+        fast_fail, self._fast_fail = self._fast_fail, True
+        try:
+            yield
+        finally:
+            self._fast_fail = fast_fail
+
     def _generate_func_code_block(self, definition):
         if not isinstance(definition, dict):
             raise JsonSchemaDefinitionException("definition must be an object")
@@ -214,7 +232,15 @@ class CodeGenerator:
             name_arg = '(name_prefix or "data") + "{}"'.format(path)
             if '{' in name_arg:
                 name_arg = name_arg + '.format(**locals())'
-            self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
+            if self._fast_fail:
+                self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
+            else:
+                # The referenced function collects into its own list, so merge it into ours
+                # instead of letting it abort the validation of the rest of the document.
+                with self.l('try:', optimize=False):
+                    self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
+                with self.l('except JsonSchemaValuesException as e:'):
+                    self.l('errors.extend(e.errors)')
 
 
     # pylint: disable=invalid-name

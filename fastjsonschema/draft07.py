@@ -1,4 +1,5 @@
 from .draft06 import CodeGeneratorDraft06
+from .generator import VALIDATION_EXCEPTIONS
 
 
 class CodeGeneratorDraft07(CodeGeneratorDraft06):
@@ -58,15 +59,16 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         """
         with self.l('try:', optimize=False):
             code_len = len(self._code)
-            self.generate_func_code_block(
-                self._definition['if'],
-                self._variable,
-                self._variable_name,
-                clear_variables=True
-            )
+            with self.trial_validation():
+                self.generate_func_code_block(
+                    self._definition['if'],
+                    self._variable,
+                    self._variable_name,
+                    clear_variables=True
+                )
             if len(self._code) == code_len:
                 self.l('pass')
-        with self.l('except JsonSchemaValueException:'):
+        with self.l('except {}:', VALIDATION_EXCEPTIONS):
             if 'else' in self._definition:
                 code_len = len(self._code)
                 self.generate_func_code_block(
