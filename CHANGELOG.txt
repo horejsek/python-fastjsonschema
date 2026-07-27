@@ -1,3 +1,7 @@
+=== 2.22.1 (2026-07-27)
+
+* Fixed min Python version
+
 === 2.22.0 (2026-07-25)
 
 * Fixed IPv4 validation (rejecting leading zeros)
