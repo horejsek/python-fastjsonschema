@@ -2,7 +2,7 @@ import decimal
 import re
 
 from .exceptions import JsonSchemaDefinitionException
-from .generator import CodeGenerator, enforce_list
+from .generator import CodeGenerator, enforce_list, repr_default
 
 
 JSON_TYPE_TO_PYTHON_TYPE = {
@@ -459,7 +459,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                             '{}[{}]'.format(self._variable_name, idx),
                         )
                     if self._use_default and isinstance(item_definition, dict) and 'default' in item_definition:
-                        self.l('else: {variable}.append({})', repr(item_definition['default']))
+                        self.l('else: {variable}.append({})', repr_default(item_definition['default']))
 
                 if 'additionalItems' in self._definition:
                     if self._definition['additionalItems'] is False:
@@ -558,7 +558,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                         clear_variables=True,
                     )
                 if self._use_default and isinstance(prop_definition, dict) and 'default' in prop_definition:
-                    self.l('else: {variable}["{}"] = {}', self.e(key), repr(prop_definition['default']))
+                    self.l('else: {variable}["{}"] = {}', self.e(key), repr_default(prop_definition['default']))
 
     def generate_pattern_properties(self):
         """
