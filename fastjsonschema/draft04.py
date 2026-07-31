@@ -2,7 +2,7 @@ import decimal
 import re
 
 from .exceptions import JsonSchemaDefinitionException
-from .generator import CodeGenerator, enforce_list
+from .generator import VALIDATION_EXCEPTIONS, CodeGenerator, enforce_list
 
 
 JSON_TYPE_TO_PYTHON_TYPE = {
@@ -196,9 +196,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             # When we know it's passing (at least once), we do not need to do another expensive try-except.
             with self.l('if not {variable}_any_of_count{count}:', count=count, optimize=False):
                 with self.l('try:', optimize=False):
-                    self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
+                    with self.trial_validation():
+                        self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_any_of_count{count} += 1', count=count)
-                self.l('except JsonSchemaValueException: pass')
+                self.l('except {}: pass', VALIDATION_EXCEPTIONS)
 
         with self.l('if not {variable}_any_of_count{count}:', count=count, optimize=False):
             self.exc('{name} cannot be validated by any definition', rule='anyOf')
@@ -226,9 +227,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             # When we know it's failing (one of means exactly once), we do not need to do another expensive try-except.
             with self.l('if {variable}_one_of_count{count} < 2:', count=count, optimize=False):
                 with self.l('try:', optimize=False):
-                    self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
+                    with self.trial_validation():
+                        self.generate_func_code_block(definition_item, self._variable, self._variable_name, clear_variables=True)
                     self.l('{variable}_one_of_count{count} += 1', count=count)
-                self.l('except JsonSchemaValueException: pass')
+                self.l('except {}: pass', VALIDATION_EXCEPTIONS)
 
         with self.l('if {variable}_one_of_count{count} != 1:', count=count):
             dynamic = '" (" + str({variable}_one_of_count{}) + " matches found)"'
@@ -257,10 +259,11 @@ class CodeGeneratorDraft04(CodeGenerator):
         else:
             with self.l('try:', optimize=False):
                 code_len = len(self._code)
-                self.generate_func_code_block(not_definition, self._variable, self._variable_name, clear_variables=True)
+                with self.trial_validation():
+                    self.generate_func_code_block(not_definition, self._variable, self._variable_name, clear_variables=True)
                 if len(self._code) == code_len:
                     self.l('pass')
-            self.l('except JsonSchemaValueException: pass')
+            self.l('except {}: pass', VALIDATION_EXCEPTIONS)
             with self.l('else:'):
                 self.exc('{name} must NOT match a disallowed definition', rule='not')
 

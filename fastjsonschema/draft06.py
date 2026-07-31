@@ -1,7 +1,7 @@
 import decimal
 from .draft04 import CodeGeneratorDraft04, JSON_TYPE_TO_PYTHON_TYPE
 from .exceptions import JsonSchemaDefinitionException
-from .generator import enforce_list
+from .generator import VALIDATION_EXCEPTIONS, enforce_list
 
 
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
@@ -127,15 +127,16 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                     with self.l('for {variable}_key in {variable}:'):
                         with self.l('try:'):
                             code_len = len(self._code)
-                            self.generate_func_code_block(
-                                property_names_definition,
-                                '{}_key'.format(self._variable),
-                                self._variable_name,
-                                clear_variables=True,
-                            )
+                            with self.trial_validation():
+                                self.generate_func_code_block(
+                                    property_names_definition,
+                                    '{}_key'.format(self._variable),
+                                    self._variable_name,
+                                    clear_variables=True,
+                                )
                             if len(self._code) == code_len:
                                 self.l('pass')
-                        with self.l('except JsonSchemaValueException:'):
+                        with self.l('except {}:', VALIDATION_EXCEPTIONS):
                             self.l('{variable}_property_names = False')
                     with self.l('if not {variable}_property_names:'):
                         self.exc('{name} must be named by propertyName definition', rule='propertyNames')
@@ -167,15 +168,16 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
                 self.l('{variable}_contains = False')
                 with self.l('for {variable}_key in {variable}:'):
                     with self.l('try:'):
-                        self.generate_func_code_block(
-                            contains_definition,
-                            '{}_key'.format(self._variable),
-                            self._variable_name,
-                            clear_variables=True,
-                        )
+                        with self.trial_validation():
+                            self.generate_func_code_block(
+                                contains_definition,
+                                '{}_key'.format(self._variable),
+                                self._variable_name,
+                                clear_variables=True,
+                            )
                         self.l('{variable}_contains = True')
                         self.l('break')
-                    self.l('except JsonSchemaValueException: pass')
+                    self.l('except {}: pass', VALIDATION_EXCEPTIONS)
 
                 with self.l('if not {variable}_contains:'):
                     self.exc('{name} must contain one of contains definition', rule='contains')

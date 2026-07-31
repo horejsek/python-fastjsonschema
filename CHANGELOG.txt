@@ -2,6 +2,11 @@
 
 * Fixed min Python version
 
+=== 2.22.2 (UNRELEASED)
+
+* Fixed wrong results of anyOf, oneOf, not, if/then/else, contains and propertyNames when `fast_fail` is off
+* Fixed collecting errors from subschemas behind `$ref` when `fast_fail` is off
+
 === 2.22.0 (2026-07-25)
 
 * Fixed IPv4 validation (rejecting leading zeros)
