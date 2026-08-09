@@ -46,7 +46,10 @@ class CodeGenerator:
             "Decimal": Decimal,
         }
 
-        self._variables = set()
+        self._variables = {}
+        self._scope_stack = []
+        self._scope_counter = 0
+        self._last_closed_scope = None
         self._indent = 0
         self._indent_last_line = None
         self._variable = None
@@ -162,7 +165,7 @@ class CodeGenerator:
         self._definition, self._variable, self._variable_name = definition, variable, variable_name
         if clear_variables:
             backup_variables = self._variables
-            self._variables = set()
+            self._variables = {}
 
         count = self._generate_func_code_block(definition)
 
@@ -304,6 +307,17 @@ class CodeGenerator:
                 return schema
         return {k: self._expand_refs(v) for k, v in definition.items()}
 
+    def _is_variable_in_scope(self, variable_name):
+        """
+        Whether ``variable_name`` was already defined in a block enclosing the
+        current one, and is therefore still bound here. A variable defined in a
+        sibling block is not, because that block may not have been entered.
+        """
+        scope = self._variables.get(variable_name)
+        if scope is None:
+            return False
+        return tuple(self._scope_stack[:len(scope)]) == scope
+
     def create_variable_with_length(self):
         """
         Append code for creating variable with length of that variable
@@ -312,9 +326,9 @@ class CodeGenerator:
         still does not exists.
         """
         variable_name = '{}_len'.format(self._variable)
-        if variable_name in self._variables:
+        if self._is_variable_in_scope(variable_name):
             return
-        self._variables.add(variable_name)
+        self._variables[variable_name] = tuple(self._scope_stack)
         self.l('{variable}_len = len({variable})')
 
     def create_variable_keys(self):
@@ -323,9 +337,9 @@ class CodeGenerator:
         with a name ``{variable}_keys``. Similar to `create_variable_with_length`.
         """
         variable_name = '{}_keys'.format(self._variable)
-        if variable_name in self._variables:
+        if self._is_variable_in_scope(variable_name):
             return
-        self._variables.add(variable_name)
+        self._variables[variable_name] = tuple(self._scope_stack)
         self.l('{variable}_keys = set({variable}.keys())')
 
     def create_variable_is_list(self):
@@ -334,9 +348,9 @@ class CodeGenerator:
         with a name ``{variable}_is_list``. Similar to `create_variable_with_length`.
         """
         variable_name = '{}_is_list'.format(self._variable)
-        if variable_name in self._variables:
+        if self._is_variable_in_scope(variable_name):
             return
-        self._variables.add(variable_name)
+        self._variables[variable_name] = tuple(self._scope_stack)
         self.l('{variable}_is_list = isinstance({variable}, (list, tuple))')
 
     def create_variable_is_dict(self):
@@ -345,9 +359,9 @@ class CodeGenerator:
         with a name ``{variable}_is_dict``. Similar to `create_variable_with_length`.
         """
         variable_name = '{}_is_dict'.format(self._variable)
-        if variable_name in self._variables:
+        if self._is_variable_in_scope(variable_name):
             return
-        self._variables.add(variable_name)
+        self._variables[variable_name] = tuple(self._scope_stack)
         self.l('{variable}_is_dict = isinstance({variable}, dict)')
 
 
