@@ -1,6 +1,8 @@
+import ast
+
 import pytest
 
-from fastjsonschema import JsonSchemaDefinitionException, RefResolver, compile, validate
+from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaValueException, RefResolver, compile, compile_to_code, validate
 
 
 @pytest.mark.parametrize('schema', [
@@ -44,6 +46,30 @@ def test_generate_code_with_proper_variable_names(asserter, schema, value):
         '$schema': 'http://json-schema.org/draft-07/schema',
         **schema
     }, value, value)
+
+
+def test_dependencies_false_escapes_property_name():
+    key = '" + validate("10") + "'
+    schema = {
+        '$schema': 'http://json-schema.org/draft-07/schema',
+        'type': 'object',
+        'dependencies': {key: False},
+    }
+    code = compile_to_code(schema)
+    tree = ast.parse(code)
+    validate_calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == 'validate'
+    ]
+    assert validate_calls == []
+
+    validator = compile(schema)
+    with pytest.raises(JsonSchemaValueException) as exc:
+        validator({key: 1})
+    assert key in exc.value.message
+    assert exc.value.rule == 'dependencies'
 
 
 def test_generate_code_without_overriding_variables(asserter):

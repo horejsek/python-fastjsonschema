@@ -660,7 +660,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 is_empty = False
                 with self.l('if "{}" in {variable}:', self.e(key)):
                     if values is False:
-                        self.exc('{} in {name} must not be there', key, rule='dependencies')
+                        self.exc('{} in {name} must not be there', self.e(key), rule='dependencies')
                     elif isinstance(values, list):
                         for value in values:
                             with self.l('if "{}" not in {variable}:', self.e(value)):
