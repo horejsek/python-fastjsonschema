@@ -146,3 +146,24 @@ def test_swap_handlers():
     }
     validator2 = compile({"$ref": "sch://schema"}, handlers={"sch": repo2.__getitem__})
     assert validator2("hello world") is not None
+
+
+def test_relative_ref_in_remote_schema_is_resolved_once():
+    repo = {
+        'schemas/main.json': {
+            'definitions': {
+                'object': {
+                    'type': 'object',
+                    'properties': {'value': {'$ref': 'main.json#/definitions/string'}},
+                },
+                'string': {'type': 'string'},
+            },
+        },
+    }
+
+    validator = compile(
+        {'$ref': 'schemas/main.json#/definitions/object'},
+        handlers={'': repo.__getitem__},
+    )
+
+    assert validator({'value': 'ok'}) == {'value': 'ok'}
