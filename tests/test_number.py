@@ -141,6 +141,42 @@ def test_multiple_of_float_1_5(asserter, value, expected):
     }, value, expected)
 
 
+@pytest.mark.parametrize('schema_version', (
+    'http://json-schema.org/draft-04/schema',
+    'http://json-schema.org/draft-06/schema',
+    'http://json-schema.org/draft-07/schema',
+))
+@pytest.mark.parametrize('keywords', (
+    {'minimum': 5},
+    {'maximum': -5},
+    {'multipleOf': 3},
+))
+@pytest.mark.parametrize('value', (True, False))
+def test_numeric_keywords_ignore_boolean(asserter, schema_version, keywords, value):
+    asserter({
+        '$schema': schema_version,
+        'type': ['boolean', 'number'],
+        **keywords,
+    }, value, value)
+
+
+@pytest.mark.parametrize('schema_version', (
+    'http://json-schema.org/draft-06/schema',
+    'http://json-schema.org/draft-07/schema',
+))
+@pytest.mark.parametrize('keywords', (
+    {'exclusiveMinimum': 5},
+    {'exclusiveMaximum': -5},
+))
+@pytest.mark.parametrize('value', (True, False))
+def test_exclusive_numeric_keywords_ignore_boolean(asserter, schema_version, keywords, value):
+    asserter({
+        '$schema': schema_version,
+        'type': ['boolean', 'number'],
+        **keywords,
+    }, value, value)
+
+
 @pytest.mark.parametrize('value', (
     1.0,
     0.1,
