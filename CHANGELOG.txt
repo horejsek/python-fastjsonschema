@@ -2,7 +2,9 @@
 
 * Fixed property names with `{` or `}` being evaluated as format string in error messages
 * Fixed numeric keywords (minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum) being applied to booleans
+* Fixed `propertyNames: false` crashing on non-object values
 * Added type annotations for public API and `py.typed` marker (PEP 561)
+* Added `message` to `JsonSchemaValuesException` joining messages of all collected errors
 
 === 2.22.2 (2026-08-15)
 

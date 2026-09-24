@@ -56,11 +56,16 @@ class JsonSchemaValueException(JsonSchemaException):
 
 class JsonSchemaValuesException(JsonSchemaException):
     """
-    Exception raised by validation function. It is a collection of all errors.
+    Exception raised by validation function when ``fast_fail`` is turned off.
+    Available properties:
+
+     * ``errors`` containing all :any:`JsonSchemaValueException` found in the data
+     * and ``message`` joining messages of all the errors.
     """
 
     def __init__(self, errors: list[JsonSchemaValueException]) -> None:
-        super().__init__()
+        self.message = '; '.join(error.message for error in errors)
+        super().__init__(self.message)
         self.errors = errors
 
 

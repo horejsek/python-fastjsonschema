@@ -115,8 +115,8 @@ class CodeGeneratorDraft06(CodeGeneratorDraft04):
         if property_names_definition is True:
             pass
         elif property_names_definition is False:
-            self.create_variable_keys()
-            with self.l('if {variable}_keys:'):
+            self.create_variable_is_dict()
+            with self.l('if {variable}_is_dict and {variable}:'):
                 self.exc('{name} must not be there', rule='propertyNames')
         else:
             self.create_variable_is_dict()

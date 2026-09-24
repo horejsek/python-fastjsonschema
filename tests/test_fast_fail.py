@@ -149,6 +149,115 @@ def test_captures_errors_behind_ref():
     ]
 
 
+def test_captures_errors_next_to_one_of():
+    validator = compile({
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'value': {'oneOf': [{'type': 'string'}, {'type': 'integer'}]},
+        },
+    }, fast_fail=False)
+
+    with pytest.raises(JsonSchemaValuesException) as exc_info:
+        validator({'name': 1, 'value': []})
+    assert [error.message for error in exc_info.value.errors] == [
+        'data.name must be string',
+        'data.value must be valid exactly by one definition (0 matches found)',
+    ]
+
+
+def test_captures_errors_next_to_nested_ref():
+    validator = compile({
+        'definitions': {'age': {'type': 'integer'}},
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'value': {
+                'type': 'object',
+                'properties': {
+                    'age': {'$ref': '#/definitions/age'},
+                },
+            },
+        },
+    }, fast_fail=False)
+
+    with pytest.raises(JsonSchemaValuesException) as exc_info:
+        validator({'name': 1, 'value': {'age': 'old'}})
+    assert [error.message for error in exc_info.value.errors] == [
+        'data.name must be string',
+        'data.value.age must be integer',
+    ]
+
+
+@pytest.mark.parametrize('definition, value, expected', [
+    (
+        {'items': {'type': 'integer', 'minimum': 5}},
+        [1, 'a', 7, 2],
+        ['data[0] must be bigger than or equal to 5', 'data[1] must be integer', 'data[3] must be bigger than or equal to 5'],
+    ),
+    (
+        {'items': [{'type': 'integer'}, {'type': 'string'}], 'additionalItems': {'type': 'null'}},
+        ['a', 1, 2],
+        ['data[0] must be integer', 'data[1] must be string', 'data[2] must be null'],
+    ),
+    (
+        {'patternProperties': {'^i_': {'type': 'integer'}}, 'additionalProperties': {'type': 'string'}},
+        {'i_a': 'x', 'i_b': 1, 'c': 2},
+        ['data.i_a must be integer', 'data.c must be string'],
+    ),
+    (
+        {'required': ['a', 'b'], 'minProperties': 3, 'properties': {'c': {'type': 'string'}}},
+        {'c': 1},
+        ['data must contain at least 3 properties', "data must contain ['a', 'b'] properties", 'data.c must be string'],
+    ),
+    (
+        {'dependencies': {'a': {'required': ['b']}, 'c': ['d']}},
+        {'a': 1, 'c': 1},
+        ["data must contain ['b'] properties", 'data missing dependency d for c'],
+    ),
+    (
+        {'allOf': [{'type': 'integer'}, {'minimum': 5}, {'multipleOf': 2}]},
+        3.5,
+        ['data must be integer', 'data must be bigger than or equal to 5', 'data must be multiple of 2'],
+    ),
+    (
+        {'if': {'type': 'integer'}, 'then': {'minimum': 5, 'multipleOf': 2}, 'else': {'type': 'string', 'maxLength': 1}},
+        3,
+        ['data must be bigger than or equal to 5', 'data must be multiple of 2'],
+    ),
+    (
+        {'properties': {'a': {'anyOf': [{'type': 'integer'}]}, 'b': {'not': {'type': 'null'}}, 'c': {'contains': {'type': 'null'}}}},
+        {'a': 'x', 'b': None, 'c': [1]},
+        ['data.a cannot be validated by any definition', 'data.b must NOT match a disallowed definition', 'data.c must contain one of contains definition'],
+    ),
+    (
+        {'type': 'array', 'maxItems': 1, 'items': {'$ref': '#'}},
+        [[1, 2], [[]]],
+        ['data must contain less than or equal to 1 items', 'data[0] must contain less than or equal to 1 items', 'data[0][0] must be array', 'data[0][1] must be array'],
+    ),
+    (
+        {'type': 'object', 'propertyNames': False},
+        'abc',
+        ['data must be object'],
+    ),
+])
+def test_captures_all_nested_errors(definition, value, expected):
+    validator = compile(definition, fast_fail=False)
+
+    with pytest.raises(JsonSchemaValuesException) as exc_info:
+        validator(value)
+    assert [error.message for error in exc_info.value.errors] == expected
+
+
+def test_values_exception_message():
+    validator = compile({'properties': {'a': {'type': 'string'}, 'b': {'type': 'integer'}}}, fast_fail=False)
+
+    with pytest.raises(JsonSchemaValuesException) as exc_info:
+        validator({'a': 1, 'b': 'x'})
+    assert exc_info.value.message == 'data.a must be string; data.b must be integer'
+    assert str(exc_info.value) == exc_info.value.message
+
+
 @pytest.mark.parametrize('value, is_valid', [('abc', True), (42, True), (1.5, False)])
 def test_generated_code_verdict(tmp_path, monkeypatch, value, is_valid):
     with open(tmp_path / 'schema_fast_fail.py', 'w') as f:

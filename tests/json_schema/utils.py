@@ -1,10 +1,17 @@
+import copy
 import json
 from pathlib import Path
 from urllib.parse import urldefrag, urlsplit, urlunsplit
 
 import pytest
 
-from fastjsonschema import RefResolver, JsonSchemaValueException, compile, _get_code_generator_class
+from fastjsonschema import (
+    RefResolver,
+    JsonSchemaValueException,
+    JsonSchemaValuesException,
+    compile,
+    _get_code_generator_class,
+)
 from fastjsonschema.exceptions import JsonSchemaDefinitionException
 
 
@@ -116,13 +123,19 @@ def template_test(schema_version, schema, data, is_valid):
     if isinstance(schema, dict):
         schema.setdefault('$schema', schema_version)
 
-    validate = compile(schema, handlers=SCHEMA_HANDLERS)
-    try:
-        result = validate(data)
-        print('Validate result:', result)
-    except JsonSchemaValueException:
-        if is_valid:
-            raise
-    else:
-        if not is_valid:
-            pytest.fail('Test should not pass')
+    for fast_fail in (True, False):
+        validate = compile(schema, handlers=SCHEMA_HANDLERS, fast_fail=fast_fail)
+        try:
+            # Validation can fill in defaults, so every run needs untouched data.
+            result = validate(copy.deepcopy(data))
+            print('Validate result (fast_fail={}):'.format(fast_fail), result)
+        except JsonSchemaValueException:
+            if is_valid or not fast_fail:
+                raise
+        except JsonSchemaValuesException as exc:
+            if is_valid or fast_fail:
+                raise
+            assert exc.errors
+        else:
+            if not is_valid:
+                pytest.fail('Test should not pass (fast_fail={})'.format(fast_fail))
