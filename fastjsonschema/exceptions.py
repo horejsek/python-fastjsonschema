@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 
 SPLIT_RE = re.compile(r'[\.\[\]]+')
@@ -27,7 +28,14 @@ class JsonSchemaValueException(JsonSchemaException):
         Added all extra properties.
     """
 
-    def __init__(self, message, value=None, name=None, definition=None, rule=None):
+    def __init__(
+        self,
+        message: str,
+        value: Any = None,
+        name: str | None = None,
+        definition: Any = None,
+        rule: str | None = None,
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.value = value
@@ -36,11 +44,11 @@ class JsonSchemaValueException(JsonSchemaException):
         self.rule = rule
 
     @property
-    def path(self):
-        return [item for item in SPLIT_RE.split(self.name) if item != '']
+    def path(self) -> list[str]:
+        return [item for item in SPLIT_RE.split(self.name or '') if item != '']
 
     @property
-    def rule_definition(self):
+    def rule_definition(self) -> Any:
         if not self.rule or not self.definition:
             return None
         return self.definition.get(self.rule)
@@ -51,7 +59,7 @@ class JsonSchemaValuesException(JsonSchemaException):
     Exception raised by validation function. It is a collection of all errors.
     """
 
-    def __init__(self, errors):
+    def __init__(self, errors: list[JsonSchemaValueException]) -> None:
         super().__init__()
         self.errors = errors
 

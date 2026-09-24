@@ -12,6 +12,8 @@ import contextlib
 import json
 import re
 import sys
+from collections.abc import Callable, Iterator, Mapping
+from typing import Any
 from urllib import parse as urlparse
 from urllib.parse import unquote
 
@@ -20,14 +22,14 @@ from .exceptions import JsonSchemaDefinitionException
 MAX_SCHEMA_WALK_DEPTH = min(500, sys.getrecursionlimit() // 2)
 
 
-def get_id(schema):
+def get_id(schema: dict[str, Any]) -> str:
     """
     Originally ID was `id` and since v7 it's `$id`.
     """
     return schema.get('$id', schema.get('id', ''))
 
 
-def resolve_path(schema, fragment):
+def resolve_path(schema: Any, fragment: str) -> Any:
     """
     Return definition from path.
 
@@ -46,11 +48,11 @@ def resolve_path(schema, fragment):
     return schema
 
 
-def normalize(uri):
+def normalize(uri: str) -> str:
     return urlparse.urlsplit(uri).geturl()
 
 
-def resolve_remote(uri, handlers):
+def resolve_remote(uri: str, handlers: Mapping[str, Callable[[str], Any]]) -> Any:
     """
     Resolve a remote ``uri``.
 
@@ -80,7 +82,14 @@ class RefResolver:
     """
 
     # pylint: disable=dangerous-default-value,too-many-arguments
-    def __init__(self, base_uri, schema, store={}, cache=True, handlers={}):
+    def __init__(
+        self,
+        base_uri: str,
+        schema: dict[str, Any] | bool,
+        store: dict[str, Any] = {},
+        cache: bool = True,
+        handlers: Mapping[str, Callable[[str], Any]] = {},
+    ) -> None:
         """
         `base_uri` is URI of the referring document from the `schema`.
         `store` is an dictionary that will be used to cache the fetched schemas
@@ -96,12 +105,17 @@ class RefResolver:
         self.store = store
         self.cache = cache
         self.handlers = handlers
-        self._walked_uris = set()
+        self._walked_uris: set[str] = set()
         self.walk(schema)
         self._walked_uris.add(normalize(base_uri) if base_uri else '')
 
     @classmethod
-    def from_schema(cls, schema, handlers={}, **kwargs):
+    def from_schema(
+        cls,
+        schema: dict[str, Any] | bool,
+        handlers: Mapping[str, Callable[[str], Any]] = {},
+        **kwargs: Any,
+    ) -> 'RefResolver':
         """
         Construct a resolver from a JSON schema object.
         """
@@ -113,7 +127,7 @@ class RefResolver:
         )
 
     @contextlib.contextmanager
-    def in_scope(self, scope: str):
+    def in_scope(self, scope: str) -> Iterator[None]:
         """
         Context manager to handle current scope.
         """
@@ -125,7 +139,7 @@ class RefResolver:
             self.resolution_scope = old_scope
 
     @contextlib.contextmanager
-    def resolving(self, ref: str):
+    def resolving(self, ref: str) -> Iterator[Any]:
         """
         Context manager which resolves a JSON ``ref`` and enters the
         resolution scope of this ref.
@@ -159,17 +173,17 @@ class RefResolver:
         finally:
             self.base_uri, self.schema = old_base_uri, old_schema
 
-    def _ensure_walked(self, uri, schema):
+    def _ensure_walked(self, uri: str, schema: Any) -> None:
         normalized = normalize(uri) if uri else ''
         if normalized in self._walked_uris:
             return
         self.walk(schema, rewrite_refs=False)
         self._walked_uris.add(normalized)
 
-    def get_uri(self):
+    def get_uri(self) -> str:
         return normalize(self.resolution_scope)
 
-    def get_scope_name(self):
+    def get_scope_name(self) -> str:
         """
         Get current scope and return it as a valid function name.
         """
@@ -178,7 +192,7 @@ class RefResolver:
         name = name.lower().rstrip('_')
         return name
 
-    def walk(self, node: dict, depth=0, rewrite_refs=True):
+    def walk(self, node: dict[str, Any] | bool, depth: int = 0, rewrite_refs: bool = True) -> None:
         """
         Walk thru schema and dereferencing ``id`` and ``$ref`` instances
         """

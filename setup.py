@@ -17,6 +17,7 @@ setup(
     name='fastjsonschema',
     version=VERSION,
     packages=['fastjsonschema'],
+    package_data={'fastjsonschema': ['py.typed']},
     extras_require={
         'devel': [
             'colorama',
@@ -52,5 +53,6 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Python Modules",
+        "Typing :: Typed",
     ],
 )

@@ -105,7 +105,9 @@ Usage
 API
 ***
 """
+from collections.abc import Callable, Mapping
 from functools import partial, update_wrapper
+from typing import Any
 
 from .draft04 import CodeGeneratorDraft04
 from .draft06 import CodeGeneratorDraft06
@@ -132,16 +134,22 @@ __all__ = (
 )
 
 
+Definition = dict[str, Any] | bool
+Handlers = Mapping[str, Callable[[str], Any]]
+Formats = Mapping[str, str | Callable[[Any], bool]]
+Validator = Callable[..., Any]
+
+
 def validate(
-    definition: dict | bool,
-    data,
-    handlers: dict = {},
-    formats: dict = {},
+    definition: Definition,
+    data: Any,
+    handlers: Handlers = {},
+    formats: Formats = {},
     use_default: bool = True,
     use_formats: bool = True,
     detailed_exceptions: bool = True,
     fast_fail: bool = True,
-):
+) -> Any:
     """
     Validation function for lazy programmers or for use cases when you need
     to call validation only once, so you do not have to compile it first.
@@ -167,14 +175,14 @@ def validate(
 #TODO: Change use_default to False when upgrading to version 3.
 # pylint: disable=redefined-builtin,dangerous-default-value,exec-used
 def compile(
-    definition: dict | bool,
-    handlers: dict = {},
-    formats: dict = {},
+    definition: Definition,
+    handlers: Handlers = {},
+    formats: Formats = {},
     use_default: bool = True,
     use_formats: bool = True,
     detailed_exceptions: bool = True,
     fast_fail: bool = True,
-):
+) -> Validator:
     """
     Generates validation function for validating JSON schema passed in ``definition``.
     Example:
@@ -292,14 +300,14 @@ def compile(
 
 # pylint: disable=dangerous-default-value
 def compile_to_code(
-    definition: dict | bool,
-    handlers: dict = {},
-    formats: dict = {},
+    definition: Definition,
+    handlers: Handlers = {},
+    formats: Formats = {},
     use_default: bool = True,
     use_formats: bool = True,
     detailed_exceptions: bool = True,
     fast_fail: bool = True,
-):
+) -> str:
     """
     Generates validation code for validating JSON schema passed in ``definition``.
     Example:
@@ -342,14 +350,14 @@ def compile_to_code(
 
 
 def _factory(
-    definition: dict | bool,
-    handlers: dict,
-    formats: dict = {},
+    definition: Definition,
+    handlers: Handlers,
+    formats: Formats = {},
     use_default: bool = True,
     use_formats: bool = True,
     detailed_exceptions: bool = True,
     fast_fail: bool = True,
-):
+) -> tuple[RefResolver, CodeGeneratorDraft04]:
     resolver = RefResolver.from_schema(definition, handlers=handlers, store={})
     code_generator = _get_code_generator_class(definition)(
         definition,
@@ -363,7 +371,7 @@ def _factory(
     return resolver, code_generator
 
 
-def _get_code_generator_class(schema: dict | bool):
+def _get_code_generator_class(schema: Definition) -> type[CodeGeneratorDraft04]:
     # Schema in from draft-06 can be just the boolean value.
     if isinstance(schema, dict):
         schema_version = schema.get('$schema', '')
