@@ -557,7 +557,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.generate_func_code_block(
                         prop_definition,
                         '{}__{}'.format(self._variable, key_name),
-                        '{}.{}'.format(self._variable_name, self.e(key)),
+                        '{}.{}'.format(self._variable_name, self.e(key).replace('{', '{{').replace('}', '}}')),
                         clear_variables=True,
                     )
                 if self._use_default and isinstance(prop_definition, dict) and 'default' in prop_definition:

@@ -2,7 +2,7 @@ import ast
 
 import pytest
 
-from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaValueException, RefResolver, compile, compile_to_code, validate
+from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaException, JsonSchemaValueException, RefResolver, compile, compile_to_code, validate
 
 
 @pytest.mark.parametrize('schema', [
@@ -70,6 +70,25 @@ def test_dependencies_false_escapes_property_name():
         validator({key: 1})
     assert key in exc.value.message
     assert exc.value.rule == 'dependencies'
+
+
+@pytest.mark.parametrize('key', ['{foo}', '{data}', '{name_prefix}', '{', '}', '{data.__class__}'])
+@pytest.mark.parametrize('fast_fail', [True, False])
+@pytest.mark.parametrize('via_ref', [False, True])
+def test_property_name_with_braces_is_not_formatted(key, fast_fail, via_ref):
+    inner = {'type': 'object', 'properties': {'a': {'type': 'string'}}}
+    validator = compile({
+        'type': 'object',
+        'definitions': {'inner': inner},
+        'properties': {
+            key: {'$ref': '#/definitions/inner'} if via_ref else inner,
+        },
+    }, fast_fail=fast_fail)
+    with pytest.raises(JsonSchemaException) as exc:
+        validator({key: {'a': 1}})
+    errors = [exc.value] if fast_fail else exc.value.errors
+    assert errors[0].name == 'data.{}.a'.format(key)
+    assert errors[0].message == 'data.{}.a must be string'.format(key)
 
 
 def test_generate_code_without_overriding_variables(asserter):

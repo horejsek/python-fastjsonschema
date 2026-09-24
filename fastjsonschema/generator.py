@@ -233,7 +233,7 @@ class CodeGenerator:
             assert self._variable_name.startswith("data")
             path = self._variable_name[4:]
             name_arg = '(name_prefix or "data") + "{}"'.format(path)
-            if '{' in name_arg:
+            if '{' in name_arg or '}' in name_arg:
                 name_arg = name_arg + '.format(**locals())'
             if self._fast_fail:
                 self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
@@ -273,7 +273,7 @@ class CodeGenerator:
             # Add name_prefix to the name when it is being outputted.
             assert name.startswith('data')
             name = '" + (name_prefix or "data") + "' + name[4:]
-            if '{' in name:
+            if '{' in name or '}' in name:
                 name = name + '".format(**locals()) + "'
 
         context = dict(
