@@ -418,7 +418,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 'for k, v in var.items()).items()) '
                 'if hasattr(var, "items") else tuple(fn(v) '
                 'for v in var) '
-                'if isinstance(var, (dict, list)) else str(var) '
+                'if isinstance(var, (dict, list)) else (bool, var) '
                 'if isinstance(var, bool) else var')
             self.create_variable_with_length()
             with self.l('if {variable}_len > len(set(fn({variable}_x) for {variable}_x in {variable})):'):
