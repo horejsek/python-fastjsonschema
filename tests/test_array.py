@@ -73,6 +73,25 @@ def test_unique_items(asserter, value, expected):
     }, value, expected)
 
 
+@pytest.mark.parametrize('draft', ['04', '06', '07'])
+@pytest.mark.parametrize('value', [
+    [True, 'True'],
+    [False, 'False'],
+    [[True], ['True']],
+    [[False], ['False']],
+    [{'a': True}, {'a': 'True'}],
+    [{'a': False}, {'a': 'False'}],
+    [True, 1],
+    [False, 0],
+])
+def test_unique_items_distinguishes_booleans(asserter, draft, value):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-{}/schema'.format(draft),
+        'type': 'array',
+        'uniqueItems': True,
+    }, value, value)
+
+
 def test_not_unique_items(asserter):
     value = [{'id': 1}, {'id': 1}]
     asserter({
