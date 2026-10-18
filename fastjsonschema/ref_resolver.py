@@ -35,8 +35,10 @@ def resolve_path(schema: Any, fragment: str) -> Any:
 
     Path is unescaped according https://tools.ietf.org/html/rfc6901
     """
-    fragment = fragment.lstrip('/')
-    parts = unquote(fragment).split('/') if fragment else []
+    if not fragment:
+        return schema
+    fragment = fragment[1:] if fragment.startswith('/') else fragment
+    parts = unquote(fragment).split('/')
     for part in parts:
         part = part.replace('~1', '/').replace('~0', '~')
         if isinstance(schema, list):
@@ -76,7 +78,7 @@ def resolve_remote(uri: str, handlers: Mapping[str, Callable[[str], Any]]) -> An
     return result
 
 
-class RefResolver:
+class RefResolver:  # pylint: disable=too-many-instance-attributes
     """
     Resolve JSON References.
     """
@@ -105,6 +107,8 @@ class RefResolver:
         self.store = store
         self.cache = cache
         self.handlers = handlers
+        self._scope_names: dict[str, str] = {}
+        self._used_scope_names: set[str] = set()
         self._walked_uris: set[str] = set()
         self.walk(schema)
         self._walked_uris.add(normalize(base_uri) if base_uri else '')
@@ -185,11 +189,21 @@ class RefResolver:
 
     def get_scope_name(self) -> str:
         """
-        Get current scope and return it as a valid function name.
+        Get a stable, unique function name for the current scope.
         """
+        uri = self.get_uri()
+        if uri in self._scope_names:
+            return self._scope_names[uri]
         name = 'validate_' + unquote(self.resolution_scope).replace('~1', '_').replace('~0', '_').replace('"', '')
         name = re.sub(r'($[^a-zA-Z]|[^a-zA-Z0-9])', '_', name)
         name = name.lower().rstrip('_')
+        # Distinct URIs, such as the root and #/, can sanitize to the same name.
+        base_name, suffix = name, 1
+        while name in self._used_scope_names:
+            name = '{}_{}'.format(base_name, suffix)
+            suffix += 1
+        self._scope_names[uri] = name
+        self._used_scope_names.add(name)
         return name
 
     def walk(self, node: dict[str, Any] | bool, depth: int = 0, rewrite_refs: bool = True) -> None:
