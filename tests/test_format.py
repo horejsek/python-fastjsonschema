@@ -77,6 +77,10 @@ exc = JsonSchemaValueException('data must be ipv6', value='{data}', name='data',
     ('1.1.1.1', exc),
     ('2001:db8::1:1', '2001:db8::1:1'),
     ('::ffff:1.1.1.1', '::ffff:1.1.1.1'),
+    # One group before '::', the rest after it.
+    ('1::2:3:4:5:6', '1::2:3:4:5:6'),
+    ('1::2:3:4:1.2.3.4', '1::2:3:4:1.2.3.4'),
+    ('1::2:3:4:5:6:7:8', exc),
 ])
 def test_ipv6(asserter, value, expected):
     asserter({'type': 'string', 'format': 'ipv6'}, value, expected)
