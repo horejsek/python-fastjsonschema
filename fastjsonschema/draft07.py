@@ -1,10 +1,11 @@
+from .draft04 import DATE_REGEX
 from .draft06 import CodeGeneratorDraft06
 from .generator import VALIDATION_EXCEPTIONS
 
 
 class CodeGeneratorDraft07(CodeGeneratorDraft06):
     FORMAT_REGEXS = dict(CodeGeneratorDraft06.FORMAT_REGEXS, **{
-        'date': r'^(?P<year>\d{4})-(?P<month>(0[1-9]|1[0-2]))-(?P<day>(0[1-9]|[12]\d|3[01]))\Z',
+        'date': r'^(?:' + DATE_REGEX + r')\Z',
         'iri': r'^\w+:(\/?\/?)[^\s]+\Z',
         'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
         'idn-email': r'^[^@]+@[^@]+\.[^@]+\Z',
