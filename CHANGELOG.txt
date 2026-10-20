@@ -5,6 +5,7 @@
 * Fixed `propertyNames: false` crashing on non-object values
 * Added type annotations for public API and `py.typed` marker (PEP 561)
 * Added `message` to `JsonSchemaValuesException` joining messages of all collected errors
+* Fixed the `date-time` format accepting months, days and hours out of range (such as `2020-19-39T29:00:00Z`) and rejecting a leap second (`23:59:60Z`)
 
 === 2.22.2 (2026-08-15)
 
