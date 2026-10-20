@@ -6,6 +6,7 @@
 * Added type annotations for public API and `py.typed` marker (PEP 561)
 * Added `message` to `JsonSchemaValuesException` joining messages of all collected errors
 * Fixed the `date-time` format accepting months, days and hours out of range (such as `2020-19-39T29:00:00Z`) and rejecting a leap second (`23:59:60Z`)
+* Fixed the `date` and `date-time` formats accepting days that do not exist in their month, such as `2021-02-29` and `2021-04-31`
 
 === 2.22.2 (2026-08-15)
 
