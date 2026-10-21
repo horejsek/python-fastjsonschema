@@ -50,6 +50,30 @@ def test_hostname(asserter, value, expected):
     asserter({'type': 'string', 'format': 'hostname'}, value, expected)
 
 
+exc = JsonSchemaValueException('data must be time', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('bla', exc),
+    ('12:00:00', '12:00:00'),
+    ('12:00:00Z', '12:00:00Z'),
+    ('00:00:00.5+01:30', '00:00:00.5+01:30'),
+    ('23:59:59-23:59', '23:59:59-23:59'),
+    ('23:59:60Z', '23:59:60Z'),
+    ('24:00:00Z', exc),
+    ('29:00:00Z', exc),
+    ('99:99:99', exc),
+    ('12:60:00Z', exc),
+    ('12:00:61Z', exc),
+    ('12:00:00+24:00', exc),
+    ('12:00:00+00:60', exc),
+])
+def test_time(asserter, value, expected):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-07/schema',
+        'format': 'time',
+    }, value, expected)
+
+
 exc = JsonSchemaValueException('data must be date', value='{data}', name='data', definition='{definition}', rule='format')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
