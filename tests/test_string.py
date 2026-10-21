@@ -3,6 +3,7 @@ import warnings
 import pytest
 
 from fastjsonschema import JsonSchemaValueException
+from fastjsonschema import compile as compile_schema, compile_to_code
 
 
 exc = JsonSchemaValueException('data must be string', value='{data}', name='data', definition='{definition}', rule='type')
@@ -82,6 +83,23 @@ def test_pattern_with_escape_no_warnings(asserter):
             'type': 'string',
             'pattern': '\\s'
         }, ' ', ' ')
+
+
+@pytest.mark.parametrize('pattern', ['\x00', '[\x00-\x1f]'])
+@pytest.mark.parametrize('detailed', [False, True])
+@pytest.mark.parametrize('to_code', [False, True])
+def test_pattern_with_null_character(pattern, detailed, to_code):
+    schema = {'type': 'string', 'pattern': pattern}
+    if to_code:
+        namespace = {}
+        exec(compile_to_code(schema, detailed_exceptions=detailed), namespace)
+        validator = namespace['validate']
+    else:
+        validator = compile_schema(schema, detailed_exceptions=detailed)
+    assert validator('\x00') == '\x00'
+    with pytest.raises(JsonSchemaValueException) as exc_info:
+        validator('x')
+    assert exc_info.value.message == 'data must match pattern ' + pattern
 
 
 exc = JsonSchemaValueException('data must be a valid regex', value='{data}', name='data', definition='{definition}', rule='format')
