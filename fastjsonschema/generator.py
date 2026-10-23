@@ -304,10 +304,11 @@ class CodeGenerator:
         Short-cut for creating raising exception in the code.
         """
         if not self._detailed_exceptions:
+            definition_rule = self.e(self._definition.get(rule) if isinstance(self._definition, dict) else None)
             if self._fast_fail:
-                self.l('raise JsonSchemaValueException("'+msg+'")', *args)
+                self.l('raise JsonSchemaValueException("'+msg+'")', *args, definition_rule=definition_rule)
             else:
-                self.l('errors.append(JsonSchemaValueException("'+msg+'"))', *args)
+                self.l('errors.append(JsonSchemaValueException("'+msg+'"))', *args, definition_rule=definition_rule)
             return
 
         arg = '"'+msg+'"'
