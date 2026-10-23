@@ -2,7 +2,7 @@ import decimal
 
 import pytest
 
-from fastjsonschema import JsonSchemaValueException
+from fastjsonschema import JsonSchemaValueException, JsonSchemaValuesException, compile, compile_to_code
 
 
 @pytest.fixture(params=['number', 'integer'])
@@ -111,6 +111,80 @@ def test_multiple_of(asserter, number_type, value, expected):
         'type': number_type,
         'multipleOf': 3,
     }, value, expected)
+
+
+@pytest.fixture(params=[compile, compile_to_code], ids=['compiled', 'generated'])
+def multiple_of_compiler(request):
+    def generate(definition, fast_fail):
+        validator = request.param(definition, fast_fail=fast_fail)
+        if isinstance(validator, str):
+            namespace = {}
+            exec(validator, namespace)
+            return namespace['validate']
+        return validator
+    return generate
+
+
+@pytest.mark.parametrize('schema_version', ['04', '06', '07'])
+@pytest.mark.parametrize('fast_fail', [True, False])
+@pytest.mark.parametrize('divisor, value, valid', [
+    (2, 2 ** 53 + 1, False),
+    (2, -(2 ** 53 + 1), False),
+    (2, 2 ** 63 - 1, False),
+    (2, 2 ** 63 - 2, True),
+    (3, 3 * 10 ** 400, True),
+    (3, -3 * 10 ** 400, True),
+    (3, 3 * 10 ** 400 + 1, False),
+    (3, -(3 * 10 ** 400 + 1), False),
+    (10 ** 400 + 3, 2 * (10 ** 400 + 3), True),
+    (10 ** 400 + 3, 2 * (10 ** 400 + 3) + 1, False),
+    (3, 0, True),
+    (1, 10 ** 400, True),
+], ids=[
+    'above-float-precision', 'negative-above-float-precision',
+    'signed-64-bit-odd', 'signed-64-bit-even',
+    'huge-multiple', 'negative-huge-multiple',
+    'huge-nonmultiple', 'negative-huge-nonmultiple',
+    'huge-divisor-multiple', 'huge-divisor-nonmultiple', 'zero', 'unit-divisor',
+])
+def test_multiple_of_large_integers(multiple_of_compiler, schema_version, fast_fail, divisor, value, valid):
+    definition = {
+        '$schema': 'http://json-schema.org/draft-{}/schema'.format(schema_version),
+        'type': 'integer',
+        'multipleOf': divisor,
+    }
+    validator = multiple_of_compiler(definition, fast_fail)
+    if valid:
+        assert validator(value) == value
+    else:
+        exception = JsonSchemaValueException if fast_fail else JsonSchemaValuesException
+        with pytest.raises(exception) as exc:
+            validator(value)
+        errors = [exc.value] if fast_fail else exc.value.errors
+        assert len(errors) == 1
+        assert errors[0].rule == 'multipleOf'
+        assert errors[0].value == value
+        assert errors[0].name == 'data'
+        assert errors[0].definition == definition
+
+
+@pytest.mark.parametrize('divisor, value, valid', [
+    (3, 6.0, True),
+    (3, 4.5, False),
+    (3, decimal.Decimal('6'), True),
+    (3, decimal.Decimal('4.5'), False),
+    (0.01, 19.01, True),
+    (0.01, 19.001, False),
+    (decimal.Decimal('3'), 6, True),
+    (decimal.Decimal('3'), 4, False),
+])
+def test_multiple_of_non_integer_operands(multiple_of_compiler, divisor, value, valid):
+    validator = multiple_of_compiler({'multipleOf': divisor}, True)
+    if valid:
+        assert validator(value) == value
+    else:
+        with pytest.raises(JsonSchemaValueException):
+            validator(value)
 
 
 exc = JsonSchemaValueException('data must be multiple of 0.0001', value='{data}', name='data', definition='{definition}', rule='multipleOf')

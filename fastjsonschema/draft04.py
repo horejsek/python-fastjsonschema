@@ -361,17 +361,22 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if isinstance({variable}, (int, float, Decimal)) and not isinstance({variable}, bool):'):
             if not isinstance(self._definition['multipleOf'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('multipleOf must be a number')
-            # For proper multiplication check of floats we need to use decimals,
-            # because for example 19.01 / 0.01 = 1901.0000000000002.
-            if isinstance(self._definition['multipleOf'], float):
-                self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
-            else:
-                self.l('quotient = {variable} / {multipleOf}')
-            with self.l('if int(quotient) != quotient:'):
-                self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
-            # For example, 1e308 / 0.123456789
-            with self.l('if {variable} / {multipleOf} == float("inf"):'):
-                self.exc('inifinity reached', rule='multipleOf')
+            # Integer division through a float loses precision or can overflow.
+            with self.l('if isinstance({variable}, int) and isinstance({multipleOf}, int):'):
+                with self.l('if {variable} % {multipleOf} != 0:'):
+                    self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
+            with self.l('else:'):
+                # For proper multiplication check of floats we need to use decimals,
+                # because for example 19.01 / 0.01 = 1901.0000000000002.
+                if isinstance(self._definition['multipleOf'], float):
+                    self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
+                else:
+                    self.l('quotient = {variable} / {multipleOf}')
+                with self.l('if int(quotient) != quotient:'):
+                    self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
+                # For example, 1e308 / 0.123456789
+                with self.l('if {variable} / {multipleOf} == float("inf"):'):
+                    self.exc('inifinity reached', rule='multipleOf')
 
     def generate_min_items(self):
         self.create_variable_is_list()
