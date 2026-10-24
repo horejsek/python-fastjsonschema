@@ -7,6 +7,7 @@
 * Added `message` to `JsonSchemaValuesException` joining messages of all collected errors
 * Fixed the `date-time` format accepting months, days and hours out of range (such as `2020-19-39T29:00:00Z`) and rejecting a leap second (`23:59:60Z`)
 * Fixed the `time` format accepting hours, minutes, seconds and offsets out of range (such as `29:99:99`)
+* Fixed `minimum` and `maximum` being exclusive in draft 06 and later when `exclusiveMinimum` or `exclusiveMaximum` is set to a number other than zero
 
 === 2.22.2 (2026-08-15)
 

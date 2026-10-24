@@ -177,6 +177,21 @@ def test_exclusive_numeric_keywords_ignore_boolean(asserter, schema_version, key
     }, value, value)
 
 
+@pytest.mark.parametrize('schema_version', (
+    'http://json-schema.org/draft-06/schema',
+    'http://json-schema.org/draft-07/schema',
+))
+@pytest.mark.parametrize('keywords', (
+    {'minimum': 10, 'exclusiveMinimum': 5},
+    {'maximum': 10, 'exclusiveMaximum': 15},
+))
+def test_minimum_and_maximum_stay_inclusive_next_to_exclusive_keywords(asserter, schema_version, keywords):
+    asserter({
+        '$schema': schema_version,
+        **keywords,
+    }, 10, 10)
+
+
 @pytest.mark.parametrize('value', (
     1.0,
     0.1,
