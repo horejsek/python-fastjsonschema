@@ -1,3 +1,7 @@
+=== UNRELEASED
+
+* Fixed `$` in `patternProperties` matching before a trailing newline, which also made a `pattern` with the same regex accept a trailing newline
+
 === 2.22.3 (2026-11-01)
 
 * Fixed property names with `{` or `}` being evaluated as format string in error messages
