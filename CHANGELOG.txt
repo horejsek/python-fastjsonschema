@@ -1,4 +1,4 @@
-=== UNRELEASED
+=== 2.22.3 (2026-11-01)
 
 * Fixed property names with `{` or `}` being evaluated as format string in error messages
 * Fixed numeric keywords (minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum) being applied to booleans
