@@ -1,5 +1,7 @@
 === UNRELEASED
 
+* Fixed references through empty root keys and colliding generated validator names
+
 * Fixed property names with `{` or `}` being evaluated as format string in error messages
 * Fixed numeric keywords (minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum) being applied to booleans
 * Fixed `propertyNames: false` crashing on non-object values
