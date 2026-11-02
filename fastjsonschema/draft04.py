@@ -596,7 +596,8 @@ class CodeGeneratorDraft04(CodeGenerator):
             if pattern_prop_definition == {}:
                 return
             for pattern, definition in pattern_prop_definition.items():
-                self._compile_regexps[pattern] = re.compile(pattern)
+                end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\\Z', pattern)
+                self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
             with self.l('for {variable}_key, {variable}_val in {variable}.items():'):
                 for pattern, definition in self._definition['patternProperties'].items():
                     with self.l('if REGEX_PATTERNS[{}].search({variable}_key):', repr(pattern)):

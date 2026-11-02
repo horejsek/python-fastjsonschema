@@ -2,6 +2,8 @@ import warnings
 
 import pytest
 
+from fastjsonschema import JsonSchemaValueException
+
 
 def test_dont_override_variable_names(asserter):
     value = {
@@ -76,3 +78,30 @@ def test_empty_pattern(asserter):
         'type': 'object',
         'patternProperties': {}
     }, value, value)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ({'abc': 1}, {'abc': 1}),
+    ({'abc\n': 1}, JsonSchemaValueException('data must not contain {\'abc\\n\'} properties', value='{data}', name='data', definition='{definition}', rule='additionalProperties')),
+])
+def test_pattern_dollar_does_not_match_trailing_newline(asserter, value, expected):
+    asserter({
+        'type': 'object',
+        'patternProperties': {
+            '^[a-z]+$': {},
+        },
+        'additionalProperties': False,
+    }, value, expected)
+
+
+@pytest.mark.parametrize('value, expected', [
+    ('abc', 'abc'),
+    ('abc\n', JsonSchemaValueException('data must match pattern ^[a-z]+$', value='{data}', name='data', definition='{definition}', rule='pattern')),
+])
+def test_pattern_shared_with_pattern_properties(asserter, value, expected):
+    asserter({
+        'pattern': '^[a-z]+$',
+        'patternProperties': {
+            '^[a-z]+$': {},
+        },
+    }, value, expected)
