@@ -1,6 +1,8 @@
 === UNRELEASED
 
 * Fixed `$` in `patternProperties` matching before a trailing newline, which also made a `pattern` with the same regex accept a trailing newline
+* Fixed `$ref` resolution for subschemas inside `allOf`, `anyOf`, `oneOf` and `items` arrays: an `$id` (or draft 04 `id`) there was not found, and a relative `$ref` there ignored the base URI of its parent `$id`
+* Fixed `$id` and `$ref` inside `const`, `default`, `enum` and `examples` values being treated as schema keywords (a `$ref` there was rewritten to an absolute URI)
 
 === 2.22.3 (2026-11-01)
 
