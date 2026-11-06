@@ -13,10 +13,6 @@ def pytest_generate_tests(metafunc):
             'float-overflow.json',
             'unknownKeyword.json',
             'date-time.json',
-
-            # TODO: fix ref
-            'ref.json',
-            'id.json',
         ],
     )
     metafunc.parametrize(['schema_version', 'schema', 'data', 'is_valid'], param_values, ids=param_ids)

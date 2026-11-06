@@ -20,6 +20,9 @@ from urllib.parse import unquote
 from .exceptions import JsonSchemaDefinitionException
 
 MAX_SCHEMA_WALK_DEPTH = min(500, sys.getrecursionlimit() // 2)
+SUBSCHEMA_ARRAY_KEYWORDS = ('allOf', 'anyOf', 'oneOf', 'items')
+SUBSCHEMA_MAP_KEYWORDS = ('properties', 'patternProperties', 'definitions', '$defs', 'dependencies', 'dependentSchemas')
+DATA_KEYWORDS = ('const', 'default', 'enum', 'examples')
 
 
 def get_id(schema: dict[str, Any]) -> str:
@@ -27,6 +30,18 @@ def get_id(schema: dict[str, Any]) -> str:
     Originally ID was `id` and since v7 it's `$id`.
     """
     return schema.get('$id', schema.get('id', ''))
+
+
+def _subschemas(node: dict[str, Any]) -> Iterator[dict[str, Any]]:
+    for key, item in node.items():
+        if key in DATA_KEYWORDS:
+            continue
+        if key in SUBSCHEMA_MAP_KEYWORDS and isinstance(item, dict):
+            yield from (sub for sub in item.values() if isinstance(sub, dict))
+        elif isinstance(item, dict):
+            yield item
+        elif isinstance(item, list) and key in SUBSCHEMA_ARRAY_KEYWORDS:
+            yield from (sub for sub in item if isinstance(sub, dict))
 
 
 def resolve_path(schema: Any, fragment: str) -> Any:
@@ -210,10 +225,8 @@ class RefResolver:
         elif ('$id' in node or 'id' in node) and isinstance(get_id(node), str):
             with self.in_scope(get_id(node)):
                 self.store[normalize(self.resolution_scope)] = node
-                for _, item in node.items():
-                    if isinstance(item, dict):
-                        self.walk(item, depth + 1, rewrite_refs)
-        else:
-            for _, item in node.items():
-                if isinstance(item, dict):
+                for item in _subschemas(node):
                     self.walk(item, depth + 1, rewrite_refs)
+        else:
+            for item in _subschemas(node):
+                self.walk(item, depth + 1, rewrite_refs)
