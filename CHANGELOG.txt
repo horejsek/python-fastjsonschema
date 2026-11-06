@@ -1,6 +1,7 @@
 === UNRELEASED
 
 * Fixed `$` in `patternProperties` matching before a trailing newline, which also made a `pattern` with the same regex accept a trailing newline
+* Fixed quadratic backtracking in the `email` and `idn-email` format regexes on long invalid strings
 
 === 2.22.3 (2026-11-01)
 
