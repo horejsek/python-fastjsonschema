@@ -316,3 +316,19 @@ def test_dependencies_annotation_only_schema():
     validator = fastjsonschema.compile(schema)
     assert validator({'foo': 1}) == {'foo': 1}
     assert validator({'bar': 1}) == {'bar': 1}
+
+
+@pytest.mark.parametrize('keyword, definition', [
+    ('dependentRequired', {'foo': ['bar']}),
+    ('dependentSchemas', {'foo': False}),
+])
+def test_dependent_keywords_checked_before_defaults(keyword, definition):
+    validator = fastjsonschema.compile({
+        '$schema': 'https://json-schema.org/draft/2019-09/schema',
+        'properties': {'foo': {'default': 1}},
+        keyword: definition,
+    })
+    assert validator({}) == {'foo': 1}
+    with pytest.raises(JsonSchemaValueException) as exc:
+        validator({'foo': 1})
+    assert exc.value.rule == keyword

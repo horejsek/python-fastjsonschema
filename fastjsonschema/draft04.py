@@ -664,20 +664,23 @@ class CodeGeneratorDraft04(CodeGenerator):
         Since draft 06 definition can be boolean or empty array. True and empty array
         means nothing, False means that key cannot be there at all.
         """
+        self._generate_dependencies('dependencies')
+
+    def _generate_dependencies(self, rule):
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             is_empty = True
-            for key, values in self._definition["dependencies"].items():
+            for key, values in self._definition[rule].items():
                 if values == [] or values is True:
                     continue
                 is_empty = False
                 with self.l('if "{}" in {variable}:', self.e(key)):
                     if values is False:
-                        self.exc('{} in {name} must not be there', self.e(key), rule='dependencies')
+                        self.exc('{} in {name} must not be there', self.e(key), rule=rule)
                     elif isinstance(values, list):
                         for value in values:
                             with self.l('if "{}" not in {variable}:', self.e(value)):
-                                self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule='dependencies')
+                                self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule=rule)
                     else:
                         code_len = len(self._code)
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)
