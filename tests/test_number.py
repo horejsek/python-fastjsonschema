@@ -301,3 +301,107 @@ def test_number_allows_decimal(asserter, value):
     asserter({
         'type': 'number',
     }, value, value)
+
+
+@pytest.mark.parametrize('schema_version', ['04', '06', '07'])
+@pytest.mark.parametrize('fast_fail', [True, False])
+@pytest.mark.parametrize('precision', [2, 28])
+@pytest.mark.parametrize('divisor, value, valid', [
+    (1.5, 10 ** 30 + 1, False),
+    (1.5, 10 ** 30 + 2, True),
+    (2.5, -(10 ** 30 + 1), False),
+    (2.5, -(10 ** 30 + 5), True),
+    (3, decimal.Decimal('1000000000000000000000000000001'), False),
+    (3, decimal.Decimal('1000000000000000000000000000002'), True),
+    (0.01, decimal.Decimal('19.01'), True),
+    (0.01, decimal.Decimal('19.001'), False),
+    (0.01, 19.01, True),
+    (0.01, 19.001, False),
+    (decimal.Decimal('0.01'), 19.01, True),
+    (decimal.Decimal('0.01'), 19.001, False),
+    (decimal.Decimal('0.01'), decimal.Decimal('19.01'), True),
+    (decimal.Decimal('0.01'), decimal.Decimal('19.001'), False),
+    (0.5, 10 ** 400, True),
+    (1.5, 3 * 10 ** 400 + 1, False),
+])
+def test_multiple_of_decimal_precision(multiple_of_compiler, schema_version, fast_fail, precision, divisor, value, valid):
+    definition = {
+        '$schema': 'http://json-schema.org/draft-{}/schema'.format(schema_version),
+        'multipleOf': divisor,
+    }
+    # Compilation and validation must neither depend on nor alter caller context.
+    with decimal.localcontext() as context:
+        context.prec = precision
+        context.clear_flags()
+        context.traps[decimal.Inexact] = True
+        context.traps[decimal.Rounded] = True
+        validator = multiple_of_compiler(definition, fast_fail)
+        if valid:
+            assert validator(value) == value
+        else:
+            exception = JsonSchemaValueException if fast_fail else JsonSchemaValuesException
+            with pytest.raises(exception) as exc_info:
+                validator(value)
+            errors = [exc_info.value] if fast_fail else exc_info.value.errors
+            assert len(errors) == 1
+            assert errors[0].rule == 'multipleOf'
+            assert errors[0].value == value
+        assert context.prec == precision
+        assert not context.flags[decimal.Inexact]
+        assert not context.flags[decimal.Rounded]
+
+
+@pytest.mark.parametrize('divisor, value, valid', [
+    (1.5, 10 ** 30 + 1, False),
+    (1.5, 10 ** 30 + 2, True),
+    (2.5, -(10 ** 30 + 1), False),
+    (0.01, decimal.Decimal('19.01'), True),
+    (3, decimal.Decimal('1000000000000000000000000000001'), False),
+])
+def test_multiple_of_default_decimal_context(multiple_of_compiler, divisor, value, valid):
+    with decimal.localcontext(decimal.DefaultContext):
+        validator = multiple_of_compiler({'multipleOf': divisor}, True)
+        if valid:
+            assert validator(value) == value
+        else:
+            with pytest.raises(JsonSchemaValueException):
+                validator(value)
+
+
+@pytest.mark.parametrize('divisor', [decimal.Decimal('1E-100000000'), decimal.Decimal('1E+1000000')])
+def test_multiple_of_extreme_divisor_compilation(multiple_of_compiler, divisor):
+    # Compiling a schema must not expand its compact Decimal exponent into
+    # enormous integers or emit integer literals beyond Python's digit limit.
+    validator = multiple_of_compiler({'multipleOf': divisor}, True)
+    # Numeric divisibility remains deferred until a numeric value is validated.
+    assert validator(None) is None
+
+
+@pytest.mark.parametrize('fast_fail', [True, False])
+@pytest.mark.parametrize('digits', [17, 18, 28, 40])
+@pytest.mark.parametrize('is_valid', [True, False])
+def test_multiple_of_preserves_precise_decimal_divisor(multiple_of_compiler, fast_fail, digits, is_valid):
+    divisor = decimal.Decimal('1.' + '0' * (digits - 2) + '1')
+    value = decimal.Decimal('2.' + '0' * (digits - 2) + '2') if is_valid else decimal.Decimal('2.0')
+    validator = multiple_of_compiler({'multipleOf': divisor}, fast_fail)
+    if is_valid:
+        assert validator(value) == value
+    else:
+        exception = JsonSchemaValueException if fast_fail else JsonSchemaValuesException
+        with pytest.raises(exception):
+            validator(value)
+
+
+@pytest.mark.parametrize('divisor, value, is_valid', [
+    (decimal.Decimal('1E-10000'), decimal.Decimal('2E-10000'), True),
+    (decimal.Decimal('1E-10000'), decimal.Decimal('2.5E-10000'), False),
+    (decimal.Decimal('1E+10000'), decimal.Decimal('2E+10000'), True),
+    (decimal.Decimal('1E+10000'), decimal.Decimal('2.5E+10000'), False),
+])
+def test_multiple_of_decimal_exponents_beyond_float_range(multiple_of_compiler, divisor, value, is_valid):
+    validator = multiple_of_compiler({'multipleOf': divisor}, True)
+    if is_valid:
+        assert validator(value) == value
+    else:
+        with pytest.raises(JsonSchemaValueException):
+            validator(value)
