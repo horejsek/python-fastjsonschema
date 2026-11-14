@@ -373,17 +373,12 @@ class CodeGeneratorDraft04(CodeGenerator):
                 with self.l('if {variable} % {multipleOf} != 0:'):
                     self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
             with self.l('else:'):
-                # For proper multiplication check of floats we need to use decimals,
-                # because for example 19.01 / 0.01 = 1901.0000000000002.
-                if isinstance(self._definition['multipleOf'], float):
-                    self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
-                else:
-                    self.l('quotient = {variable} / {multipleOf}')
-                with self.l('if int(quotient) != quotient:'):
+                # Use decimal spellings for floats (19.01 is a multiple of 0.01),
+                # but do not divide: Decimal division rounds in the caller's context.
+                self.l('{variable}_multiple_of_numerator, {variable}_multiple_of_denominator = Decimal(str({variable})).as_integer_ratio()')
+                self.l('{variable}_multiple_of_divisor_numerator, {variable}_multiple_of_divisor_denominator = Decimal({}).as_integer_ratio()', repr(str(self._definition['multipleOf'])))
+                with self.l('if ({variable}_multiple_of_numerator * {variable}_multiple_of_divisor_denominator) % ({variable}_multiple_of_denominator * {variable}_multiple_of_divisor_numerator) != 0:'):
                     self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
-                # For example, 1e308 / 0.123456789
-                with self.l('if {variable} / {multipleOf} == float("inf"):'):
-                    self.exc('inifinity reached', rule='multipleOf')
 
     def generate_min_items(self):
         self.create_variable_is_list()
