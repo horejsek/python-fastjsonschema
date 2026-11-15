@@ -379,7 +379,9 @@ class CodeGeneratorDraft04(CodeGenerator):
                     self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
                 else:
                     self.l('quotient = {variable} / {multipleOf}')
-                with self.l('if int(quotient) != quotient:'):
+                # int() would expand a Decimal like 1E+1000000 digit by digit
+                # and raises on infinity and NaN.
+                with self.l('if not (quotient == quotient.to_integral_value() if isinstance(quotient, Decimal) else quotient.is_integer()):'):
                     self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
                 # For example, 1e308 / 0.123456789
                 with self.l('if {variable} / {multipleOf} == float("inf"):'):

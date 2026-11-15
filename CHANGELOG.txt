@@ -1,6 +1,7 @@
 === UNRELEASED
 
 * Fixed `$` in `patternProperties` matching before a trailing newline, which also made a `pattern` with the same regex accept a trailing newline
+* Fixed `multipleOf` taking minutes on a `Decimal` with a large exponent (such as `1E+1000000`) and crashing on infinity and NaN
 
 === 2.22.3 (2026-11-01)
 

@@ -187,6 +187,29 @@ def test_multiple_of_non_integer_operands(multiple_of_compiler, divisor, value, 
             validator(value)
 
 
+@pytest.mark.parametrize('fast_fail', [True, False])
+@pytest.mark.parametrize('value, valid', [
+    (decimal.Decimal('1E+100000'), True),
+    (decimal.Decimal('-1E+100000'), True),
+    (decimal.Decimal('1.5E+1'), False),
+    (decimal.Decimal('Infinity'), False),
+    (decimal.Decimal('NaN'), False),
+    (float('inf'), False),
+    (float('-inf'), False),
+    (float('nan'), False),
+], ids=['decimal-huge-exponent', 'decimal-negative-huge-exponent', 'decimal-nonmultiple', 'decimal-infinity', 'decimal-nan', 'inf', 'negative-inf', 'nan'])
+def test_multiple_of_non_finite_and_huge_exponent(multiple_of_compiler, fast_fail, value, valid):
+    validator = multiple_of_compiler({'multipleOf': 2}, fast_fail)
+    if valid:
+        assert validator(value) == value
+    else:
+        exception = JsonSchemaValueException if fast_fail else JsonSchemaValuesException
+        with pytest.raises(exception) as exc_info:
+            validator(value)
+        errors = [exc_info.value] if fast_fail else exc_info.value.errors
+        assert errors[0].rule == 'multipleOf'
+
+
 exc = JsonSchemaValueException('data must be multiple of 0.0001', value='{data}', name='data', definition='{definition}', rule='multipleOf')
 @pytest.mark.parametrize('value, expected', [
     (0.00751, exc),
