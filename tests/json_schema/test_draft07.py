@@ -21,8 +21,6 @@ def pytest_generate_tests(metafunc):
             'time.json',
 
             # TODO: fix ref
-            'ref.json',
-            'id.json',
             'cross-draft.json',
         ],
     )
