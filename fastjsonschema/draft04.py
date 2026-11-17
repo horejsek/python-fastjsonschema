@@ -34,7 +34,7 @@ class CodeGeneratorDraft04(CodeGenerator):
     # library. Some regexps are not 100% precise but good enough, fast and without dependencies.
     FORMAT_REGEXS = {
         'date-time': r'^(?:' + DATE_REGEX + r')(t|T)(?:[01]\d|2[0-3]):[0-5]\d:(?:[0-5]\d|60)(?:\.\d+)?(?:[+-](?:[01]\d|2[0-3]):[0-5]\d|[+-](?:[01]\d|2[0-3])[0-5]\d|z|Z)\Z',
-        'email': r'^(?!.*\.\..*@)[^@.][^@]*(?<!\.)@[^@]+\.[^@]+\Z',
+        'email': r'^[^@.]+(?:\.[^@.]+)*@(?=[^@][^@.]*\.[^@])[^@]+\Z',
         'hostname': r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{0,61}[A-Za-z0-9])\Z',
         'ipv4': r'^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\Z',
         'ipv6': r'^(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)\Z',
@@ -373,17 +373,12 @@ class CodeGeneratorDraft04(CodeGenerator):
                 with self.l('if {variable} % {multipleOf} != 0:'):
                     self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
             with self.l('else:'):
-                # For proper multiplication check of floats we need to use decimals,
-                # because for example 19.01 / 0.01 = 1901.0000000000002.
-                if isinstance(self._definition['multipleOf'], float):
-                    self.l('quotient = Decimal(repr({variable})) / Decimal(repr({multipleOf}))')
-                else:
-                    self.l('quotient = {variable} / {multipleOf}')
-                with self.l('if int(quotient) != quotient:'):
+                # Use decimal spellings for floats (19.01 is a multiple of 0.01),
+                # but do not divide: Decimal division rounds in the caller's context.
+                self.l('{variable}_multiple_of_numerator, {variable}_multiple_of_denominator = Decimal(str({variable})).as_integer_ratio()')
+                self.l('{variable}_multiple_of_divisor_numerator, {variable}_multiple_of_divisor_denominator = Decimal({}).as_integer_ratio()', repr(str(self._definition['multipleOf'])))
+                with self.l('if ({variable}_multiple_of_numerator * {variable}_multiple_of_divisor_denominator) % ({variable}_multiple_of_denominator * {variable}_multiple_of_divisor_numerator) != 0:'):
                     self.exc('{name} must be multiple of {multipleOf}', rule='multipleOf')
-                # For example, 1e308 / 0.123456789
-                with self.l('if {variable} / {multipleOf} == float("inf"):'):
-                    self.exc('inifinity reached', rule='multipleOf')
 
     def generate_min_items(self):
         self.create_variable_is_list()
@@ -664,20 +659,23 @@ class CodeGeneratorDraft04(CodeGenerator):
         Since draft 06 definition can be boolean or empty array. True and empty array
         means nothing, False means that key cannot be there at all.
         """
+        self._generate_dependencies('dependencies')
+
+    def _generate_dependencies(self, rule):
         self.create_variable_is_dict()
         with self.l('if {variable}_is_dict:'):
             is_empty = True
-            for key, values in self._definition["dependencies"].items():
+            for key, values in self._definition[rule].items():
                 if values == [] or values is True:
                     continue
                 is_empty = False
                 with self.l('if "{}" in {variable}:', self.e(key)):
                     if values is False:
-                        self.exc('{} in {name} must not be there', self.e(key), rule='dependencies')
+                        self.exc('{} in {name} must not be there', self.e(key), rule=rule)
                     elif isinstance(values, list):
                         for value in values:
                             with self.l('if "{}" not in {variable}:', self.e(value)):
-                                self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule='dependencies')
+                                self.exc('{name} missing dependency {} for {}', self.e(value), self.e(key), rule=rule)
                     else:
                         code_len = len(self._code)
                         self.generate_func_code_block(values, self._variable, self._variable_name, clear_variables=True)

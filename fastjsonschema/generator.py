@@ -5,7 +5,7 @@ import re
 
 from .exceptions import JsonSchemaValueException, JsonSchemaValuesException, JsonSchemaDefinitionException
 from .indent import indent
-from .ref_resolver import RefResolver
+from .ref_resolver import DATA_KEYWORDS, RefResolver
 
 # Both mean "this subschema did not match": a subschema behind a $ref becomes its own
 # function, which reports through JsonSchemaValuesException while errors are collected.
@@ -306,11 +306,13 @@ class CodeGenerator:
         """
         Short-cut for creating raising exception in the code.
         """
+        definition = self._expand_refs(self._definition) if self._detailed_exceptions else self._definition
+        definition_rule = self.e(definition.get(rule) if isinstance(definition, dict) else None)
         if not self._detailed_exceptions:
             if self._fast_fail:
-                self.l('raise JsonSchemaValueException("'+msg+'")', *args)
+                self.l('raise JsonSchemaValueException("'+msg+'")', *args, definition_rule=definition_rule)
             else:
-                self.l('errors.append(JsonSchemaValueException("'+msg+'"))', *args)
+                self.l('errors.append(JsonSchemaValueException("'+msg+'"))', *args, definition_rule=definition_rule)
             return
 
         arg = '"'+msg+'"'
@@ -322,8 +324,6 @@ class CodeGenerator:
             if self._fast_fail else
             'errors.append(JsonSchemaValueException('+arg+', value={variable}, name="{name}", definition={definition}, rule={rule}))'
         )
-        definition = self._expand_refs(self._definition)
-        definition_rule = self.e(definition.get(rule) if isinstance(definition, dict) else None)
         self.l(msg, *args, definition=repr_default(definition), rule=repr(rule), definition_rule=definition_rule)
 
     def _expand_refs(self, definition):
@@ -334,7 +334,7 @@ class CodeGenerator:
         if "$ref" in definition and isinstance(definition["$ref"], str):
             with self._resolver.resolving(definition["$ref"]) as schema:
                 return schema
-        return {k: self._expand_refs(v) for k, v in definition.items()}
+        return {k: v if k in DATA_KEYWORDS else self._expand_refs(v) for k, v in definition.items()}
 
     def _is_variable_in_scope(self, variable_name):
         """
