@@ -8,7 +8,7 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         'date': r'^(?:' + DATE_REGEX + r')\Z',
         'iri': r'^\w+:(\/?\/?)[^\s]+\Z',
         'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
-        'idn-email': r'^[^@]+@[^@]+\.[^@]+\Z',
+        'idn-email': r'^[^@]+@(?=[^@][^@.]*\.[^@])[^@]+\Z',
         # pylint: disable=line-too-long
         'idn-hostname': r'^(?!-)(xn--)?[a-zA-Z0-9][a-zA-Z0-9-_]{0,61}[a-zA-Z0-9]{0,1}\.(?!-)(xn--)?([a-zA-Z0-9\-]{1,50}|[a-zA-Z0-9-]{1,30}\.[a-zA-Z]{2,})$',
         'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',

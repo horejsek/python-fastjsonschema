@@ -1,9 +1,10 @@
 import datetime
 import re
+import time
 
 import pytest
 
-from fastjsonschema import JsonSchemaValueException
+from fastjsonschema import JsonSchemaValueException, compile
 
 
 exc = JsonSchemaValueException('data must be date-time', value='{data}', name='data', definition='{definition}', rule='format')
@@ -36,6 +37,58 @@ exc = JsonSchemaValueException('data must be date-time', value='{data}', name='d
 ])
 def test_datetime(asserter, value, expected):
     asserter({'type': 'string', 'format': 'date-time'}, value, expected)
+
+
+exc = JsonSchemaValueException('data must be email', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('bla', exc),
+    ('.john@example.com', exc),
+    ('john.@example.com', exc),
+    ('jo..hn@example.com', exc),
+    ('jo..\nhn@example.com', exc),
+    ('john@example', exc),
+    ('john@.example', exc),
+    ('john@example.', exc),
+    ('john@exa@mple.com', exc),
+    ('a@' + 'a.' * 1000 + '@', exc),
+    ('john@example.com', 'john@example.com'),
+    ('john.doe@example.com', 'john.doe@example.com'),
+    ('john@.example.com', 'john@.example.com'),
+])
+def test_email(asserter, value, expected):
+    asserter({'type': 'string', 'format': 'email'}, value, expected)
+
+
+exc = JsonSchemaValueException('data must be idn-email', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('bla', exc),
+    ('john@example', exc),
+    ('john@.example', exc),
+    ('john@example.', exc),
+    ('john@exa@mple.com', exc),
+    ('a@a' + '.' * 1000 + '@', exc),
+    ('jöhn@exämple.com', 'jöhn@exämple.com'),
+    ('john@.example.com', 'john@.example.com'),
+])
+def test_idn_email(asserter, value, expected):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-07/schema',
+        'format': 'idn-email',
+    }, value, expected)
+
+
+@pytest.mark.parametrize('format_, value', [
+    ('email', 'a@' + 'a.' * 25000 + '@'),
+    ('idn-email', 'a@a' + '.' * 50000 + '@'),
+])
+def test_email_long_input_is_rejected_quickly(format_, value):
+    validator = compile({'$schema': 'http://json-schema.org/draft-07/schema', 'format': format_})
+    start = time.perf_counter()
+    with pytest.raises(JsonSchemaValueException):
+        validator(value)
+    assert time.perf_counter() - start < 1
 
 
 exc = JsonSchemaValueException('data must be hostname', value='{data}', name='data', definition='{definition}', rule='format')
