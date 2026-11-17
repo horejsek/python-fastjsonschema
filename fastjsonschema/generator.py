@@ -234,7 +234,10 @@ class CodeGenerator:
             path = self._variable_name[4:]
             name_arg = '(name_prefix or "data") + "{}"'.format(path)
             if '{' in name_arg or '}' in name_arg:
-                name_arg = name_arg + '.format(**locals())'
+                # Pass only the loop variables used in the path, because locals() copies all
+                # local variables on each call.
+                fields = [part.split('}', 1)[0] for part in path.replace('{{', '').split('{')[1:]]
+                name_arg = name_arg + '.format(' + ', '.join(field + '=' + field for field in fields) + ')'
             if self._fast_fail:
                 self.l('{}({variable}, custom_formats, {name_arg})', name, name_arg=name_arg)
             else:
