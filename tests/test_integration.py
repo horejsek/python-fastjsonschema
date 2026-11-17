@@ -167,3 +167,22 @@ def test_relative_ref_in_remote_schema_is_resolved_once():
     )
 
     assert validator({'value': 'ok'}) == {'value': 'ok'}
+
+
+
+def test_ref_inside_const_is_data():
+    schema = {
+        '$id': 'http://example.com/root.json',
+        'properties': {
+            'a': {
+                '$id': 'sub/schema.json',
+                'definitions': {'string': {'type': 'string'}},
+                'const': {'$ref': '#/definitions/string'},
+            },
+        },
+    }
+
+    validator = compile(schema)
+
+    value = {'a': {'$ref': '#/definitions/string'}}
+    assert validator(value) == value

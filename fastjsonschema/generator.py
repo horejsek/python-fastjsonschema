@@ -5,7 +5,7 @@ import re
 
 from .exceptions import JsonSchemaValueException, JsonSchemaValuesException, JsonSchemaDefinitionException
 from .indent import indent
-from .ref_resolver import RefResolver
+from .ref_resolver import DATA_KEYWORDS, RefResolver
 
 # Both mean "this subschema did not match": a subschema behind a $ref becomes its own
 # function, which reports through JsonSchemaValuesException while errors are collected.
@@ -331,7 +331,7 @@ class CodeGenerator:
         if "$ref" in definition and isinstance(definition["$ref"], str):
             with self._resolver.resolving(definition["$ref"]) as schema:
                 return schema
-        return {k: self._expand_refs(v) for k, v in definition.items()}
+        return {k: v if k in DATA_KEYWORDS else self._expand_refs(v) for k, v in definition.items()}
 
     def _is_variable_in_scope(self, variable_name):
         """
