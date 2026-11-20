@@ -89,6 +89,10 @@ exc = JsonSchemaValueException('data must be idn-hostname', value='{data}', name
     ('example.com\n', exc),
     ('exa mple.com', exc),
     ('a' * 64 + '.com', exc),
+    ('evil\uff0ecom', exc),
+    ('example.com\uff0fpath', exc),
+    ('user\uff20example.com', exc),
+    ('\u0301example.com', exc),
     ('localhost', 'localhost'),
     ('example.com', 'example.com'),
     ('www.example.co.uk', 'www.example.co.uk'),
@@ -96,6 +100,8 @@ exc = JsonSchemaValueException('data must be idn-hostname', value='{data}', name
     ('münchen.de', 'münchen.de'),
     ('실례.테스트', '실례.테스트'),
     ('例え.テスト', '例え.テスト'),
+    ('हिन्दी.भारत', 'हिन्दी.भारत'),
+    ('ภาษาไทย.ไทย', 'ภาษาไทย.ไทย'),
     ('a' * 63 + '.com', 'a' * 63 + '.com'),
 ])
 def test_idn_hostname(asserter, value, expected):
