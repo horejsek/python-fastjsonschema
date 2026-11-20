@@ -79,9 +79,36 @@ def test_idn_email(asserter, value, expected):
     }, value, expected)
 
 
+exc = JsonSchemaValueException('data must be idn-hostname', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', exc),
+    ('-example.com', exc),
+    ('example-.com', exc),
+    ('ex_ample.com', exc),
+    ('example..com', exc),
+    ('example.com\n', exc),
+    ('exa mple.com', exc),
+    ('a' * 64 + '.com', exc),
+    ('localhost', 'localhost'),
+    ('example.com', 'example.com'),
+    ('www.example.co.uk', 'www.example.co.uk'),
+    ('xn--mnchen-3ya.de', 'xn--mnchen-3ya.de'),
+    ('münchen.de', 'münchen.de'),
+    ('실례.테스트', '실례.테스트'),
+    ('例え.テスト', '例え.テスト'),
+    ('a' * 63 + '.com', 'a' * 63 + '.com'),
+])
+def test_idn_hostname(asserter, value, expected):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-07/schema',
+        'format': 'idn-hostname',
+    }, value, expected)
+
+
 @pytest.mark.parametrize('format_, value', [
     ('email', 'a@' + 'a.' * 25000 + '@'),
     ('idn-email', 'a@a' + '.' * 50000 + '@'),
+    ('idn-hostname', 'ü' + '-' * 50000),
 ])
 def test_email_long_input_is_rejected_quickly(format_, value):
     validator = compile({'$schema': 'http://json-schema.org/draft-07/schema', 'format': format_})

@@ -10,7 +10,12 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
         'idn-email': r'^[^@]+@(?=[^@][^@.]*\.[^@])[^@]+\Z',
         # pylint: disable=line-too-long
-        'idn-hostname': r'^(?!-)(xn--)?[a-zA-Z0-9][a-zA-Z0-9-_]{0,61}[a-zA-Z0-9]{0,1}\.(?!-)(xn--)?([a-zA-Z0-9\-]{1,50}|[a-zA-Z0-9-]{1,30}\.[a-zA-Z]{2,})$',
+        # Same shape as hostname, but a label may also hold any non-ASCII character
+        # (U-labels such as münchen or 실례), not only ASCII letters and digits.
+        'idn-hostname': (
+            r'^(?:(?:[a-zA-Z0-9]|[^\x00-\x7f\s])(?:(?:[a-zA-Z0-9\-]|[^\x00-\x7f\s]){0,61}(?:[a-zA-Z0-9]|[^\x00-\x7f\s]))?\.)*'
+            r'(?:[a-zA-Z0-9]|[^\x00-\x7f\s])(?:(?:[a-zA-Z0-9\-]|[^\x00-\x7f\s]){0,61}(?:[a-zA-Z0-9]|[^\x00-\x7f\s]))?\Z'
+        ),
         'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',
         #'regex': r'',
         'time': (
