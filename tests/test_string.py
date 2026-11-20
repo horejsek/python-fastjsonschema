@@ -112,3 +112,21 @@ def test_regex_pattern(asserter, value, expected):
         'format': 'regex',
         'type': 'string'
     }, value, expected)
+
+
+@pytest.mark.parametrize('schema_version', [
+    'http://json-schema.org/draft-07/schema',
+    'https://json-schema.org/draft/2019-09/schema',
+])
+@pytest.mark.parametrize('value', [
+    'aGVsbG8=" onerror="alert(1)',
+    'aGVs bG8=',
+    'aGVsbG8=\n',
+    '%%%%',
+])
+def test_content_encoding_base64_invalid_characters(schema_version, value):
+    validator = compile_schema({'$schema': schema_version, 'contentEncoding': 'base64'})
+    validator('aGVsbG8=')
+    with pytest.raises(JsonSchemaValueException) as exc_info:
+        validator(value)
+    assert exc_info.value.message == 'data must be encoded by base64'
