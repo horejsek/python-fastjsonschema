@@ -14,9 +14,9 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',
         #'regex': r'',
         'time': (
-            r'^(?P<hour>[01]?\d|2[0-3]):(?P<minute>[0-5]?\d)'
-            r'(?::(?P<second>[0-5]?\d|60)(?:\.(?P<microsecond>\d{1,6}))?'
-            r'([zZ]|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?\Z'
+            r'^(?P<hour>[01]?[0-9]|2[0-3]):(?P<minute>[0-5]?[0-9])'
+            r'(?::(?P<second>[0-5]?[0-9]|60)(?:\.(?P<microsecond>[0-9]{1,6}))?'
+            r'([zZ]|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])?)?\Z'
         ),
     })
 

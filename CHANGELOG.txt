@@ -5,6 +5,8 @@
 * Fixed `$id` and `$ref` inside `const`, `default`, `enum` and `examples` values being treated as schema keywords (a `$ref` there was rewritten to an absolute URI)
 * Fixed quadratic backtracking in the `email` and `idn-email` format regexes on long invalid strings
 * Fixed `contentEncoding: base64` accepting strings with characters outside the base64 alphabet
+* Fixed `minimum`, `maximum`, `exclusiveMinimum` and `exclusiveMaximum` accepting NaN
+* Fixed the `date`, `date-time` and `time` formats accepting non-ASCII digits (such as Bengali or fullwidth digits)
 * Optimization: `$ref` inside an array or an object does not copy all local variables to make the name for each item
 * Added support of dependentRequired and dependentSchemas from draft-2019
 
