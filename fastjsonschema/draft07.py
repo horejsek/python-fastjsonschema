@@ -29,9 +29,9 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',
         #'regex': r'',
         'time': (
-            r'^(?P<hour>[01]?\d|2[0-3]):(?P<minute>[0-5]?\d)'
-            r'(?::(?P<second>[0-5]?\d|60)(?:\.(?P<microsecond>\d{1,6}))?'
-            r'([zZ]|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?\Z'
+            r'^(?P<hour>[01]?[0-9]|2[0-3]):(?P<minute>[0-5]?[0-9])'
+            r'(?::(?P<second>[0-5]?[0-9]|60)(?:\.(?P<microsecond>[0-9]{1,6}))?'
+            r'([zZ]|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])?)?\Z'
         ),
     })
 
@@ -123,7 +123,8 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
             with self.l('if isinstance({variable}, str):'):
                 with self.l('try:'):
                     self.l('import base64')
-                    self.l('{variable} = base64.b64decode({variable})')
+                    self.l('{variable} = {variable}.replace("\\r", "").replace("\\n", "")')
+                    self.l('{variable} = base64.b64decode({variable}, validate=True)')
                 with self.l('except Exception:'):
                     self.exc('{name} must be encoded by base64')
                 with self.l('if {variable} == "":'):

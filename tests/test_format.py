@@ -32,6 +32,9 @@ exc = JsonSchemaValueException('data must be date-time', value='{data}', name='d
     ('2020-02-30T01:01:01Z', exc),
     ('2021-02-29T01:01:01Z', exc),
     ('2021-04-31T01:01:01Z', exc),
+    ('1963-06-1\u09eaT00:00:00Z', exc),
+    ('1963-06-11T0\u09ea:00:00Z', exc),
+    ('2020-01-01T00:00:00.\u0661\u0662Z', exc),
     ('2020-02-29T01:01:01Z', '2020-02-29T01:01:01Z'),
     ('2021-04-30T01:01:01Z', '2021-04-30T01:01:01Z'),
 ])
@@ -157,6 +160,8 @@ exc = JsonSchemaValueException('data must be time', value='{data}', name='data',
     ('12:00:61Z', exc),
     ('12:00:00+24:00', exc),
     ('12:00:00+00:60', exc),
+    ('1\u09e8:00:00Z', exc),
+    ('12:00:00.\u0661Z', exc),
 ])
 def test_time(asserter, value, expected):
     asserter({
@@ -180,6 +185,8 @@ exc = JsonSchemaValueException('data must be date', value='{data}', name='data',
     ('2018-11-31', exc),
     ('1900-02-29', exc),
     ('2100-02-29', exc),
+    ('1963-06-1\u09ea', exc),
+    ('\uff12\uff10\uff11\uff18-02-05', exc),
     ('2020-02-29', '2020-02-29'),
     ('2000-02-29', '2000-02-29'),
     ('2400-02-29', '2400-02-29'),

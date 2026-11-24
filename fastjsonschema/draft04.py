@@ -20,8 +20,9 @@ DOLLAR_FINDER = re.compile(r"(?<!\\)\$")  # Finds any un-escaped $ (including in
 
 # Calendar date: the day must exist in its month, and 29 February only in a leap year.
 DATE_REGEX = (
-    r'\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|02-(?:0[1-9]|1\d|2[0-8]))'
-    r'|(?:\d\d(?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29'
+    r'[0-9]{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])'
+    r'|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))'
+    r'|(?:[0-9][0-9](?:0[48]|[2468][048]|[13579][26])|(?:[02468][048]|[13579][26])00)-02-29'
 )
 
 
@@ -33,7 +34,7 @@ class CodeGeneratorDraft04(CodeGenerator):
     # vs. 9 ms with a regex! Other modules are also ineffective or not available in standard
     # library. Some regexps are not 100% precise but good enough, fast and without dependencies.
     FORMAT_REGEXS = {
-        'date-time': r'^(?:' + DATE_REGEX + r')(t|T)(?:[01]\d|2[0-3]):[0-5]\d:(?:[0-5]\d|60)(?:\.\d+)?(?:[+-](?:[01]\d|2[0-3]):[0-5]\d|[+-](?:[01]\d|2[0-3])[0-5]\d|z|Z)\Z',
+        'date-time': r'^(?:' + DATE_REGEX + r')(t|T)(?:[01][0-9]|2[0-3]):[0-5][0-9]:(?:[0-5][0-9]|60)(?:\.[0-9]+)?(?:[+-](?:[01][0-9]|2[0-3]):[0-5][0-9]|[+-](?:[01][0-9]|2[0-3])[0-5][0-9]|z|Z)\Z',
         'email': r'^[^@.]+(?:\.[^@.]+)*@(?=[^@][^@.]*\.[^@])[^@]+\Z',
         'hostname': r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]{0,61}[A-Za-z0-9])\Z',
         'ipv4': r'^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\Z',
@@ -347,10 +348,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             if not isinstance(self._definition['minimum'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('minimum must be a number')
             if self._definition.get('exclusiveMinimum', False):
-                with self.l('if {variable} <= {minimum}:'):
+                with self.l('if not {variable} > {minimum}:'):
                     self.exc('{name} must be bigger than {minimum}', rule='minimum')
             else:
-                with self.l('if {variable} < {minimum}:'):
+                with self.l('if not {variable} >= {minimum}:'):
                     self.exc('{name} must be bigger than or equal to {minimum}', rule='minimum')
 
     def generate_maximum(self):
@@ -358,10 +359,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             if not isinstance(self._definition['maximum'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('maximum must be a number')
             if self._definition.get('exclusiveMaximum', False):
-                with self.l('if {variable} >= {maximum}:'):
+                with self.l('if not {variable} < {maximum}:'):
                     self.exc('{name} must be smaller than {maximum}', rule='maximum')
             else:
-                with self.l('if {variable} > {maximum}:'):
+                with self.l('if not {variable} <= {maximum}:'):
                     self.exc('{name} must be smaller than or equal to {maximum}', rule='maximum')
 
     def generate_multiple_of(self):

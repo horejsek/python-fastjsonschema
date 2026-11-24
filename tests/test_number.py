@@ -266,6 +266,24 @@ def test_minimum_and_maximum_stay_inclusive_next_to_exclusive_keywords(asserter,
     }, 10, 10)
 
 
+@pytest.mark.parametrize('schema_version, keywords, rule', (
+    ('http://json-schema.org/draft-04/schema', {'minimum': 5}, 'minimum'),
+    ('http://json-schema.org/draft-04/schema', {'minimum': 5, 'exclusiveMinimum': True}, 'minimum'),
+    ('http://json-schema.org/draft-04/schema', {'maximum': 5}, 'maximum'),
+    ('http://json-schema.org/draft-04/schema', {'maximum': 5, 'exclusiveMaximum': True}, 'maximum'),
+    ('http://json-schema.org/draft-07/schema', {'minimum': 5}, 'minimum'),
+    ('http://json-schema.org/draft-07/schema', {'maximum': 5}, 'maximum'),
+    ('http://json-schema.org/draft-07/schema', {'exclusiveMinimum': 5}, 'exclusiveMinimum'),
+    ('http://json-schema.org/draft-07/schema', {'exclusiveMaximum': 5}, 'exclusiveMaximum'),
+))
+def test_numeric_range_rejects_nan(schema_version, keywords, rule):
+    # json.loads accepts NaN by default and every comparison with it is false.
+    validator = compile({'$schema': schema_version, 'type': 'number', **keywords})
+    with pytest.raises(JsonSchemaValueException) as exc:
+        validator(float('nan'))
+    assert exc.value.rule == rule
+
+
 @pytest.mark.parametrize('value', (
     1.0,
     0.1,
