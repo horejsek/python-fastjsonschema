@@ -3,6 +3,21 @@ from .draft06 import CodeGeneratorDraft06
 from .generator import VALIDATION_EXCEPTIONS
 
 
+# A label of an internationalized host name: same shape as in `hostname`, but a letter
+# or digit may be any Unicode letter or digit ([^\W_]) and combining marks of common
+# scripts are allowed after the first character. Punctuation, symbols and spaces (also
+# fullwidth ones such as U+FF0F) are not. IDNA2008 context rules are not checked.
+IDN_ALNUM_REGEX = r'[^\W_]'
+IDN_MARK_REGEX = (
+    r'[\u0300-\u036f\u0483-\u0489\u0591-\u05c7\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed'
+    r'\u0900-\u0dff\u0e00-\u0eff\u0f00-\u0fff\u1000-\u109f\u1780-\u17ff\u3099\u309a]'
+)
+IDN_LABEL_REGEX = (
+    IDN_ALNUM_REGEX + r'(?:(?:' + IDN_ALNUM_REGEX + r'|' + IDN_MARK_REGEX + r'|-){0,61}'
+    r'(?:' + IDN_ALNUM_REGEX + r'|' + IDN_MARK_REGEX + r'))?'
+)
+
+
 class CodeGeneratorDraft07(CodeGeneratorDraft06):
     FORMAT_REGEXS = dict(CodeGeneratorDraft06.FORMAT_REGEXS, **{
         'date': r'^(?:' + DATE_REGEX + r')\Z',
@@ -10,7 +25,7 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
         'iri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
         'idn-email': r'^[^@]+@(?=[^@][^@.]*\.[^@])[^@]+\Z',
         # pylint: disable=line-too-long
-        'idn-hostname': r'^(?!-)(xn--)?[a-zA-Z0-9][a-zA-Z0-9-_]{0,61}[a-zA-Z0-9]{0,1}\.(?!-)(xn--)?([a-zA-Z0-9\-]{1,50}|[a-zA-Z0-9-]{1,30}\.[a-zA-Z]{2,})$',
+        'idn-hostname': r'^(?:' + IDN_LABEL_REGEX + r'\.)*' + IDN_LABEL_REGEX + r'\Z',
         'relative-json-pointer': r'^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)\Z',
         #'regex': r'',
         'time': (
