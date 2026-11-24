@@ -108,7 +108,8 @@ class CodeGeneratorDraft07(CodeGeneratorDraft06):
             with self.l('if isinstance({variable}, str):'):
                 with self.l('try:'):
                     self.l('import base64')
-                    self.l('{variable} = base64.b64decode({variable})')
+                    self.l('{variable} = {variable}.replace("\\r", "").replace("\\n", "")')
+                    self.l('{variable} = base64.b64decode({variable}, validate=True)')
                 with self.l('except Exception:'):
                     self.exc('{name} must be encoded by base64')
                 with self.l('if {variable} == "":'):
