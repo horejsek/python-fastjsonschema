@@ -348,10 +348,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             if not isinstance(self._definition['minimum'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('minimum must be a number')
             if self._definition.get('exclusiveMinimum', False):
-                with self.l('if {variable} <= {minimum}:'):
+                with self.l('if not {variable} > {minimum}:'):
                     self.exc('{name} must be bigger than {minimum}', rule='minimum')
             else:
-                with self.l('if {variable} < {minimum}:'):
+                with self.l('if not {variable} >= {minimum}:'):
                     self.exc('{name} must be bigger than or equal to {minimum}', rule='minimum')
 
     def generate_maximum(self):
@@ -359,10 +359,10 @@ class CodeGeneratorDraft04(CodeGenerator):
             if not isinstance(self._definition['maximum'], (int, float, decimal.Decimal)):
                 raise JsonSchemaDefinitionException('maximum must be a number')
             if self._definition.get('exclusiveMaximum', False):
-                with self.l('if {variable} >= {maximum}:'):
+                with self.l('if not {variable} < {maximum}:'):
                     self.exc('{name} must be smaller than {maximum}', rule='maximum')
             else:
-                with self.l('if {variable} > {maximum}:'):
+                with self.l('if not {variable} <= {maximum}:'):
                     self.exc('{name} must be smaller than or equal to {maximum}', rule='maximum')
 
     def generate_multiple_of(self):
