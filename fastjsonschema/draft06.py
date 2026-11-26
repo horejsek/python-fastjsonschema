@@ -4,15 +4,23 @@ from .exceptions import JsonSchemaDefinitionException
 from .generator import VALIDATION_EXCEPTIONS, enforce_list
 
 
+# RFC 6570: varchar is a letter (any case), a digit, "_" or a percent-encoded byte,
+# and a varname may have single dots between its varchars (such as "user.name").
+URI_TEMPLATE_VARCHAR_REGEX = r'(?:[a-zA-Z0-9_]|%[0-9a-fA-F]{2})'
+URI_TEMPLATE_VARSPEC_REGEX = (
+    URI_TEMPLATE_VARCHAR_REGEX + r'(?:\.?' + URI_TEMPLATE_VARCHAR_REGEX + r')*'
+    r'(?::[1-9][0-9]{0,3}|\*)?'
+)
+
+
 class CodeGeneratorDraft06(CodeGeneratorDraft04):
     FORMAT_REGEXS = dict(CodeGeneratorDraft04.FORMAT_REGEXS, **{
         'json-pointer': r'^(/(([^/~])|(~[01]))*)*\Z',
         'uri-reference': r'^(\w+:(\/?\/?))?[^#\\\s]*(#[^\\\s]*)?\Z',
         'uri-template': (
-            r'^(?:(?:[^\x00-\x20\"\'<>%\\^`{|}]|%[0-9a-f]{2})|'
-            r'\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+'
-            r'(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+'
-            r'(?::[1-9][0-9]{0,3}|\*)?)*\})*\Z'
+            r'^(?:(?:[^\x00-\x20\"\'<>%\\^`{|}]|%[0-9a-fA-F]{2})|'
+            r'\{[+#./;?&=,!@|]?' + URI_TEMPLATE_VARSPEC_REGEX +
+            r'(?:,' + URI_TEMPLATE_VARSPEC_REGEX + r')*\})*\Z'
         ),
     })
 

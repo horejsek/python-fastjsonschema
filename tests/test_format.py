@@ -170,6 +170,31 @@ def test_time(asserter, value, expected):
     }, value, expected)
 
 
+exc = JsonSchemaValueException('data must be uri-template', value='{data}', name='data', definition='{definition}', rule='format')
+@pytest.mark.parametrize('value, expected', [
+    ('', ''),
+    ('http://example.com/{term}', 'http://example.com/{term}'),
+    ('http://example.com/{userId}', 'http://example.com/{userId}'),
+    ('{?Query,lang}', '{?Query,lang}'),
+    ('{user.name}', '{user.name}'),
+    ('{.a.b,c:3}', '{.a.b,c:3}'),
+    ('http://example.com/%2F{%2Fa}', 'http://example.com/%2F{%2Fa}'),
+    ('{}', exc),
+    ('{term', exc),
+    ('{a.}', exc),
+    ('{a..b}', exc),
+    ('{.a.}', exc),
+    ('{a:0}', exc),
+    ('{a b}', exc),
+    ('%2G', exc),
+])
+def test_uri_template(asserter, value, expected):
+    asserter({
+        '$schema': 'http://json-schema.org/draft-07/schema',
+        'format': 'uri-template',
+    }, value, expected)
+
+
 exc = JsonSchemaValueException('data must be date', value='{data}', name='data', definition='{definition}', rule='format')
 @pytest.mark.parametrize('value, expected', [
     ('', exc),
