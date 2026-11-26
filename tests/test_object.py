@@ -103,6 +103,16 @@ def test_invalid_properties(asserter, definition):
         fastjsonschema.compile(definition)
 
 
+@pytest.mark.parametrize('additional_properties', ({}, {'type': 'number'}))
+def test_empty_additional_properties_allows_required(asserter, additional_properties):
+    definition = {
+        'type': 'object',
+        'required': ['extra'],
+        'additionalProperties': additional_properties,
+    }
+    asserter(definition, {'extra': 1}, {'extra': 1})
+
+
 @pytest.mark.parametrize('definition', (
     {
         'properties': {
