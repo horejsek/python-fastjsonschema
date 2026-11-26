@@ -523,7 +523,7 @@ class CodeGeneratorDraft04(CodeGenerator):
                 raise JsonSchemaDefinitionException('required must be an array')
             if len(self._definition['required']) != len(set(self._definition['required'])):
                 raise JsonSchemaDefinitionException('required must contain unique elements')
-            if not self._definition.get('additionalProperties', True):
+            if self._definition.get('additionalProperties', True) is False:
                 not_possible = [
                     prop
                     for prop in self._definition['required']
