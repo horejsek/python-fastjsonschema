@@ -15,7 +15,38 @@ JSON_TYPE_TO_PYTHON_TYPE = {
     'object': 'dict',
 }
 
-DOLLAR_FINDER = re.compile(r"(?<!\\)\$")  # Finds any un-escaped $ (including inside []-sets)
+
+def _fix_pattern(pattern: str) -> str:
+    result = []
+    escaped = False
+    in_class = False
+    class_first = False
+    for char in pattern:
+        if escaped:
+            result.append(char)
+            escaped = False
+        elif char == '\\':
+            result.append(char)
+            escaped = True
+        elif in_class:
+            result.append(char)
+            if class_first:
+                if char == '^':
+                    continue
+                class_first = False
+                if char == ']':
+                    continue
+            elif char == ']':
+                in_class = False
+        elif char == '[':
+            result.append(char)
+            in_class = True
+            class_first = True
+        elif char == '$':
+            result.append(r'\Z')
+        else:
+            result.append(char)
+    return ''.join(result)
 
 
 # Calendar date: the day must exist in its month, and 29 February only in a leap year.
@@ -295,7 +326,7 @@ class CodeGeneratorDraft04(CodeGenerator):
         with self.l('if isinstance({variable}, str):'):
             pattern = self._definition['pattern']
             safe_pattern = self.e(pattern)
-            end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\\Z', pattern)
+            end_of_string_fixed_pattern = _fix_pattern(pattern)
             self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
             with self.l('if not REGEX_PATTERNS[{}].search({variable}):', repr(pattern)):
                 self.exc('{name} must match pattern {}', safe_pattern, rule='pattern')
@@ -592,7 +623,7 @@ class CodeGeneratorDraft04(CodeGenerator):
             if pattern_prop_definition == {}:
                 return
             for pattern, definition in pattern_prop_definition.items():
-                end_of_string_fixed_pattern = DOLLAR_FINDER.sub(r'\\Z', pattern)
+                end_of_string_fixed_pattern = _fix_pattern(pattern)
                 self._compile_regexps[pattern] = re.compile(end_of_string_fixed_pattern)
             with self.l('for {variable}_key, {variable}_val in {variable}.items():'):
                 for pattern, definition in self._definition['patternProperties'].items():
