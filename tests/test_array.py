@@ -1,6 +1,6 @@
 import pytest
 
-from fastjsonschema import JsonSchemaValueException
+from fastjsonschema import JsonSchemaDefinitionException, JsonSchemaValueException, compile
 
 
 exc = JsonSchemaValueException('data must be array', value='{data}', name='data', definition='{definition}', rule='type')
@@ -248,3 +248,45 @@ def test_min_items_with_min_length(asserter):
 
 def test_max_items_with_max_length(asserter):
     asserter({'maxItems': 2, 'maxLength': 2}, ['a'], ['a'])
+
+
+DRAFT2019 = 'https://json-schema.org/draft/2019-09/schema'
+exc_min = JsonSchemaValueException('data must contain at least 2 items valid against contains definition', value='{data}', name='data', definition='{definition}', rule='minContains')
+exc_max = JsonSchemaValueException('data must contain at most 3 items valid against contains definition', value='{data}', name='data', definition='{definition}', rule='maxContains')
+@pytest.mark.parametrize('value, expected', [
+    ([], exc_min),
+    (['a', 1], exc_min),
+    ([1, 2], [1, 2]),
+    (['a', 1, 2, 3], ['a', 1, 2, 3]),
+    ([1, 2, 3, 4], exc_max),
+    ('not an array', 'not an array'),
+])
+def test_min_max_contains(asserter, value, expected):
+    asserter({
+        '$schema': DRAFT2019,
+        'contains': {'type': 'number'},
+        'minContains': 2,
+        'maxContains': 3,
+    }, value, expected)
+
+
+@pytest.mark.parametrize('definition, value, expected', [
+    ({'contains': True, 'maxContains': 1}, [1], [1]),
+    ({'contains': True, 'maxContains': 1}, [1, 2], JsonSchemaValueException('data must contain at most 1 items valid against contains definition', value='{data}', name='data', definition='{definition}', rule='maxContains')),
+    ({'contains': False, 'minContains': 0}, [1], [1]),
+    ({'contains': {'type': 'string'}, 'minContains': 0}, [], []),
+    ({'contains': {'type': 'string'}, 'minContains': 0, 'maxContains': 0}, ['a'], JsonSchemaValueException('data must contain at most 0 items valid against contains definition', value='{data}', name='data', definition='{definition}', rule='maxContains')),
+])
+def test_min_max_contains_with_boolean_and_zero(asserter, definition, value, expected):
+    asserter(dict(definition, **{'$schema': DRAFT2019}), value, expected)
+
+
+@pytest.mark.parametrize('keyword, value', [
+    ('minContains', -1),
+    ('minContains', 1.5),
+    ('minContains', True),
+    ('maxContains', 'two'),
+])
+def test_min_max_contains_invalid_definition(keyword, value):
+    with pytest.raises(JsonSchemaDefinitionException, match=keyword + ' must be a non-negative integer'):
+        compile({'$schema': DRAFT2019, 'contains': {'type': 'number'}, keyword: value})
