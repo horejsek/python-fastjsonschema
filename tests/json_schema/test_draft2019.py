@@ -31,8 +31,6 @@ def pytest_generate_tests(metafunc):
             'anchor.json',
             'content.json',
             'defs.json',
-            'maxContains.json',
-            'minContains.json',
             'recursiveRef.json',
             'unevaluatedItems.json',
             'unevaluatedProperties.json',

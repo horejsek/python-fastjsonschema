@@ -10,6 +10,7 @@
 * Fixed the `date`, `date-time` and `time` formats accepting non-ASCII digits (such as Bengali or fullwidth digits)
 * Optimization: `$ref` inside an array or an object does not copy all local variables to make the name for each item
 * Added support of dependentRequired and dependentSchemas from draft-2019
+* Added support of minContains and maxContains from draft-2019
 
 === 2.22.3 (2026-11-01)
 
